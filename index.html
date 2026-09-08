@@ -1391,12 +1391,6 @@ function setEvalMode(mode, opts = {}) {
   buttons.forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.mode === mode);
   });
-  if (mode === 'local') {
-    // 로컬 WASM 런타임이 페이지에 로드된 뒤에는 API 키를 DOM에 남겨 두지 않습니다.
-    document.getElementById('apiKeyInput').value = '';
-    state.apiHandshake.openai = { ready: false, fingerprint: '', model: '', selectionSource: '', verifiedAt: '' };
-    state.apiHandshake.gemini = { ready: false, fingerprint: '', model: '', selectionSource: '', verifiedAt: '' };
-  }
   document.getElementById('modeSelect').dataset.current = mode;
   applyEvalPresetByMode();
   if (!opts.skipSave) {
