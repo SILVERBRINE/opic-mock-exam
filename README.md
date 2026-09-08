@@ -6,6 +6,8 @@
 
 처음에는 Release를 한 번 발행해야 숫자가 표시돼요. 그 뒤 ZIP을 내려받을 때마다 GitHub가 누적해서 올려 줍니다.
 
+[⬇️ 최신 버전 다운로드](https://github.com/SILVERBRINE/opic-mock-exam/releases/latest)
+
 문제는 귀로 듣고, 답변은 마이크로 녹음해요. 한 문제 끝나면 바로 피드백을 보고 다음 문제로 넘어가는 OPIc 연습 도구입니다. 서버 없이 정적 HTML 하나로 실행되고, 오프라인 평가와 API 평가 중 편한 방식을 고르면 됩니다.
 
 ## 주요 기능
