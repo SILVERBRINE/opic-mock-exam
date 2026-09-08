@@ -65,11 +65,11 @@ docs/ANALYTICS.md                   다운로드·익명 통계의 범위와 한
 
 API를 선택해도 별도 중계 서버를 거치지 않습니다. 따라서 사용자의 API 키와 음성 데이터는 선택한 제공자의 브라우저 API 요청으로 직접 전달됩니다.
 
-## 다운로드와 사용 통계
+## 다운로드 집계
 
-GitHub는 저장소 관리자의 **Insights → Traffic**에서 최근 저장소 조회와 Git clone을 익명 집계해 보여줍니다. Release asset으로 배포하면 asset별 다운로드 수도 확인할 수 있습니다. 다만 정적 HTML만으로는 실제로 앱을 실행한 사람 수를 정확히 세거나 개인을 식별할 수 없습니다.
+누적 다운로드 수는 GitHub Release asset으로 배포한 ZIP에서 집계합니다. `v*` 태그를 만들면 `.github/workflows/release.yml`이 `index.html`과 실행에 필요한 안내 파일을 ZIP으로 묶어 Release asset으로 게시합니다. 다운로드 수는 저장소의 [Releases](https://github.com/SILVERBRINE/opic-mock-exam/releases) 화면에서 확인할 수 있습니다.
 
-이 프로젝트는 기본적으로 제3자 추적 스크립트를 넣지 않습니다. 자세한 범위와 향후 선택 가능한 익명 분석 방안은 [`docs/ANALYTICS.md`](docs/ANALYTICS.md)에 정리했습니다.
+이 프로젝트는 앱 실행자 수, 개인 식별 정보, 제3자 추적 스크립트를 수집하지 않습니다. GitHub의 저장소 조회·clone 통계는 다운로드 누적 수와 다른 별도 지표입니다.
 
 ## 라이선스
 
