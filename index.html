@@ -1395,7 +1395,7 @@ function renderHistory() {
   }
   list.innerHTML = state.history.map((item) => {
     const date = new Date(item.timestamp);
-    const when = Number.isNaN(date.getTime()) ? '' : date.toLocaleString('ko-KR', { dateStyle: 'short', timeStyle: 'short' });
+    const when = Number.isNaN(date.getTime()) ? '' : date.toLocaleString('ko-KR');
     const c = item.criteria || {};
     return `<article class="history-item">
       <div class="history-item-head"><span>Q${escapeHtml(String(item.questionId || '').padStart(3, '0'))} · ${escapeHtml(item.type || '')}</span><small>${escapeHtml(when)}</small></div>
@@ -3543,7 +3543,7 @@ function buildEvaluationHtml(result, question = null, answer = '') {
     ['content', '내용의 완성도', '질문의 의도·구체성·흥미'],
     ['fluency', '유창성', '자연스러운 흐름·멈춤'],
     ['grammar', '문법의 정확성', '의사소통에 필요한 문법'],
-    ['pronunciation', '발음의 명확성', '상대가 이해하기 쉬운 정도'],
+    ['pronunciation', '발음의 명확성', '음성 인식 신호 기반 프록시'],
   ];
   const metricsHtml = metricItems.map(([key, label, hint]) => {
     const score = Math.max(1, Math.min(10, Number(criteria[key]) || 5));
