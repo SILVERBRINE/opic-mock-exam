@@ -1,0 +1,3668 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OPIc 모의고사 v1.0</title>
+  <style>
+    :root {
+      --bg: #edf2fc;
+      --card: #ffffff;
+      --ink: #15243f;
+      --muted: #5d6f8f;
+      --line: #d8e2f5;
+      --accent: #1e66f5;
+      --accent-2: #1f6feb;
+      --accent-soft: #e8f0ff;
+      --good: #1f8f53;
+      --warn: #c57a00;
+      --bad: #b62c2c;
+      --shadow: 0 14px 34px rgba(17, 34, 77, 0.09);
+      --shadow-soft: 0 8px 20px rgba(24, 40, 85, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, "Apple SD Gothic Neo", sans-serif;
+      background: radial-gradient(circle at 10% 0%, #e7efff 0%, var(--bg) 38%, #f7f9fc 100%);
+      color: var(--ink);
+      padding: 20px;
+    }
+
+    .wrap {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .hero {
+      padding: 24px;
+      background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.98)),
+        linear-gradient(160deg, #f2f7ff 0%, #dfeafe 100%);
+      border: 1px solid #c7d6f6;
+      box-shadow: var(--shadow-soft);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 30px;
+      letter-spacing: -0.4px;
+      line-height: 1.2;
+    }
+
+    .hero-desc {
+      font-size: 15px;
+      color: #425170;
+      margin: 0;
+    }
+
+    .hero-meta {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .session-mode-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .session-mode-btn {
+      text-align: left;
+      padding: 13px 15px;
+      border-radius: 13px;
+      border: 1px solid #c8d6f4;
+      background: #f7faff;
+      color: #21355b;
+      cursor: pointer;
+      line-height: 1.45;
+      transition: all .2s ease;
+    }
+
+    .session-mode-btn span {
+      display: block;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .session-mode-btn small {
+      display: block;
+      margin-top: 3px;
+      color: #5a6f95;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .session-mode-btn:hover {
+      transform: translateY(-1px);
+      border-color: #9fb8f3;
+    }
+
+    .session-mode-btn.active {
+      background: #e8f0ff;
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 1px rgba(30, 102, 245, 0.35);
+      color: #153067;
+    }
+
+    .mode-btn {
+      text-align: left;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid #c8d6f4;
+      background: #f7faff;
+      color: #21355b;
+      font-size: 13px;
+      transition: all .2s ease;
+      cursor: pointer;
+      line-height: 1.5;
+    }
+
+    .mode-btn span {
+      display: block;
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 2px;
+    }
+
+    .mode-btn small {
+      color: #4f648c;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .mode-btn:hover {
+      transform: translateY(-1px);
+      border-color: #9fb8f3;
+    }
+
+    .mode-btn.active {
+      background: #e8f0ff;
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 1px rgba(30, 102, 245, 0.35);
+      color: #153067;
+    }
+
+    .local-ai-panel {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 6px 12px;
+      align-items: center;
+      margin-top: 12px;
+      padding: 12px 14px;
+      border: 1px solid #d8e4f6;
+      border-radius: 11px;
+      background: #f7faff;
+    }
+    .local-ai-panel strong { display: block; color: #2d4a78; font-size: 13px; }
+    .local-ai-panel small { display: block; margin-top: 3px; color: #687b9d; font-size: 11px; line-height: 1.45; }
+    .local-ai-panel .small-note { grid-column: 1 / -1; margin-top: 0; }
+
+    h2 {
+      margin-top: 0;
+      color: #263c76;
+    }
+
+    p {
+      margin: 10px 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 18px;
+      font-size: 15px;
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    button:hover { opacity: 0.94; transform: translateY(-1px); }
+    button:disabled { opacity: 0.45; cursor: default; transform: none; }
+
+    .secondary { background: #2f446f; }
+    .ghost { background: #fff; color: #263c76; border: 1px solid #c9d7f0; }
+
+    .grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 10px;
+      color: #30446d;
+      font-size: 14px;
+    }
+
+    .chip {
+      background: #e8efff;
+      color: #2d4a7d;
+      border-radius: 999px;
+      padding: 5px 12px;
+      border: 1px solid #cad8f4;
+      font-size: 12px;
+    }
+
+    .timer-chip {
+      min-width: 190px;
+      text-align: center;
+      padding: 12px 18px;
+      border-radius: 14px;
+      border: 1px solid #a8bef6;
+      background: linear-gradient(135deg, #1f6feb, #2f6bdc);
+      color: #fff;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+    }
+
+    .question-box {
+      background: #f9fbff;
+      border: 1px dashed #c8d8f7;
+      border-radius: 12px;
+      padding: 14px;
+      margin: 12px 0;
+    }
+
+    .prompt {
+      font-size: 17px;
+      line-height: 1.6;
+      margin: 8px 0 0;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 180px;
+      border: 1px solid #cedcf2;
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 10px;
+      font-size: 15px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    textarea.read-only-answer {
+      background: #f4f8ff;
+      color: #1f2f4f;
+      border-color: #b9caee;
+      resize: none;
+      cursor: default;
+      white-space: pre-wrap;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .status-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .status-indicator {
+      min-height: 22px;
+      font-size: 13px;
+      color: #4b618d;
+    }
+
+    .feedback {
+      margin-top: 10px;
+      border: 1px solid #e1ebff;
+      border-radius: 12px;
+      padding: 12px;
+      background: #f8fbff;
+      min-height: 82px;
+    }
+
+    .q-grid {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
+      gap: 8px;
+    }
+
+    .q-dot {
+      border: 1px solid #d4e0fa;
+      padding: 6px 0;
+      min-height: 36px;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      background: #f2f6ff;
+      color: #29447a;
+    }
+
+    .q-dot.done { background: #d7f0e0; border-color: #7ad09f; color: #0f5e37; }
+    .q-dot.current { background: #1f6feb; color: #fff; border-color: #1f6feb; }
+    .q-dot:disabled { opacity: 1; cursor: default; }
+
+    .feedback-item {
+      border: 1px solid #d7e3fb;
+      border-radius: 10px;
+      padding: 10px;
+      margin: 8px 0;
+      background: #fff;
+    }
+
+    .bar-wrap {
+      height: 12px;
+      border-radius: 999px;
+      background: #d9e3f7;
+      overflow: hidden;
+      margin: 6px 0;
+    }
+
+    .bar {
+      height: 100%;
+      width: 0;
+      border-radius: 999px;
+      transition: width 0.35s ease;
+      background: linear-gradient(90deg, #1f6feb, #4aa5ff);
+    }
+
+    .score-line {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 14px;
+      color: #324a70;
+    }
+
+    .summary {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    }
+
+    .summary-card {
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #d8e4fb;
+      background: #f8fbff;
+    }
+
+    .level {
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-block;
+      border-radius: 999px;
+      padding: 4px 9px;
+      background: #e6f0ff;
+      color: #22427c;
+      margin-top: 4px;
+    }
+
+    .hide { display: none; }
+
+    .small {
+      font-size: 13px;
+      color: #5a6f95;
+    }
+
+    .setup-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+      align-items: flex-end;
+    }
+
+    .config-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(260px, .65fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .config-row > .field:first-child {
+      grid-column: 1 / -1;
+    }
+
+    .config-row .field.small {
+      min-width: 0;
+      flex: initial;
+    }
+
+    .action-row {
+      align-items: center;
+    }
+
+    .key-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .key-row input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .key-row button {
+      flex: 0 0 auto;
+      white-space: nowrap;
+      word-break: keep-all;
+    }
+
+    .small-note {
+      margin-top: 4px;
+      color: #496188;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .api-help a {
+      color: #245fc0;
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .field {
+      min-width: 220px;
+      flex: 1;
+      display: grid;
+      gap: 5px;
+    }
+
+    .field.small {
+      min-width: 170px;
+      flex: 0 0 220px;
+    }
+
+    label {
+      font-size: 12px;
+      color: #30446d;
+      font-weight: 700;
+    }
+
+    .field input {
+      border: 1px solid #c9d7f0;
+      border-radius: 8px;
+      padding: 9px 10px;
+      font-size: 13px;
+    }
+
+    .model-select-shell {
+      position: relative;
+      display: flex;
+      align-items: center;
+      min-height: 48px;
+      overflow: hidden;
+      border: 1px solid #bfd0ed;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%);
+      box-shadow: 0 5px 14px rgba(40, 72, 123, .08);
+      transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+    }
+
+    .model-select-shell::before {
+      content: 'AI';
+      display: grid;
+      place-items: center;
+      flex: 0 0 30px;
+      width: 30px;
+      height: 30px;
+      margin-left: 9px;
+      border-radius: 10px;
+      background: #294a7e;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .04em;
+      box-shadow: 0 4px 8px rgba(41, 74, 126, .2);
+      pointer-events: none;
+    }
+
+    .model-select-shell::after {
+      content: '⌄';
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      color: #31558c;
+      font-size: 19px;
+      font-weight: 800;
+      line-height: 1;
+      transform: translateY(-58%);
+      pointer-events: none;
+    }
+
+    .model-select-shell:focus-within {
+      border-color: #397cff;
+      box-shadow: 0 0 0 4px rgba(57, 124, 255, .14), 0 8px 18px rgba(40, 72, 123, .11);
+      transform: translateY(-1px);
+    }
+
+    #modelSelect {
+      width: 100%;
+      min-width: 0;
+      appearance: none;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: #172f58;
+      cursor: pointer;
+      padding: 12px 42px 12px 11px;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: -.01em;
+    }
+
+    #modelSelect:disabled {
+      color: #8293ae;
+      cursor: not-allowed;
+    }
+
+    #modelSelect option {
+      color: #172f58;
+      background: #fff;
+      font-weight: 600;
+    }
+
+    #modelHint {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      margin-top: 7px;
+      color: #60769a;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    #modelHint::before {
+      content: '✦';
+      flex: 0 0 auto;
+      color: #397cff;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .model-picker {
+      position: relative;
+      width: 100%;
+    }
+
+    .model-picker-button {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      min-height: 48px;
+      gap: 10px;
+      padding: 8px 12px 8px 9px;
+      border: 1px solid #bfd0ed;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%);
+      color: #172f58;
+      box-shadow: 0 5px 14px rgba(40, 72, 123, .08);
+      cursor: pointer;
+      text-align: left;
+      transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease, background .18s ease;
+    }
+
+    .model-picker-button:hover:not(:disabled) {
+      border-color: #91b4ef;
+      background: linear-gradient(135deg, #fbfdff 0%, #e8f1ff 100%);
+      transform: translateY(-1px);
+    }
+
+    .model-picker-button:focus-visible {
+      outline: 0;
+      border-color: #397cff;
+      box-shadow: 0 0 0 4px rgba(57, 124, 255, .14), 0 8px 18px rgba(40, 72, 123, .11);
+    }
+
+    .model-picker-button:disabled {
+      color: #8293ae;
+      cursor: not-allowed;
+      opacity: .82;
+    }
+
+    .model-picker-badge {
+      display: grid;
+      place-items: center;
+      flex: 0 0 30px;
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      background: #294a7e;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .04em;
+      box-shadow: 0 4px 8px rgba(41, 74, 126, .2);
+    }
+
+    .model-picker-value {
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+      color: inherit;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: -.01em;
+      line-height: 1.35;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .model-picker-chevron {
+      flex: 0 0 auto;
+      color: #31558c;
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1;
+      transform: translateY(-2px);
+      transition: transform .18s ease;
+    }
+
+    .model-picker-button[aria-expanded="true"] .model-picker-chevron {
+      transform: rotate(180deg) translateY(2px);
+    }
+
+    .model-picker-menu {
+      position: absolute;
+      z-index: 20;
+      top: calc(100% + 8px);
+      right: 0;
+      left: 0;
+      display: grid;
+      gap: 4px;
+      max-height: 230px;
+      overflow-y: auto;
+      padding: 6px;
+      border: 1px solid #c8d8f0;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, .98);
+      box-shadow: 0 16px 32px rgba(35, 61, 103, .18);
+      backdrop-filter: blur(14px);
+    }
+
+    .model-picker-menu[hidden] {
+      display: none;
+    }
+
+    .model-picker-option {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      min-height: 38px;
+      padding: 8px 10px;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: #29466f;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: left;
+      transition: background .15s ease, color .15s ease;
+    }
+
+    .model-picker-option:hover,
+    .model-picker-option:focus-visible {
+      outline: 0;
+      background: #edf4ff;
+      color: #1d5dcc;
+    }
+
+    .model-picker-option[aria-selected="true"] {
+      background: #e5efff;
+      color: #1d5dcc;
+    }
+
+    .model-picker-option[aria-selected="true"]::after {
+      content: '✓';
+      margin-left: auto;
+      color: #397cff;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    #modelSelect.model-native-select {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      border: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .good { color: var(--good); }
+    .warn { color: var(--warn); }
+    .bad { color: var(--bad); }
+
+    @media (max-width: 720px) {
+      body { padding: 12px; }
+      h1 { font-size: 23px; }
+      .mode-grid { grid-template-columns: 1fr; }
+      .session-mode-grid { grid-template-columns: 1fr; }
+      .config-row { grid-template-columns: 1fr; }
+      .config-row > .field:first-child { grid-column: auto; }
+      .timer-chip { min-width: 0; font-size: 22px; }
+      .controls { gap: 8px; }
+      .question-box { padding: 11px; }
+    }
+
+    /* Product layout */
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e8edf7;
+    }
+
+    .brand-lockup { display: flex; align-items: center; gap: 11px; }
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: #1f6feb;
+      color: #fff;
+      font-size: 21px;
+      font-weight: 900;
+      box-shadow: 0 8px 16px rgba(31, 111, 235, .22);
+    }
+    .brand-kicker, .eyebrow {
+      color: #6d7d9d;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .brand-title { color: #152b53; font-size: 16px; font-weight: 800; }
+    .brand-title span { color: #7183a5; font-size: 11px; font-weight: 700; margin-left: 4px; }
+    .top-settings {
+      padding: 9px 12px;
+      border: 1px solid #d6e0f2;
+      border-radius: 9px;
+      background: #fff;
+      color: #29446f;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .hero-heading {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-top: 30px;
+    }
+    .hero-heading h1 { margin: 6px 0 10px; font-size: clamp(29px, 4vw, 44px); letter-spacing: -1.3px; }
+    .hero-heading .hero-desc { max-width: 720px; font-size: 15px; }
+    .hero-badge {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      flex: 0 0 auto;
+      padding: 12px 15px;
+      border: 1px solid #cddcf7;
+      border-radius: 14px;
+      background: #f5f8ff;
+      color: #2e4c7c;
+    }
+    .hero-badge strong { color: #1f6feb; font-size: 30px; line-height: 1; }
+    .hero-badge span { font-size: 12px; font-weight: 800; line-height: 1.35; }
+    .section-divider {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 28px;
+      padding-top: 22px;
+      border-top: 1px solid #e8edf7;
+    }
+    .section-divider span { color: #203b68; font-size: 16px; font-weight: 800; }
+    .section-divider small { color: #7686a4; font-size: 12px; }
+    .primary-action { background: #1f6feb; box-shadow: 0 8px 16px rgba(31,111,235,.18); }
+    .label-muted { color: #8a98b2; font-weight: 500; }
+    .evalStatus, #evalStatus { margin-top: 12px; padding: 9px 11px; border-radius: 8px; background: #f5f8fd; }
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(16, 29, 55, .42);
+      backdrop-filter: blur(4px);
+    }
+    .modal.hide { display: none; }
+    .modal-card {
+      width: min(980px, 100%);
+      max-height: min(860px, 92vh);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid #d6e1f3;
+      border-radius: 18px;
+      background: #fff;
+      box-shadow: 0 26px 70px rgba(17, 34, 77, .22);
+    }
+    .modal-header, .modal-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 24px; }
+    .modal-header { border-bottom: 1px solid #e8edf7; }
+    .modal-header h2 { margin: 5px 0 4px; font-size: 24px; }
+    .modal-header p { margin: 0; font-size: 13px; }
+    .icon-button { width: 34px; height: 34px; padding: 0; border-radius: 50%; background: #f2f5fb; color: #536684; font-size: 24px; line-height: 1; }
+    .editor-toolbar { display: flex; align-items: center; gap: 10px; padding: 16px 24px; background: #f7f9fd; border-bottom: 1px solid #e8edf7; }
+    .editor-toolbar input { flex: 1; min-width: 0; border: 1px solid #ccd8ed; border-radius: 9px; padding: 10px 12px; font-size: 14px; }
+    .editor-count { color: #667899; font-size: 12px; white-space: nowrap; }
+    .text-button { padding: 8px 10px; background: transparent; color: #4a6591; font-size: 12px; white-space: nowrap; }
+    .question-editor-list { flex: 1; min-height: 0; overflow: auto; padding: 14px 24px; }
+    .editor-item { display: grid; grid-template-columns: 62px 150px minmax(0, 1fr); gap: 10px; align-items: start; padding: 12px 0; border-bottom: 1px solid #edf1f7; }
+    .editor-item:last-child { border-bottom: 0; }
+    .editor-number { padding-top: 10px; color: #1f6feb; font-size: 12px; font-weight: 800; }
+    .editor-item input, .editor-item textarea { width: 100%; margin: 0; border: 1px solid #d3deef; border-radius: 8px; padding: 9px 10px; color: #233858; font-size: 13px; background: #fff; }
+    .editor-item textarea { min-height: 66px; resize: vertical; line-height: 1.45; }
+    .editor-pagination { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 12px 24px; border-top: 1px solid #e8edf7; }
+    .editor-pagination button { padding: 8px 12px; font-size: 12px; }
+    .editor-pagination span { min-width: 70px; text-align: center; color: #607394; font-size: 12px; }
+    .modal-footer { border-top: 1px solid #e8edf7; background: #fbfcfe; }
+    .modal-footer > div { display: flex; gap: 8px; flex: 0 0 auto; }
+    .modal-footer button { padding: 9px 13px; font-size: 13px; }
+    .exam-hud { margin-top: 0; }
+    .exam-hud-topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .exam-question-label { color: #263f70; font-size: 18px; font-weight: 850; letter-spacing: -.02em; }
+    .exam-timers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 13px; }
+    .exam-timers .timer-chip { min-width: 0; font-size: 26px; }
+    .total-timer { background: linear-gradient(135deg, #1f6feb, #2853a0); }
+    .question-timer { background: linear-gradient(135deg, #bd6a19, #d28b2a); border-color: #e6b267; }
+    .question-timer.not-started { background: linear-gradient(135deg, #6f7f9d, #8795ae); border-color: #aebbd0; }
+    .question-timer.warning { background: linear-gradient(135deg, #b54936, #d15e45); border-color: #e49383; animation: timerPulse 1s ease-in-out infinite; }
+    @keyframes timerPulse { 50% { transform: scale(1.015); box-shadow: 0 0 0 4px rgba(209, 94, 69, .12); } }
+    .question-nav-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-top: 16px; color: #304a78; font-size: 13px; font-weight: 800; }
+    .question-nav-heading small { color: #7183a2; font-size: 11px; font-weight: 500; }
+    .exam-panel .q-grid { grid-template-columns: repeat(15, minmax(0, 1fr)); margin-top: 7px; gap: 6px; }
+    .exam-panel .question-box { margin-top: 22px; padding: 25px 28px; border-style: solid; background: linear-gradient(145deg, #f8fbff, #f1f6ff); }
+    .exam-panel .question-box h2 { margin-bottom: 8px; font-size: 19px; }
+    .exam-panel .prompt { color: #466086; font-size: 15px; }
+    .exam-panel textarea { min-height: 148px; margin-top: 18px; }
+    .exam-panel .status-line { align-items: center; margin-top: 15px; }
+    .exam-panel .status-line > .controls { justify-content: flex-end; }
+    @media (max-width: 720px) {
+      .app-header, .hero-heading, .section-divider, .modal-footer { align-items: flex-start; flex-direction: column; }
+      .hero-heading { margin-top: 22px; }
+      .hero-badge { align-self: flex-start; }
+      .editor-toolbar { flex-wrap: wrap; padding: 12px 16px; }
+      .editor-toolbar input { flex-basis: 100%; }
+      .question-editor-list { padding: 10px 16px; }
+      .editor-item { grid-template-columns: 52px minmax(0, 1fr); }
+      .editor-item textarea { grid-column: 2; }
+      .modal-header, .modal-footer { padding: 16px; }
+      .exam-timers { grid-template-columns: 1fr; gap: 8px; }
+      .exam-timers .timer-chip { font-size: 23px; }
+      .exam-panel .q-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+      .exam-panel .question-box { padding: 18px; }
+      .exam-panel .status-line > .controls { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="panel hero">
+      <header class="app-header">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true">O</div>
+          <div>
+            <div class="brand-kicker">SPEAKING PRACTICE</div>
+            <div class="brand-title">OPIc 모의고사 <span>v1.0</span></div>
+          </div>
+        </div>
+        <button id="settingsBtn" type="button" class="top-settings" aria-haspopup="dialog">⚙ 환경 설정</button>
+      </header>
+      <div class="hero-heading">
+        <div>
+          <div class="eyebrow">오늘의 말하기 연습</div>
+          <h1>실전과 같은 훈련으로 영포자의 승리자가 된다</h1>
+          <p class="hero-desc">질문은 음성으로 듣고 답변은 마이크로 녹음합니다. 한 문항이 끝나면 개선점을 확인한 뒤 다음 문제로 넘어갑니다.</p>
+        </div>
+        <div class="hero-badge"><strong id="heroModeValue">15</strong><span id="heroModeLabel">문항<br />총 40분 · 문항당 2분</span></div>
+      </div>
+      <div class="meta">
+        <span class="chip">역할극 2문항 이상</span>
+        <span class="chip">질문 다시 듣기 1회</span>
+        <span class="chip">진행 내용 자동 저장</span>
+      </div>
+      <div class="hero-meta">
+        <span class="level" style="background:#eaf2ff;color:#234074;">인터넷 없이도 기본 평가 가능</span>
+        <span class="small" style="align-self:center;">평가 방식은 아래에서 선택할 수 있습니다.</span>
+      </div>
+      <div class="controls">
+        <button id="startBtn" class="primary-action">모의고사 시작</button>
+        <button id="clearBtn" class="ghost">진행 기록 삭제</button>
+      </div>
+      <div class="section-divider"><span>진행 방식</span><small>모의고사는 15문항, 연습모드는 한 문항씩 반복합니다.</small></div>
+      <div class="session-mode-grid" id="sessionModeSelect" role="group" aria-label="진행 방식">
+        <button type="button" class="session-mode-btn active" data-session-mode="exam">
+          <span>모의고사</span>
+          <small>15문항 · 전체 제한시간 40분</small>
+        </button>
+        <button type="button" class="session-mode-btn" data-session-mode="practice">
+          <span>연습모드</span>
+          <small>한 문항 · 피드백 후 새 문제</small>
+        </button>
+      </div>
+      <div id="sessionModeHint" class="small-note">실전처럼 15문항을 연속으로 풉니다. 각 문항의 시간은 ‘문항 듣기’를 누르면 시작됩니다.</div>
+      <div class="section-divider"><span>평가 방식</span><small>처음 사용한다면 ‘오프라인 기본 평가’를 추천합니다.</small></div>
+      <div class="setup-row config-row">
+        <div class="field">
+          <label>어떻게 평가할까요?</label>
+          <div class="mode-grid" id="modeSelect" role="group" aria-label="평가 방식">
+            <button type="button" class="mode-btn active" data-mode="local">
+              <span>오프라인 기본 평가</span>
+              <small>인터넷 불필요 · 바로 시작</small>
+            </button>
+            <button type="button" class="mode-btn" data-mode="openai">
+              <span>OpenAI API</span>
+              <small>정밀한 AI 피드백 · 키 필요</small>
+            </button>
+            <button type="button" class="mode-btn" data-mode="gemini">
+              <span>Gemini API</span>
+              <small>정밀한 AI 피드백 · 키 필요</small>
+            </button>
+          </div>
+          <div id="localAiPanel" class="local-ai-panel">
+            <div>
+              <strong>오프라인 AI 전사·평가</strong>
+              <small>Whisper base.en Q5_1(약 57MB)로 녹음을 PC 안에서 전사하고, WebGPU가 지원되면 로컬 LLM이 피드백을 보조합니다. 준비한 모델은 이 사이트의 브라우저 저장소에 보관되어 다음 실행 때 재사용합니다.</small>
+            </div>
+            <button id="prepareLocalAiBtn" type="button" class="ghost">오프라인 AI 준비</button>
+            <div id="localAiStatus" class="small-note">아직 준비하지 않음 · 첫 실행 때 Whisper 모델과 실행 파일을 내려받습니다. 비공개 모드에서는 브라우저를 닫으면 다시 받아야 할 수 있습니다.</div>
+          </div>
+        </div>
+          <div class="field small">
+            <label for="apiKeyInput">AI 연결 키 <span class="label-muted">(API 방식에서만 필요)</span></label>
+          <div class="key-row">
+            <input id="apiKeyInput" type="password" placeholder="API 키를 입력하세요" autocomplete="off" />
+            <button id="handshakeBtn" type="button" class="ghost">연결</button>
+          </div>
+          <div id="handshakeInfo" class="small-note">오프라인 기본 평가에서는 키가 필요 없습니다.</div>
+          <div class="small-note api-help">Gemini 무료 키 발급: <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio에서 API 키 만들기</a> → Google 계정 로그인 → <b>API key 만들기</b> → 키를 복사해 위 입력란에 붙여넣으세요.</div>
+        </div>
+        <div class="field small">
+          <label for="modelPickerButton">사용할 모델</label>
+          <div id="modelPicker" class="model-picker">
+            <button id="modelPickerButton" class="model-picker-button" type="button" aria-haspopup="listbox" aria-expanded="false" disabled>
+              <span class="model-picker-badge" aria-hidden="true">AI</span>
+              <span id="modelPickerValue" class="model-picker-value">연결 후 선택할 수 있습니다</span>
+              <span class="model-picker-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="modelPickerMenu" class="model-picker-menu" role="listbox" hidden></div>
+            <select id="modelSelect" class="model-native-select" aria-hidden="true" tabindex="-1" disabled>
+              <option value="">연결 후 선택할 수 있습니다</option>
+            </select>
+          </div>
+          <div id="modelHint" class="small-note">연결 후 사용할 수 있는 모델이 표시됩니다.</div>
+        </div>
+      </div>
+      <div class="setup-row action-row">
+        <button id="saveConfigBtn" class="ghost">평가 설정 저장</button>
+        <button id="clearConfigBtn" class="ghost">저장된 키 삭제</button>
+      </div>
+      <div id="evalStatus" class="small"></div>
+    </section>
+
+    <div id="questionEditorModal" class="modal hide" role="dialog" aria-modal="true" aria-labelledby="questionEditorTitle">
+      <div class="modal-card">
+        <header class="modal-header">
+          <div>
+            <div class="eyebrow">환경 설정</div>
+            <h2 id="questionEditorTitle">연습 질문 수정</h2>
+            <p>이 브라우저에 저장되는 나만의 연습 질문을 관리합니다.</p>
+          </div>
+          <button id="closeQuestionEditorBtn" type="button" class="icon-button" aria-label="닫기">×</button>
+        </header>
+        <div class="editor-toolbar">
+          <input id="questionSearchInput" type="search" placeholder="번호, 유형, 질문으로 검색" />
+          <span id="questionEditorCount" class="editor-count"></span>
+          <button id="resetQuestionsBtn" type="button" class="text-button">기본 질문으로 되돌리기</button>
+        </div>
+        <div id="questionEditorList" class="question-editor-list"></div>
+        <div class="editor-pagination">
+          <button id="questionPrevBtn" type="button" class="ghost">이전</button>
+          <span id="questionEditorPage"></span>
+          <button id="questionNextBtn" type="button" class="ghost">다음</button>
+        </div>
+        <footer class="modal-footer">
+          <span class="small">질문 200개가 이 HTML에 포함되어 있습니다. 수정 내용은 이 브라우저에 저장됩니다.</span>
+          <div>
+            <button id="cancelQuestionEditorBtn" type="button" class="ghost">취소</button>
+            <button id="saveQuestionsBtn" type="button" class="primary-action">질문 저장</button>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <section class="panel hide exam-panel" id="examPanel">
+      <div class="exam-hud">
+        <div class="exam-hud-topline">
+          <span id="examInfo" class="exam-question-label"></span>
+          <span id="progress" class="chip"></span>
+        </div>
+        <div class="exam-timers" aria-label="시험 타이머">
+          <span id="timer" class="chip timer-chip total-timer"></span>
+          <span id="questionTimer" class="chip timer-chip question-timer"></span>
+        </div>
+        <div class="question-nav-heading"><span>문항 번호</span><small>현재 문제는 파란색으로 표시됩니다.</small></div>
+        <div id="qMap" class="q-grid" aria-label="문항 번호"></div>
+      </div>
+      <div class="question-box">
+        <h2 id="qType"></h2>
+        <div class="prompt" id="qPrompt" aria-live="polite"></div>
+      </div>
+      <textarea id="answerInput" rows="7" class="read-only-answer" readonly placeholder="문항 듣기 후 음성 입력 버튼을 눌러 답변하세요."></textarea>
+      <div class="small-note">인식 결과는 수정할 수 없습니다. API 모드에서는 녹음 원본을 고정밀 STT로 확인하고, 오프라인 모드에서는 준비된 Whisper 또는 브라우저 인식을 사용합니다.</div>
+      <div class="status-line">
+        <span id="voiceStatus" class="status-indicator"></span>
+        <div class="controls">
+          <button id="playQuestionBtn">문항 듣기</button>
+          <button id="voiceBtn">음성 입력</button>
+          <button id="nextBtn" class="secondary">다음 문제</button>
+          <button id="submitBtn" class="secondary">전체 제출</button>
+        </div>
+      </div>
+      <div id="questionFeedback" class="feedback hide"></div>
+    </section>
+
+    <section class="panel hide" id="resultPanel"></section>
+  </div>
+
+<script>
+const QUESTION_BANK = [{"id":1,"type":"자기소개","prompt":"Introduce yourself to someone who has never met you. What would help that person understand your everyday life and interests?"},{"id":2,"type":"묘사","prompt":"Choose three words that describe your personality. Explain how one of those qualities appears in your daily life."},{"id":3,"type":"일상","prompt":"Walk me through an ordinary weekday. Which part of the day do you usually look forward to most?"},{"id":4,"type":"인물 묘사","prompt":"Who do you spend the most time with these days? Describe that person and explain what you enjoy doing together."},{"id":5,"type":"취향","prompt":"What activity helps you feel like yourself after a busy week? Explain what makes it satisfying for you."},{"id":6,"type":"비교","prompt":"Compare a typical weekend now with a weekend when you were a teenager. What has changed the most?"},{"id":7,"type":"최근 경험","prompt":"Describe a small achievement you felt good about recently. What did you do, and how did you celebrate it?"},{"id":8,"type":"과거 경험","prompt":"Tell me about a time you met someone who later became a close friend. How did the conversation begin?"},{"id":9,"type":"변화","prompt":"Describe a habit you have changed in the past few years. What led you to change it, and how has your routine improved?"},{"id":10,"type":"계획","prompt":"What personal activity would you like to make more time for next month? Explain how you would fit it into your schedule."},{"id":11,"type":"묘사","prompt":"Imagine showing a visitor around your home. Describe the layout and the part of the home that feels most comfortable."},{"id":12,"type":"사물 묘사","prompt":"Choose an item of furniture that you use every day. What does it look like, and how does it fit into your life?"},{"id":13,"type":"일상","prompt":"What happens at home during a typical evening? Describe what you do from the time you get home until bedtime."},{"id":14,"type":"과정","prompt":"Explain how you clean and organize your living space. Which task takes the most effort, and why?"},{"id":15,"type":"비교","prompt":"Think of a place you lived in before. How does your current home differ in space, convenience, and atmosphere?"},{"id":16,"type":"과거 경험","prompt":"Tell me about a day when you rearranged or decorated your home. What did you change, and how did it turn out?"},{"id":17,"type":"문제 경험","prompt":"Describe a household item that stopped working at an inconvenient time. What were you trying to do, and how did you manage?"},{"id":18,"type":"과거 경험","prompt":"Recall a visit from a friend or relative at your home. How did you prepare, and what did you do together?"},{"id":19,"type":"변화","prompt":"Has the way you use your home changed since you were younger? Explain which activities now take up more space or time."},{"id":20,"type":"선호","prompt":"If you could improve one part of your home, what would you choose? Explain the practical difference it would make."},{"id":21,"type":"묘사","prompt":"Describe the area within a short walk of your home. What would a visitor notice first?"},{"id":22,"type":"장소 묘사","prompt":"Which neighborhood facility makes your life easier? Explain where it is, what it offers, and how you use it."},{"id":23,"type":"일상","prompt":"When you have a free hour in your neighborhood, where do you go? Describe your usual route and stops."},{"id":24,"type":"인물·관계","prompt":"How do people in your neighborhood interact with one another? Describe a situation in which neighbors usually meet."},{"id":25,"type":"비교","prompt":"Compare your neighborhood during the daytime and late in the evening. How do the sounds, crowds, and activities differ?"},{"id":26,"type":"최근 경험","prompt":"Tell me about a new place you recently discovered near home. How did you find it, and what was your first impression?"},{"id":27,"type":"과거 경험","prompt":"Describe a time someone in your neighborhood helped you or you helped them. What happened afterward?"},{"id":28,"type":"문제 경험","prompt":"Have construction, noise, or a closed road ever disrupted your neighborhood routine? Describe one incident and your response."},{"id":29,"type":"변화","prompt":"What is one noticeable change in your neighborhood since you moved there? Explain how it affects your daily activities."},{"id":30,"type":"의견","prompt":"What would make your neighborhood more pleasant for residents? Describe one improvement and who would benefit from it."},{"id":31,"type":"취향","prompt":"What makes you decide to watch a movie or a series? Describe the kind of story that usually catches your attention."},{"id":32,"type":"장소 묘사","prompt":"Describe a movie theater you know well. What is the experience like from the entrance to your seat?"},{"id":33,"type":"일상","prompt":"How do you choose something to watch at home? Explain what you do when several people want different things."},{"id":34,"type":"과정","prompt":"Describe your routine for an evening at the movies, including what you do before and after the screening."},{"id":35,"type":"비교","prompt":"Compare watching a story in weekly episodes with watching the whole series at once. Which experience suits you better?"},{"id":36,"type":"최근 경험","prompt":"Tell me about something you watched recently that stayed on your mind. Describe a scene and your reaction to it."},{"id":37,"type":"과거 경험","prompt":"Recall a movie you saw with someone whose reaction was different from yours. What did you discuss afterward?"},{"id":38,"type":"문제 경험","prompt":"Tell me about a time a technical problem or another viewer interrupted a movie. What happened, and how did the evening end?"},{"id":39,"type":"변화","prompt":"How have your viewing habits changed since childhood? Consider what you watch, where you watch it, and who joins you."},{"id":40,"type":"추천","prompt":"A friend wants a relaxing movie night. What kind of movie would you suggest, and how would you explain your choice?"},{"id":41,"type":"취향","prompt":"What kind of sound or mood do you look for in music? Describe an artist whose music gives you that feeling."},{"id":42,"type":"일상","prompt":"Explain how music fits into different parts of your day. Does your choice change depending on what you are doing?"},{"id":43,"type":"과정","prompt":"How do you discover songs you have not heard before? Describe how a new song becomes part of your regular playlist."},{"id":44,"type":"묘사","prompt":"Describe a venue where people can enjoy a live performance. What features help the audience enjoy the show?"},{"id":45,"type":"비교","prompt":"Compare listening with headphones and listening through speakers with other people. How does each experience feel?"},{"id":46,"type":"과거 경험","prompt":"Tell me about a song that reminds you of a particular person or period in your life. Explain the connection."},{"id":47,"type":"최근 경험","prompt":"Describe a performance you attended or watched online recently. What moment held your attention most strongly?"},{"id":48,"type":"문제 경험","prompt":"Recall a time your plans to enjoy music or a performance did not work out. What changed, and what did you do instead?"},{"id":49,"type":"변화","prompt":"Have the reasons you listen to music changed over time? Give examples from two different stages of your life."},{"id":50,"type":"비교·선호","prompt":"Would you rather see a familiar performer in a small venue or a large festival with unfamiliar acts? Explain your preference."},{"id":51,"type":"묘사","prompt":"Describe a green space you can easily visit. What can you see along its paths, and where do people tend to gather?"},{"id":52,"type":"일상","prompt":"What do you usually do during a visit to a park? Explain how you decide where to walk and when to return home."},{"id":53,"type":"과정","prompt":"How do you get ready for a long walk outdoors? Describe what you check and what you take with you."},{"id":54,"type":"묘사","prompt":"Describe the different activities you see people doing in a park. Which area seems busiest, and why?"},{"id":55,"type":"비교","prompt":"Compare a walk by yourself with a walk with a friend. How do the pace and the experience differ?"},{"id":56,"type":"최근 경험","prompt":"Describe your most recent walk that lasted longer than expected. Where did you go, and what kept you outside?"},{"id":57,"type":"과거 경험","prompt":"Tell me about something unusual you noticed while walking. Why did you stop to pay attention to it?"},{"id":58,"type":"문제 경험","prompt":"Recall a time a blocked path, bad weather, or another obstacle changed your walk. How did you find another way?"},{"id":59,"type":"변화","prompt":"How does a park you know change from one season to another? Describe the differences in scenery and visitors."},{"id":60,"type":"의견","prompt":"What makes a walking route enjoyable enough to use regularly? Explain your priorities with an example."},{"id":61,"type":"취향","prompt":"What kind of physical activity feels manageable in your current lifestyle? Explain why it suits your schedule and preferences."},{"id":62,"type":"장소 묘사","prompt":"Describe a place where you exercise or see other people exercising. What equipment or space is available?"},{"id":63,"type":"일상","prompt":"Talk me through a typical exercise session. How do you begin, keep going, and finish?"},{"id":64,"type":"과정","prompt":"How do you choose clothing or equipment for exercise? Explain what matters to you before you buy or use it."},{"id":65,"type":"비교","prompt":"Compare exercising outdoors with exercising indoors. How do weather, motivation, and convenience affect your choice?"},{"id":66,"type":"첫 경험","prompt":"Tell me about your first attempt at a physical activity you were unfamiliar with. What was harder than you expected?"},{"id":67,"type":"과거 경험","prompt":"Describe a time a friend encouraged you to be active. What did you do together, and how did you feel afterward?"},{"id":68,"type":"문제 경험","prompt":"Tell me about a day when you could not follow your exercise plan. What got in the way, and how did you adjust?"},{"id":69,"type":"변화","prompt":"How has your attitude toward exercise changed since school? Explain what motivates you now compared with then."},{"id":70,"type":"일상·대안","prompt":"If you do not exercise regularly, how do you include movement in your day? Describe walking, errands, or other everyday activities."},{"id":71,"type":"묘사","prompt":"Describe a seaside place you have visited or know about. What gives it a different atmosphere from an inland destination?"},{"id":72,"type":"묘사","prompt":"What would you look for in a campsite? Describe the surroundings and facilities that would make you comfortable."},{"id":73,"type":"일상","prompt":"How do you normally spend a day near the sea? Describe how your activities change from morning to evening."},{"id":74,"type":"과정","prompt":"Explain how you would pack for an overnight outdoor trip. Which items would you prepare first, and why?"},{"id":75,"type":"비교","prompt":"Compare sleeping in a tent with staying in a guesthouse near nature. What would you enjoy or find difficult about each?"},{"id":76,"type":"과거 경험","prompt":"Tell me about an outdoor meal you remember clearly. Who prepared it, and what made the setting special?"},{"id":77,"type":"과거 경험","prompt":"Describe a sunrise, sunset, or night sky you saw on a trip. What were you doing just before you noticed it?"},{"id":78,"type":"문제 경험","prompt":"Recall a time wind, insects, or missing equipment made an outdoor activity difficult. How did your group respond?"},{"id":79,"type":"변화","prompt":"Have your preferences for outdoor trips changed as you have gotten older? Explain what you now value more."},{"id":80,"type":"계획","prompt":"Plan a short seaside outing for a friend who dislikes crowded places. Explain where you would go and how you would spend the time."},{"id":81,"type":"장소 묘사","prompt":"Choose a destination in your country that feels different from your hometown. Describe its atmosphere and what visitors can do there."},{"id":82,"type":"선호","prompt":"When choosing a short domestic trip, what matters most to you? Explain how you weigh distance, cost, food, and activities."},{"id":83,"type":"과정","prompt":"Describe how you plan a two-day trip within your country. What do you arrange in advance, and what do you leave open?"},{"id":84,"type":"일상","prompt":"Once you arrive in a new city, how do you get a feel for the place? Explain your usual first few activities."},{"id":85,"type":"비교","prompt":"Compare traveling to a large city with visiting a small town. How do you spend your time differently?"},{"id":86,"type":"최근 경험","prompt":"Tell me about a domestic trip you took recently. Describe a specific part of the trip that went especially well."},{"id":87,"type":"과거 경험","prompt":"Recall a place on a trip that was better than you had expected. What had you imagined, and what did you actually find?"},{"id":88,"type":"문제 경험","prompt":"Tell me about a time you arrived at a destination and discovered that an attraction was unavailable. How did you change the day?"},{"id":89,"type":"변화","prompt":"How has the way you organize trips changed since your earliest travel experiences? Give a concrete example."},{"id":90,"type":"추천","prompt":"A visitor has one free day in your country and wants something beyond major tourist sights. Describe the day you would recommend."},{"id":91,"type":"묘사","prompt":"Describe a place abroad you have visited or would like to visit. What everyday details there interest you most?"},{"id":92,"type":"선호","prompt":"What do you look for when choosing accommodation in an unfamiliar city? Explain which features you would prioritize."},{"id":93,"type":"과정","prompt":"Walk me through your preparations for an international trip, from making a booking to leaving for the airport."},{"id":94,"type":"일상","prompt":"When staying at a hotel, how do you organize a typical morning before going out? What information do you usually check?"},{"id":95,"type":"비교","prompt":"Compare traveling with a detailed itinerary and deciding your plans each morning. What are the advantages of each approach?"},{"id":96,"type":"과거 경험","prompt":"Describe a time you had to communicate with someone while traveling in an unfamiliar place. How did you make yourself understood?"},{"id":97,"type":"과거 경험","prompt":"Tell me about a meal or local custom you encountered on a trip that was new to you. What did you learn from it?"},{"id":98,"type":"문제 경험","prompt":"Recall a misunderstanding involving a booking, directions, or a meeting point during travel. Explain how you cleared it up."},{"id":99,"type":"변화","prompt":"How have your expectations of a good hotel or guesthouse changed? Use a past stay to explain your current priorities."},{"id":100,"type":"계획","prompt":"Imagine returning to a destination you visited before. What would you do differently, and what would you want to experience again?"},{"id":101,"type":"취향","prompt":"What makes a day at home feel like a vacation to you? Describe the activities and atmosphere you enjoy."},{"id":102,"type":"일상","prompt":"Walk me through a day off when you have no appointments. How do you decide what to do next?"},{"id":103,"type":"묘사","prompt":"Describe your favorite setup for relaxing at home. What do you keep nearby, and how does it help you unwind?"},{"id":104,"type":"과정","prompt":"How do you prepare to take several days off without traveling? Explain what you finish beforehand and what you plan for the break."},{"id":105,"type":"비교","prompt":"Compare spending a day off alone with spending it with family or friends. What is enjoyable about each?"},{"id":106,"type":"최근 경험","prompt":"Tell me about a recent day when you stayed home and felt refreshed afterward. What did you do that made the difference?"},{"id":107,"type":"과거 경험","prompt":"Describe a time you tried a new hobby during a break at home. How did you get started, and did you continue?"},{"id":108,"type":"문제 경험","prompt":"Recall a day off that was interrupted by an unexpected responsibility. What happened to your original plans?"},{"id":109,"type":"변화","prompt":"Has your idea of a relaxing vacation changed over the years? Explain what you used to want and what you prefer now."},{"id":110,"type":"계획","prompt":"You have three free days at home next month. Describe how you would balance rest, enjoyable activities, and necessary chores."},{"id":111,"type":"묘사","prompt":"Describe a café where you could comfortably spend an hour. What are the seating, lighting, and background sounds like?"},{"id":112,"type":"취향","prompt":"What kind of restaurant do you choose for a casual meal with friends? Explain how you decide whether everyone will enjoy it."},{"id":113,"type":"일상","prompt":"Describe how you handle meals on a busy weekday. Which meals do you prepare, buy, or eat with other people?"},{"id":114,"type":"과정","prompt":"Explain how you make a simple meal you know well. What should a beginner pay attention to while preparing it?"},{"id":115,"type":"비교","prompt":"Compare getting a drink to go with sitting down in a café. When does each choice work better for you?"},{"id":116,"type":"최근 경험","prompt":"Tell me about a meal you recently shared with someone. What did you talk about, and what made the meal enjoyable?"},{"id":117,"type":"첫 경험","prompt":"Recall the first time you cooked something without help. What did you attempt, and how did people react to it?"},{"id":118,"type":"문제 경험","prompt":"Describe a time you realized you were missing an ingredient while cooking. What substitute or new plan did you use?"},{"id":119,"type":"변화","prompt":"How have your food preferences changed since childhood? Describe something you enjoy now that you once avoided."},{"id":120,"type":"장소·일상","prompt":"Describe a bar, pub, or evening gathering place you know. What do people do there, and what makes it suitable for conversation?"},{"id":121,"type":"묘사","prompt":"Describe a store you enjoy browsing even when you do not need anything. What draws your attention inside?"},{"id":122,"type":"선호","prompt":"What information do you want before buying a product you will use often? Explain how you judge whether it is worth buying."},{"id":123,"type":"일상","prompt":"How do you usually shop for groceries or household supplies? Describe how you keep track of what you need."},{"id":124,"type":"과정","prompt":"Explain how you choose a gift for someone. How do you move from an initial idea to the final purchase?"},{"id":125,"type":"비교","prompt":"Compare buying clothing online with trying it on in a store. How do you decide which method to use?"},{"id":126,"type":"최근 경험","prompt":"Describe a recent purchase that made an everyday task easier. How did you find it, and has it met your expectations?"},{"id":127,"type":"과거 경험","prompt":"Tell me about a time you spent longer choosing an item than you expected. What made the decision difficult?"},{"id":128,"type":"문제 경험","prompt":"Recall an order that arrived differently from what you expected. What was wrong, and how was the situation resolved?"},{"id":129,"type":"변화","prompt":"How has your shopping behavior changed in recent years? Describe something you now buy less often or more carefully."},{"id":130,"type":"의견","prompt":"What makes you trust or distrust a customer review? Explain with an example of how a review affected a decision."},{"id":131,"type":"일상","prompt":"Describe a journey you make regularly. Explain the route, the time it takes, and the part that requires the most attention."},{"id":132,"type":"묘사","prompt":"What is a station or bus stop you often use like? Describe how people find their way and wait there."},{"id":133,"type":"과정","prompt":"How do you plan your departure time for an important appointment? Explain how you prepare for possible delays."},{"id":134,"type":"비교","prompt":"Compare taking a taxi with using a bus or train for the same journey. What circumstances would influence your choice?"},{"id":135,"type":"과거 경험","prompt":"Tell me about a time you took an unfamiliar route and discovered something interesting. What made you choose that route?"},{"id":136,"type":"문제 경험","prompt":"Describe a time you left something behind while moving between places. When did you notice, and what did you do next?"},{"id":137,"type":"과정","prompt":"Explain how you usually arrange an appointment for a haircut or another personal service. What details do you confirm?"},{"id":138,"type":"최근 경험","prompt":"Describe your most recent visit to a bank, post office, or service counter. What did you need, and how did the visit go?"},{"id":139,"type":"문제 경험","prompt":"Tell me about a time you had to wait much longer than expected for a service. How did you use the time or change your plans?"},{"id":140,"type":"변화","prompt":"How has the way you book appointments changed? Compare an earlier method with the one you use now."},{"id":141,"type":"사물 묘사","prompt":"Describe a digital device you rely on during an ordinary day. Which features do you use most, and why?"},{"id":142,"type":"일상","prompt":"What tasks do you regularly complete on your phone? Describe a sequence of things you might do in a single morning."},{"id":143,"type":"과정","prompt":"When learning to use a new app, how do you figure it out? Describe what you do if a feature is confusing."},{"id":144,"type":"문제 경험","prompt":"Tell me about a time your internet connection or device failed during an important task. How did you finish what you needed to do?"},{"id":145,"type":"묘사","prompt":"Describe a workplace, classroom, or study space you know well. What makes it easy or difficult to concentrate there?"},{"id":146,"type":"일상","prompt":"Explain how you organize a day of work or study. How do you decide which task deserves your attention first?"},{"id":147,"type":"과거 경험","prompt":"Tell me about a project you completed with other people. What was your role, and how did the group coordinate its work?"},{"id":148,"type":"문제 경험","prompt":"Describe a time instructions for a task were unclear. How did you find out what was expected and move forward?"},{"id":149,"type":"비교","prompt":"Compare learning a skill online with learning it in person. Use an example from something you have tried to learn."},{"id":150,"type":"변화","prompt":"How has technology changed a task you do at work, at school, or in your personal life? Describe the old and new processes."},{"id":151,"type":"묘사","prompt":"Describe the season you find most comfortable where you live. What does a typical day in that season feel like?"},{"id":152,"type":"일상","prompt":"How do you change your daily routine during very hot or cold weather? Give examples involving clothing, transport, or leisure."},{"id":153,"type":"비교","prompt":"Compare how you spend a rainy weekend and a sunny weekend. Which activities stay the same?"},{"id":154,"type":"과거 경험","prompt":"Tell me about a day when the weather changed suddenly while you were out. Describe what you noticed and how you reacted."},{"id":155,"type":"문제 경험","prompt":"Recall a time weather disrupted a gathering or trip. How did the people involved agree on a new plan?"},{"id":156,"type":"과정","prompt":"Explain how you sort and dispose of household waste where you live. What steps require extra care?"},{"id":157,"type":"과거 경험","prompt":"Tell me about a time you were unsure how to dispose of an item. How did you find the right information?"},{"id":158,"type":"변화","prompt":"Has your use of reusable bags, bottles, or containers changed? Explain what encouraged or discouraged the change."},{"id":159,"type":"일상·문화","prompt":"Describe how you and the people around you spend a holiday or family celebration. What usually happens before the main gathering?"},{"id":160,"type":"과거 경험","prompt":"Tell me about a holiday gathering that differed from your usual celebrations. What changed, and how did everyone respond?"},{"id":161,"type":"정보 문의","prompt":"You are organizing a small book club meeting at a café. Call the café and ask three or four questions to find out whether the space will work for your group."},{"id":162,"type":"문제 해결","prompt":"The café has just told you that its meeting room is unavailable at your reserved time. Call the manager, explain what your group needs, and suggest two workable alternatives."},{"id":163,"type":"관련 경험","prompt":"Leave the role-play now. Tell me about a time a group meeting location changed unexpectedly. How did everyone receive the new information, and how did the meeting go?"},{"id":164,"type":"정보 문의","prompt":"You want to rent bicycles for yourself and a friend for an afternoon. Speak to the rental shop employee and ask three or four questions before making the booking."},{"id":165,"type":"문제 해결","prompt":"At pickup, only one of the two bicycles you reserved is available. Explain the situation to the employee and propose two ways to adjust your booking or your plans."},{"id":166,"type":"관련 경험","prompt":"Leave the role-play now. Describe a time equipment or a service you expected was unavailable. What did you arrange instead, and were you satisfied with the result?"},{"id":167,"type":"정보 문의","prompt":"You are interested in a weekend cooking class for beginners. Call the organizer and ask three or four questions that will help you decide whether to register."},{"id":168,"type":"문제 해결","prompt":"After registering, you learn that the class has moved to a day when you cannot attend. Call the organizer, explain the conflict, and offer two possible solutions."},{"id":169,"type":"관련 경험","prompt":"Leave the role-play now. Tell me about a time the schedule of a class or activity changed after you signed up. How did you handle the change?"},{"id":170,"type":"정보 문의","prompt":"Your train arrives several hours before your accommodation's check-in time. Call the front desk and ask three or four questions about what you can do before your room is ready."},{"id":171,"type":"문제 해결","prompt":"You arranged to leave your bags at the accommodation, but the storage area is now closed. Explain your sightseeing plans to the receptionist and suggest two practical alternatives."},{"id":172,"type":"관련 경험","prompt":"Leave the role-play now. Describe a time luggage or other belongings complicated a day out. What did you do with them, and how did the day continue?"},{"id":173,"type":"정보 문의","prompt":"You want to take a friend to an exhibition this weekend. Call the venue and ask three or four questions about planning the visit and buying tickets."},{"id":174,"type":"문제 해결","prompt":"The confirmation email shows tickets for Sunday, but you intended to visit on Saturday. Call the ticket office, explain the mismatch, and suggest two ways to resolve it."},{"id":175,"type":"관련 경험","prompt":"Leave the role-play now. Tell me about a time you noticed incorrect information in a reservation or confirmation. How did you get it corrected?"},{"id":176,"type":"정보 문의","prompt":"You want a shop to deliver a gift to your friend before a celebration. Speak to an employee and ask three or four questions about arranging the delivery."},{"id":177,"type":"문제 해결","prompt":"The shop says the gift will arrive two days after the celebration. Call the shop, explain why the timing matters, and propose two alternatives that could still work."},{"id":178,"type":"관련 경험","prompt":"Leave the role-play now. Describe a time something important arrived late. How did the delay affect your plans, and what did you do about it?"},{"id":179,"type":"정보 문의","prompt":"You would like to borrow your friend's portable speaker for a picnic. Call your friend and ask three or four questions about borrowing, using, and returning it."},{"id":180,"type":"문제 해결","prompt":"While you are using the borrowed speaker, it suddenly stops charging. Call your friend, explain what happened, and suggest two ways to handle the problem responsibly."},{"id":181,"type":"관련 경험","prompt":"Leave the role-play now. Tell me about a time something you borrowed was damaged or did not work properly. How did you discuss it with the owner?"},{"id":182,"type":"정보 문의","prompt":"A repair technician needs to visit your home to inspect a leaking kitchen tap. Call the service company and ask three or four questions to prepare for the visit."},{"id":183,"type":"문제 해결","prompt":"The technician is delayed, and you must leave home before the new arrival time. Call the company, explain your availability, and suggest two ways to arrange the visit."},{"id":184,"type":"관련 경험","prompt":"Leave the role-play now. Describe a time you had to stay home for a repair or delivery. Did things happen as planned? Explain the outcome."},{"id":185,"type":"정보 문의","prompt":"Your friend has invited you on a day trip but has given you very few details. Call your friend and ask three or four questions so that you can prepare."},{"id":186,"type":"문제 해결","prompt":"On the morning of the trip, you discover that the meeting place is much farther away than you understood. Call your friend, explain the difficulty, and suggest two changes to the plan."},{"id":187,"type":"관련 경험","prompt":"Leave the role-play now. Tell me about a time you and a friend understood a plan differently. How did you discover the misunderstanding and resolve it?"},{"id":188,"type":"정보 문의","prompt":"You think you left a small bag at a sports center yesterday. Call the reception desk and ask three or four questions about checking and collecting lost property."},{"id":189,"type":"문제 해결","prompt":"The center has found your bag, but its collection hours overlap with your work or study schedule. Speak to the receptionist, explain the conflict, and propose two ways to collect it."},{"id":190,"type":"관련 경험","prompt":"Leave the role-play now. Describe a time you recovered a lost item. Who helped you, what steps did you take, and how did you feel when you got it back?"},{"id":191,"type":"변화·영향","prompt":"Think about how people arrange social plans now compared with several years ago. What has become easier, and what new difficulties have appeared? Use an example you have observed."},{"id":192,"type":"비교·의견","prompt":"Compare a neighborhood filled with small independent stores and one centered around a large shopping complex. How might everyday life differ for residents?"},{"id":193,"type":"의견·근거","prompt":"Some people choose leisure activities mainly because they look interesting online. How useful is that approach? Discuss both a benefit and a possible disappointment."},{"id":194,"type":"문제·대안","prompt":"Imagine a popular local park becomes too crowded on weekends. What difficulties could this create, and what practical steps could improve visitors' experiences?"},{"id":195,"type":"변화·영향","prompt":"How might ordering meals more often change the way people cook and spend time together at home? Connect your explanation to something you have noticed."},{"id":196,"type":"비교·의견","prompt":"Compare using a self-service machine with speaking to an employee when buying a ticket. Who might prefer each option, and what makes a service easy to use?"},{"id":197,"type":"의견·사례","prompt":"When planning a group vacation, how much should be decided together in advance? Explain how a group could balance shared activities and individual preferences."},{"id":198,"type":"변화·영향","prompt":"Think of a hobby that people can now enjoy both online and in person. How does the online version change participation and the sense of community?"},{"id":199,"type":"문제·해결","prompt":"People sometimes find it difficult to keep work or study messages from interrupting their free time. Why can this be challenging, and what practical boundaries could help?"},{"id":200,"type":"의견·비교","prompt":"A community can improve either its outdoor recreation spaces or its indoor cultural facilities this year. Which would you prioritize for a place you know, and what trade-off would you accept?"}];
+
+let activeQuestionBank = QUESTION_BANK.map((question) => ({ ...question }));
+const QUESTION_BANK_STORAGE_KEY = 'opic-question-bank-v1';
+let questionEditorPage = 1;
+const QUESTION_EDITOR_PAGE_SIZE = 20;
+let questionEditorItems = [];
+const LOCAL_LLM_MODEL = 'Llama-3.2-1B-Instruct-q4f16_1-MLC';
+const WHISPER_WASM_SCRIPT_URL = 'https://ggml.ai/whisper.cpp/main.js';
+const WHISPER_MODEL_URL = 'https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en-q5_1.bin';
+const WHISPER_MODEL_NAME = 'base.en Q5_1';
+const WHISPER_MODEL_SIZE_MB = 57;
+const WHISPER_CACHE_DB = 'opic-whisper-cache-v1';
+const WHISPER_CACHE_STORE = 'models';
+const WHISPER_CACHE_KEY = 'ggml-base.en-q5_1.bin';
+const TOTAL_EXAM_SECONDS = 40 * 60;
+const QUESTION_SECONDS = 2 * 60;
+let localLlmModulePromise = null;
+let localLlmEngine = null;
+let localLlmReady = false;
+let whisperModulePromise = null;
+let whisperModule = null;
+let whisperInstance = null;
+let whisperModelReady = false;
+let whisperModelLoading = false;
+
+const state = {
+  questions: [],
+  idx: 0,
+  answers: {},
+  questionFeedback: {},
+  startedAt: null,
+  timerId: null,
+  questionTimerId: null,
+  totalSeconds: TOTAL_EXAM_SECONDS,
+  questionSeconds: QUESTION_SECONDS,
+  sessionMode: 'exam',
+  questionTimerStarted: false,
+  questionExpired: false,
+  examFinished: false,
+  manualStopRequested: false,
+  voiceStarting: false,
+  audioRecorder: null,
+  audioChunks: [],
+  audioStream: null,
+  audioMimeType: '',
+  audioStopPromise: null,
+  recognitionRestartTimer: null,
+  voiceFinalizing: false,
+  storageKey: 'opic-mock-progress-v2',
+  configStorageKey: 'opic-mock-eval-config-v1',
+  recognition: null,
+  isRecording: false,
+  recognitionText: '',
+  speechMetrics: {
+    speechSegments: 0,
+    pauseDurations: [],
+    speechStartedAt: null,
+    lastSpeechEndAt: null,
+  },
+  promptPlayCount: {},
+  isEvaluating: false,
+  evaluationJobs: {},
+  transcriptionJobs: {},
+  speechSignalsByQuestion: {},
+  questionScores: {},
+  modelCatalog: {
+    openai: ['gpt-4.1-mini', 'gpt-4o-mini', 'gpt-4o'],
+    gemini: [],
+  },
+  apiHandshake: {
+    openai: { ready: false, fingerprint: '', model: '', selectionSource: '', verifiedAt: '' },
+    gemini: { ready: false, fingerprint: '', model: '', selectionSource: '', verifiedAt: '' },
+  },
+};
+
+const DEFAULT_MODELS = {
+  openai: 'gpt-4.1-mini',
+  // Google의 latest 별칭은 현재 제공되는 Flash 릴리스를 가리킵니다.
+  gemini: 'gemini-flash-latest',
+};
+
+function isValidSavedState(data) {
+  if (!data || !Array.isArray(data.questions)) return false;
+  const sessionMode = data.sessionMode || (data.questions.length === 1 ? 'practice' : 'exam');
+  if (!['exam', 'practice'].includes(sessionMode)) return false;
+  if (sessionMode === 'exam' && data.questions.length !== 15) return false;
+  if (sessionMode === 'practice' && data.questions.length !== 1) return false;
+  return data.questions.every((q) => q && typeof q.no === 'number' && typeof q.prompt === 'string');
+}
+
+function isValidQuestionBank(data) {
+  return Array.isArray(data) && data.length >= 15 && data.every((question, index) => (
+    question && typeof question === 'object' && Number.isFinite(Number(question.id)) &&
+    typeof question.type === 'string' && question.type.trim() &&
+    typeof question.prompt === 'string' && question.prompt.trim() &&
+    (index === 0 || Number(question.id) !== Number(data[index - 1].id))
+  ));
+}
+
+function loadQuestionBank() {
+  try {
+    const raw = localStorage.getItem(QUESTION_BANK_STORAGE_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (isValidQuestionBank(saved)) {
+      activeQuestionBank = saved.map((question, index) => ({
+        id: Number(question.id) || index + 1,
+        type: String(question.type).trim(),
+        prompt: String(question.prompt).trim(),
+      }));
+    }
+  } catch (error) {
+    console.warn('사용자 질문을 불러오지 못했습니다.', error);
+  }
+}
+
+function saveQuestionBank() {
+  try {
+    localStorage.setItem(QUESTION_BANK_STORAGE_KEY, JSON.stringify(activeQuestionBank));
+  } catch (error) {
+    alert(`질문을 저장하지 못했습니다. 브라우저 저장 공간을 확인해 주세요.\n${error.message}`);
+  }
+}
+
+function resetQuestionBank() {
+  if (!confirm('수정한 질문을 모두 기본 질문으로 되돌릴까요?')) return;
+  activeQuestionBank = QUESTION_BANK.map((question) => ({ ...question }));
+  localStorage.removeItem(QUESTION_BANK_STORAGE_KEY);
+  questionEditorPage = 1;
+  renderQuestionEditor();
+}
+
+function openQuestionEditor() {
+  const modal = document.getElementById('questionEditorModal');
+  if (!modal) return;
+  document.getElementById('questionSearchInput').value = '';
+  questionEditorPage = 1;
+  renderQuestionEditor();
+  modal.classList.remove('hide');
+  document.getElementById('questionSearchInput').focus();
+}
+
+function closeQuestionEditor() {
+  document.getElementById('questionEditorModal')?.classList.add('hide');
+}
+
+function renderQuestionEditor() {
+  const list = document.getElementById('questionEditorList');
+  const searchInput = document.getElementById('questionSearchInput');
+  if (!list || !searchInput) return;
+  const search = searchInput.value.trim().toLowerCase();
+  questionEditorItems = activeQuestionBank.filter((question) => (
+    !search || `${question.id} ${question.type} ${question.prompt}`.toLowerCase().includes(search)
+  ));
+  const totalPages = Math.max(1, Math.ceil(questionEditorItems.length / QUESTION_EDITOR_PAGE_SIZE));
+  questionEditorPage = Math.min(Math.max(1, questionEditorPage), totalPages);
+  const start = (questionEditorPage - 1) * QUESTION_EDITOR_PAGE_SIZE;
+  const pageItems = questionEditorItems.slice(start, start + QUESTION_EDITOR_PAGE_SIZE);
+  list.innerHTML = pageItems.length ? pageItems.map((question) => `
+    <div class="editor-item" data-question-id="${escapeHtml(question.id)}">
+      <div class="editor-number">Q${String(question.id).padStart(3, '0')}</div>
+      <input class="editor-type" aria-label="Q${question.id} 유형" value="${escapeHtml(question.type)}" />
+      <textarea class="editor-prompt" aria-label="Q${question.id} 질문">${escapeHtml(question.prompt)}</textarea>
+    </div>
+  `).join('') : '<div class="empty-state">검색 결과가 없습니다.</div>';
+  document.getElementById('questionEditorCount').textContent = `${questionEditorItems.length}개 표시`;
+  document.getElementById('questionEditorPage').textContent = `${questionEditorPage} / ${totalPages}`;
+  document.getElementById('questionPrevBtn').disabled = questionEditorPage <= 1;
+  document.getElementById('questionNextBtn').disabled = questionEditorPage >= totalPages;
+}
+
+function collectQuestionEditorChanges() {
+  document.querySelectorAll('#questionEditorList .editor-item').forEach((row) => {
+    const id = Number(row.dataset.questionId);
+    const target = activeQuestionBank.find((question) => Number(question.id) === id);
+    if (!target) return;
+    const type = row.querySelector('.editor-type')?.value.trim();
+    const prompt = row.querySelector('.editor-prompt')?.value.trim();
+    if (type) target.type = type;
+    if (prompt) target.prompt = prompt;
+  });
+  saveQuestionBank();
+}
+
+function loadEvalConfig() {
+  const raw = localStorage.getItem(state.configStorageKey);
+  if (!raw) {
+    setEvalMode('local', { skipSave: true });
+    document.getElementById('apiKeyInput').value = '';
+    state.apiHandshake.openai = { ready: false, fingerprint: '', model: '', selectionSource: '', verifiedAt: '' };
+    state.apiHandshake.gemini = { ready: false, fingerprint: '', model: '', selectionSource: '', verifiedAt: '' };
+    renderModelSelect('local');
+    document.getElementById('evalStatus').textContent = '평가 방식: 오프라인 기본 평가';
+    return;
+  }
+  try {
+    const cfg = JSON.parse(raw);
+    if (!cfg || typeof cfg !== 'object') throw new Error('invalid cfg');
+    const mode = cfg.mode || 'local';
+    setEvalMode(mode, { skipSave: true });
+    const apiKey = cfg.apiKey || localStorage.getItem('opic-mock-api-key-plain') || '';
+    document.getElementById('apiKeyInput').value = apiKey;
+    const modeHint = mode === 'gemini' ? 'gemini' : 'openai';
+    const fp = makeKeyFingerprint(apiKey);
+    const handshake = cfg.handshake && cfg.handshake.mode === modeHint
+      ? cfg.handshake
+      : null;
+
+    state.apiHandshake.openai.ready = false;
+    state.apiHandshake.gemini.ready = false;
+    if (handshake && handshake.ready && handshake.fingerprint === fp && handshake.model) {
+      const target = modeHint;
+      state.apiHandshake[target] = {
+        ready: true,
+        fingerprint: fp,
+        model: handshake.model,
+        selectionSource: handshake.selectionSource || '',
+        verifiedAt: handshake.verifiedAt || new Date().toISOString(),
+      };
+      if (Array.isArray(cfg.modelCatalog?.[target]) && cfg.modelCatalog[target].length) {
+        state.modelCatalog[target] = cfg.modelCatalog[target];
+      }
+      // 이전 버전은 모델을 자동 선택했는지 기록하지 않았습니다. 저장된
+      // 구형 Gemini 모델을 그대로 사용하지 않고, 다음 연결에서 최신 Flash를 고릅니다.
+      if (target === 'gemini' && !handshake.selectionSource) {
+        state.apiHandshake[target] = { ready: false, fingerprint: '', model: '', selectionSource: '', verifiedAt: '' };
+      }
+    }
+    if (cfg.model && state.apiHandshake[modeHint].ready) {
+      const target = modeHint;
+      if (!state.apiHandshake[target].model) {
+        state.apiHandshake[target].model = cfg.model;
+      }
+    }
+    applyEvalPresetByMode();
+    renderModelSelect(mode);
+    updateEvalStatus();
+  } catch {
+    localStorage.removeItem(state.configStorageKey);
+  }
+}
+
+function saveEvalConfig() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  const mode = getEvalMode();
+  if (mode !== 'local' && !state.apiHandshake[mode]?.ready) {
+    alert('API 키는 저장할 수 있지만, 평가를 시작하려면 먼저 연결을 완료해야 합니다.');
+  }
+  const cfg = {
+    mode,
+    apiKey: key,
+    model: document.getElementById('modelSelect').value || getDefaultModel(mode),
+    handshake: state.apiHandshake[mode] && state.apiHandshake[mode].ready
+      ? { ...state.apiHandshake[mode], mode: mode === 'gemini' ? 'gemini' : 'openai' }
+      : null,
+    modelCatalog: state.modelCatalog,
+  };
+  localStorage.setItem(state.configStorageKey, JSON.stringify(cfg));
+  localStorage.setItem('opic-mock-api-key-plain', key || '');
+  updateEvalStatus();
+}
+
+function clearEvalConfig() {
+  localStorage.removeItem(state.configStorageKey);
+  localStorage.removeItem('opic-mock-api-key-plain');
+  document.getElementById('apiKeyInput').value = '';
+  setEvalMode('local', { skipSave: true });
+  applyEvalPresetByMode();
+  state.apiHandshake.openai = { ready: false, fingerprint: '', model: '', selectionSource: '', verifiedAt: '' };
+  state.apiHandshake.gemini = { ready: false, fingerprint: '', model: '', selectionSource: '', verifiedAt: '' };
+  renderModelSelect('local');
+  updateEvalStatus();
+}
+
+function getEvalMode() {
+  const active = document.querySelector('.mode-btn.active[data-mode]');
+  return active ? active.dataset.mode : 'local';
+}
+
+function getSessionMode() {
+  const active = document.querySelector('.session-mode-btn.active[data-session-mode]');
+  return active ? active.dataset.sessionMode : (state.sessionMode || 'exam');
+}
+
+function setSessionMode(mode, opts = {}) {
+  const nextMode = mode === 'practice' ? 'practice' : 'exam';
+  state.sessionMode = nextMode;
+  document.querySelectorAll('.session-mode-btn[data-session-mode]').forEach((button) => {
+    button.classList.toggle('active', button.dataset.sessionMode === nextMode);
+  });
+  const hint = document.getElementById('sessionModeHint');
+  if (hint) {
+    hint.textContent = nextMode === 'practice'
+      ? '한 문항을 녹음하고 피드백을 받은 뒤, 새 연습 문제로 계속합니다.'
+      : '실전처럼 15문항을 연속으로 풉니다. 각 문항의 시간은 ‘문항 듣기’를 누르면 시작됩니다.';
+  }
+  const startButton = document.getElementById('startBtn');
+  if (startButton && !startButton.disabled) startButton.textContent = nextMode === 'practice' ? '연습 시작' : '모의고사 시작';
+  const heroValue = document.getElementById('heroModeValue');
+  const heroLabel = document.getElementById('heroModeLabel');
+  if (heroValue) heroValue.textContent = nextMode === 'practice' ? '1' : '15';
+  if (heroLabel) heroLabel.innerHTML = nextMode === 'practice' ? '문항<br />문항당 2분 · 피드백' : '문항<br />총 40분 · 문항당 2분';
+  if (!opts.skipSave) localStorage.setItem('opic-session-mode-v1', nextMode);
+}
+
+function isPracticeMode() {
+  return state.sessionMode === 'practice' || getSessionMode() === 'practice';
+}
+
+function setSessionModeButtonsDisabled(disabled) {
+  document.querySelectorAll('.session-mode-btn[data-session-mode]').forEach((button) => {
+    button.disabled = Boolean(disabled);
+  });
+}
+
+function setEvaluationControlsDisabled(disabled) {
+  document.querySelectorAll('.mode-btn[data-mode]').forEach((button) => {
+    button.disabled = Boolean(disabled);
+  });
+  ['apiKeyInput', 'handshakeBtn', 'modelPickerButton', 'saveConfigBtn', 'clearConfigBtn', 'prepareLocalAiBtn'].forEach((id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      if (disabled) element.disabled = true;
+      else if (id !== 'prepareLocalAiBtn' || !whisperModelLoading) element.disabled = false;
+    }
+  });
+  if (!disabled) applyEvalPresetByMode();
+}
+
+function setEvalMode(mode, opts = {}) {
+  const buttons = document.querySelectorAll('.mode-btn[data-mode]');
+  buttons.forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
+  document.getElementById('modeSelect').dataset.current = mode;
+  applyEvalPresetByMode();
+  if (!opts.skipSave) {
+    localStorage.setItem(state.configStorageKey, JSON.stringify({
+      ...JSON.parse(localStorage.getItem(state.configStorageKey) || '{}'),
+      mode,
+      apiKey: document.getElementById('apiKeyInput').value.trim(),
+      model: document.getElementById('modelSelect').value || getDefaultModel(mode),
+      modelCatalog: state.modelCatalog,
+    }));
+    updateEvalStatus();
+  }
+  renderModelSelect(mode);
+}
+
+function applyEvalPresetByMode() {
+  const mode = getEvalMode();
+  const keyInput = document.getElementById('apiKeyInput');
+  const handshakeBtn = document.getElementById('handshakeBtn');
+  const localAiPanel = document.getElementById('localAiPanel');
+  if (!keyInput || !handshakeBtn) return;
+  keyInput.disabled = mode === 'local';
+  handshakeBtn.disabled = mode === 'local';
+  if (localAiPanel) localAiPanel.style.display = mode === 'local' ? 'grid' : 'none';
+  if (mode === 'local') {
+    document.getElementById('apiKeyInput').placeholder = '오프라인 기본 평가에서는 키가 필요 없습니다';
+  } else if (mode === 'openai') {
+    document.getElementById('apiKeyInput').placeholder = 'OpenAI API 키를 붙여넣으세요';
+  } else {
+    document.getElementById('apiKeyInput').placeholder = 'Gemini API 키를 입력하세요';
+  }
+  renderModelSelect(mode);
+  updateEvalStatus();
+}
+
+function setLocalAiStatus(message, kind = '') {
+  const status = document.getElementById('localAiStatus');
+  if (!status) return;
+  status.textContent = message;
+  status.className = `small-note ${kind}`.trim();
+}
+
+function openWhisperCacheDb() {
+  if (!window.indexedDB) return Promise.resolve(null);
+  return new Promise((resolve, reject) => {
+    const request = window.indexedDB.open(WHISPER_CACHE_DB, 1);
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains(WHISPER_CACHE_STORE)) {
+        request.result.createObjectStore(WHISPER_CACHE_STORE);
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error('Whisper 모델 저장소를 열지 못했습니다.'));
+  });
+}
+
+async function readCachedWhisperModel() {
+  const db = await openWhisperCacheDb();
+  if (!db) return null;
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(WHISPER_CACHE_STORE, 'readonly');
+    const request = transaction.objectStore(WHISPER_CACHE_STORE).get(WHISPER_CACHE_KEY);
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = () => reject(request.error || new Error('저장된 Whisper 모델을 읽지 못했습니다.'));
+    transaction.oncomplete = () => db.close();
+  });
+}
+
+async function cacheWhisperModel(buffer) {
+  const db = await openWhisperCacheDb();
+  if (!db) return false;
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(WHISPER_CACHE_STORE, 'readwrite');
+    transaction.objectStore(WHISPER_CACHE_STORE).put(buffer, WHISPER_CACHE_KEY);
+    transaction.oncomplete = () => {
+      db.close();
+      resolve(true);
+    };
+    transaction.onerror = () => {
+      db.close();
+      reject(transaction.error || new Error('Whisper 모델을 저장하지 못했습니다.'));
+    };
+  });
+}
+
+async function downloadWhisperModel() {
+  const response = await fetch(WHISPER_MODEL_URL, { mode: 'cors', cache: 'default' });
+  if (!response.ok) throw new Error(`Whisper 모델 다운로드 실패 (${response.status})`);
+  const expected = Number(response.headers.get('content-length')) || WHISPER_MODEL_SIZE_MB * 1024 * 1024;
+  if (!response.body?.getReader) {
+    const buffer = await response.arrayBuffer();
+    setLocalAiStatus(`Whisper 모델 ${WHISPER_MODEL_SIZE_MB}MB 다운로드 완료 · 실행 준비 중...`);
+    return buffer;
+  }
+  const reader = response.body.getReader();
+  const chunks = [];
+  let received = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) {
+      chunks.push(value);
+      received += value.byteLength;
+      const percent = Math.min(100, Math.round((received / expected) * 100));
+      setLocalAiStatus(`Whisper ${WHISPER_MODEL_NAME} 다운로드 중 · ${percent}%`);
+    }
+  }
+  const buffer = new Uint8Array(received);
+  let offset = 0;
+  chunks.forEach((chunk) => {
+    buffer.set(chunk, offset);
+    offset += chunk.byteLength;
+  });
+  return buffer.buffer;
+}
+
+function ensureWhisperWasmRuntime() {
+  if (whisperModulePromise) return whisperModulePromise;
+  whisperModulePromise = new Promise((resolve, reject) => {
+    let settled = false;
+    let injectedScript = null;
+    const finish = (module) => {
+      if (settled) return;
+      settled = true;
+      whisperModule = module;
+      resolve(module);
+    };
+    const fail = (error) => {
+      if (settled) return;
+      settled = true;
+      injectedScript?.remove();
+      whisperModulePromise = null;
+      reject(error);
+    };
+
+    const module = window.Module || {};
+    const previousPrint = module.print;
+    const previousPrintErr = module.printErr;
+    module.print = previousPrint || (() => {});
+    module.printErr = previousPrintErr || (() => {});
+    const previousRuntimeCallback = module.onRuntimeInitialized;
+    module.onRuntimeInitialized = () => {
+      if (typeof previousRuntimeCallback === 'function') previousRuntimeCallback();
+      if (typeof module.full_default === 'function') finish(module);
+    };
+    window.Module = module;
+
+    const existing = document.querySelector('script[data-opic-whisper-wasm]');
+    if (!existing) {
+      injectedScript = document.createElement('script');
+      injectedScript.async = true;
+      injectedScript.src = WHISPER_WASM_SCRIPT_URL;
+      injectedScript.dataset.opicWhisperWasm = WHISPER_WASM_SCRIPT_URL;
+      injectedScript.onerror = () => fail(new Error('whisper.cpp WASM 실행 파일을 불러오지 못했습니다.'));
+      document.head.appendChild(injectedScript);
+    }
+
+    const startedAt = Date.now();
+    const poll = () => {
+      if (typeof module.full_default === 'function' && typeof module.FS_createDataFile === 'function') {
+        finish(module);
+        return;
+      }
+      if (Date.now() - startedAt > 30000) {
+        fail(new Error('whisper.cpp WASM 초기화 시간이 초과되었습니다.'));
+        return;
+      }
+      window.setTimeout(poll, 100);
+    };
+    poll();
+  });
+  return whisperModulePromise;
+}
+
+async function loadWhisperModelIntoRuntime(buffer) {
+  const module = await ensureWhisperWasmRuntime();
+  const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
+  try { module.FS_unlink('whisper.bin'); } catch (error) { /* 첫 로드에는 파일이 없습니다. */ }
+  module.FS_createDataFile('/', 'whisper.bin', bytes, true, true);
+  whisperInstance = module.init('whisper.bin');
+  if (!whisperInstance) throw new Error('Whisper 모델 인스턴스를 만들지 못했습니다.');
+  whisperModule = module;
+  whisperModelReady = true;
+}
+
+async function prepareWhisperLocal() {
+  if (whisperModelReady) return true;
+  if (whisperModelLoading) return false;
+  whisperModelLoading = true;
+  try {
+    setLocalAiStatus('whisper.cpp 실행 파일을 불러오는 중입니다...');
+    await ensureWhisperWasmRuntime();
+    let buffer = await readCachedWhisperModel().catch(() => null);
+    if (buffer) {
+      setLocalAiStatus(`저장된 Whisper ${WHISPER_MODEL_NAME}을 불러오는 중입니다...`);
+    } else {
+      buffer = await downloadWhisperModel();
+      await cacheWhisperModel(buffer).catch((error) => {
+        console.warn('Whisper 모델 캐시 저장 실패:', error);
+      });
+    }
+    await loadWhisperModelIntoRuntime(buffer);
+    setLocalAiStatus(`준비 완료 · Whisper ${WHISPER_MODEL_NAME}이 이 PC에서 실행됩니다.`, 'good');
+    return true;
+  } finally {
+    whisperModelLoading = false;
+  }
+}
+
+async function decodeAudioForWhisper(blob) {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  const OfflineAudioContextClass = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  if (!AudioContextClass || !OfflineAudioContextClass) throw new Error('이 브라우저는 오디오 변환을 지원하지 않습니다.');
+  const context = new AudioContextClass();
+  try {
+    const decoded = await context.decodeAudioData((await blob.arrayBuffer()).slice(0));
+    const targetRate = 16000;
+    const targetLength = Math.max(1, Math.ceil(decoded.duration * targetRate));
+    const offline = new OfflineAudioContextClass(1, targetLength, targetRate);
+    const source = offline.createBufferSource();
+    source.buffer = decoded;
+    source.connect(offline.destination);
+    source.start(0);
+    const rendered = await offline.startRendering();
+    return new Float32Array(rendered.getChannelData(0));
+  } finally {
+    if (typeof context.close === 'function') await context.close().catch(() => {});
+  }
+}
+
+function parseWhisperSegments(lines) {
+  const rawLines = String(lines || '').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  return rawLines.map((line) => {
+    const match = line.match(/^\[(\d+):(\d+):(\d+(?:\.\d+)?)\s*-->\s*(\d+):(\d+):(\d+(?:\.\d+)?)\]\s*(.*)$/);
+    if (!match) return null;
+    const start = (Number(match[1]) * 60 * 60) + (Number(match[2]) * 60) + Number(match[3]);
+    const end = (Number(match[4]) * 60 * 60) + (Number(match[5]) * 60) + Number(match[6]);
+    return { start, end, text: match[7] || '' };
+  }).filter((segment) => segment && segment.end >= segment.start);
+}
+
+function applyWhisperSpeechMetrics(lines) {
+  const segments = parseWhisperSegments(lines);
+  if (!segments.length) return;
+  const pauses = [];
+  for (let i = 1; i < segments.length; i += 1) {
+    const pause = segments[i].start - segments[i - 1].end;
+    if (pause >= 0.3) pauses.push(pause);
+  }
+  state.speechMetrics.speechSegments = segments.length;
+  state.speechMetrics.pauseDurations = pauses;
+}
+
+function extractWhisperTranscript(lines, returnedValue) {
+  const rawLines = String(lines || '').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const segments = parseWhisperSegments(lines).map((segment) => segment.text).filter(Boolean);
+  if (segments.length) return normalizeTranscriptText(segments.join(' '));
+  if (typeof returnedValue === 'string') return normalizeTranscriptText(returnedValue);
+  return normalizeTranscriptText(rawLines.filter((line) => !/^(whisper_|js:|ggml_|system_info|loading model)/i.test(line)).join(' '));
+}
+
+async function transcribeCapturedAudioWithWhisper(blob) {
+  if (!whisperModelReady || !whisperModule || !whisperInstance) return '';
+  const audio = await decodeAudioForWhisper(blob);
+  if (!audio.length) return '';
+  const output = [];
+  const previousPrint = whisperModule.print;
+  const previousPrintErr = whisperModule.printErr;
+  whisperModule.print = (line) => output.push(String(line));
+  whisperModule.printErr = (line) => output.push(String(line));
+  try {
+    const threads = window.crossOriginIsolated
+      ? Math.max(1, Math.min(4, Number(navigator.hardwareConcurrency) || 2))
+      : 1;
+    const returnedValue = whisperModule.full_default(whisperInstance, audio, 'en', threads, false);
+    applyWhisperSpeechMetrics(output.join('\n'));
+    const transcript = extractWhisperTranscript(output.join('\n'), returnedValue);
+    if (!transcript) throw new Error('Whisper가 음성을 전사하지 못했습니다.');
+    return transcript;
+  } finally {
+    whisperModule.print = previousPrint;
+    whisperModule.printErr = previousPrintErr;
+  }
+}
+
+async function prepareLocalLlm() {
+  const button = document.getElementById('prepareLocalAiBtn');
+  if (localLlmReady && whisperModelReady) {
+    setLocalAiStatus(`준비 완료 · Whisper ${WHISPER_MODEL_NAME} 전사와 로컬 AI 평가를 사용합니다.`, 'good');
+    return true;
+  }
+  button.disabled = true;
+  button.textContent = '준비 중...';
+  let whisperError = null;
+  let llmError = null;
+  try {
+    try {
+      await prepareWhisperLocal();
+    } catch (error) {
+      whisperError = error;
+      console.warn('로컬 Whisper 준비 실패:', error);
+    }
+
+    if (navigator.gpu && !localLlmReady) {
+      setLocalAiStatus('Whisper 준비 완료 · 로컬 LLM 평가 엔진을 불러오는 중입니다...');
+      if (!localLlmModulePromise) {
+        localLlmModulePromise = import('https://esm.run/@mlc-ai/web-llm');
+      }
+      const webllm = await localLlmModulePromise;
+      const available = webllm.prebuiltAppConfig?.model_list || [];
+      const model = available.find((item) => item.model_id === LOCAL_LLM_MODEL);
+      if (!model) throw new Error('호환 가능한 기본 로컬 모델을 찾지 못했습니다.');
+      localLlmEngine = await webllm.CreateMLCEngine(LOCAL_LLM_MODEL, {
+        initProgressCallback: (progress) => {
+          const text = progress?.text || progress?.progress;
+          if (text) setLocalAiStatus(`로컬 LLM 준비 중 · ${text}`);
+        },
+      });
+      localLlmReady = true;
+    } else if (!navigator.gpu) {
+      llmError = new Error('WebGPU를 지원하지 않아 로컬 LLM 평가는 사용할 수 없습니다.');
+    }
+    if (whisperModelReady && localLlmReady) {
+      setLocalAiStatus(`준비 완료 · Whisper ${WHISPER_MODEL_NAME} 전사 + 로컬 AI 평가를 사용합니다.`, 'good');
+      button.textContent = '오프라인 AI 준비 완료';
+      return true;
+    }
+    if (whisperModelReady) {
+      const detail = llmError ? ` 로컬 LLM은 사용할 수 없습니다(${llmError.message}).` : '';
+      setLocalAiStatus(`준비 완료 · Whisper ${WHISPER_MODEL_NAME} 전사를 사용합니다.${detail}`, 'good');
+      button.textContent = 'Whisper 준비 완료';
+      return true;
+    }
+    if (localLlmReady) {
+      setLocalAiStatus(`로컬 LLM 평가만 준비 완료 · Whisper 전사는 브라우저 음성인식으로 대체합니다.`, 'warn');
+      button.textContent = '로컬 LLM 준비 완료';
+      return true;
+    }
+    const message = whisperError?.message || 'Whisper 모델을 준비하지 못했습니다.';
+    setLocalAiStatus(`오프라인 Whisper 준비 실패 · 브라우저 음성인식으로 계속합니다. (${message})`, 'warn');
+    button.textContent = '다시 준비';
+    return false;
+  } catch (error) {
+    localLlmModulePromise = null;
+    localLlmReady = false;
+    localLlmEngine = null;
+    setLocalAiStatus(`오프라인 AI 준비 실패 · 기본 평가를 사용합니다. (${error.message})`, 'warn');
+    button.textContent = '다시 준비';
+    return false;
+  } finally {
+    updateEvalStatus();
+    button.disabled = false;
+  }
+}
+
+function readEvalConfig() {
+  const model = document.getElementById('modelSelect').value || getDefaultModel(getEvalMode());
+  return {
+    mode: getEvalMode(),
+    apiKey: document.getElementById('apiKeyInput').value.trim(),
+    model,
+  };
+}
+
+function updateEvalStatus() {
+  const cfg = readEvalConfig();
+  const model = getCurrentModelSelection();
+  const key = cfg.apiKey;
+  const mode = cfg.mode;
+  const handshakeInfo = document.getElementById('handshakeInfo');
+  const handshakeBtn = document.getElementById('handshakeBtn');
+  const modelHint = document.getElementById('modelHint');
+  if (cfg.mode === 'local') {
+    const localCapabilities = [];
+    if (whisperModelReady) localCapabilities.push(`Whisper ${WHISPER_MODEL_NAME} 전사`);
+    if (localLlmReady) localCapabilities.push('로컬 AI 평가');
+    document.getElementById('evalStatus').textContent = localCapabilities.length
+      ? `평가 방식: ${localCapabilities.join(' + ')}`
+      : '평가 방식: 오프라인 기본 평가 · Whisper 준비 전';
+    if (handshakeInfo) handshakeInfo.textContent = '오프라인 기본 평가에서는 AI 연결이 필요 없습니다.';
+    if (handshakeBtn) handshakeBtn.textContent = '연결';
+    if (modelHint) modelHint.textContent = whisperModelReady
+      ? `음성 전사: 로컬 Whisper ${WHISPER_MODEL_NAME} (이 PC에서 실행)`
+      : '오프라인 규칙 평가를 사용합니다. 더 정확한 음성 전사는 오프라인 AI 준비 후 활성화됩니다.';
+    return;
+  }
+  if (!key) {
+    document.getElementById('evalStatus').textContent = `${cfg.mode.toUpperCase()} 평가: 연결 키 미입력`;
+    if (handshakeInfo) handshakeInfo.textContent = 'API 키를 입력한 뒤 연결을 눌러 사용 가능한 모델을 확인하세요.';
+    if (handshakeBtn) handshakeBtn.textContent = '연결';
+    if (modelHint) modelHint.textContent = mode === 'gemini'
+      ? '연결하면 사용 가능한 최신 Gemini Flash를 자동으로 선택합니다.'
+      : '연결 후 사용할 수 있는 모델을 선택할 수 있습니다.';
+    return;
+  }
+  if (!isApiReadyForMode(mode, key)) {
+    document.getElementById('evalStatus').textContent = `${cfg.mode.toUpperCase()} 평가: 연결 전`;
+  } else {
+    const handshake = state.apiHandshake[mode];
+    const verifiedAt = handshake.verifiedAt ? ` · ${new Date(handshake.verifiedAt).toLocaleString()}` : '';
+    document.getElementById('evalStatus').textContent = `${cfg.mode.toUpperCase()} 평가: ${model} 사용 (연결 완료${verifiedAt})`;
+  }
+
+  if (handshakeInfo) {
+    if (isApiReadyForMode(mode, key)) {
+      const handshake = state.apiHandshake[mode];
+      handshakeInfo.textContent = `연결 상태: 완료 · ${mode.toUpperCase()} / ${handshake.model || getDefaultModel(mode)} (${new Date(handshake.verifiedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
+      if (handshakeBtn) handshakeBtn.textContent = '재연결';
+      if (modelHint) {
+        const selectionLabel = handshake.selectionSource === 'auto' ? '자동 선택' : '현재 선택';
+        modelHint.textContent = mode === 'gemini'
+          ? `${handshake.model} ${selectionLabel} · 목록에서 다른 모델로 바꿀 수 있습니다.`
+          : '목록에서 사용할 모델을 선택할 수 있습니다.';
+      }
+      renderModelSelect(mode);
+    } else {
+      handshakeInfo.textContent = 'API 키를 입력한 뒤 연결을 눌러 사용 가능한 모델을 확인하세요.';
+      if (handshakeBtn) handshakeBtn.textContent = '연결';
+      if (modelHint) modelHint.textContent = mode === 'gemini'
+        ? '연결하면 사용 가능한 최신 Gemini Flash를 자동으로 선택합니다.'
+        : '연결 후 사용할 수 있는 모델을 선택할 수 있습니다.';
+    }
+  }
+}
+
+function getDefaultModel(mode) {
+  return mode === 'gemini' ? DEFAULT_MODELS.gemini : DEFAULT_MODELS.openai;
+}
+
+function getCurrentModelSelection() {
+  const select = document.getElementById('modelSelect');
+  return select && select.value ? select.value : getDefaultModel(getEvalMode());
+}
+
+function makeKeyFingerprint(key) {
+  const normalized = (key || '').trim();
+  if (!normalized) return '';
+  let hash = 2166136261;
+  for (let i = 0; i < normalized.length; i += 1) {
+    hash ^= normalized.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `${normalized.length}-${(hash >>> 0).toString(16)}`;
+}
+
+function isApiReadyForMode(mode, apiKey) {
+  if (mode === 'local' || mode === 'LOCAL') return true;
+  const stateItem = state.apiHandshake[mode];
+  if (!stateItem || !stateItem.ready) return false;
+  return stateItem.fingerprint === makeKeyFingerprint(apiKey || '');
+}
+
+function renderModelSelect(mode) {
+  const select = document.getElementById('modelSelect');
+  const isLocal = mode === 'local';
+  const modelSource = state.apiHandshake[mode]?.ready
+    ? state.modelCatalog[mode] || [getDefaultModel(mode)]
+    : [getDefaultModel(mode)];
+  if (!select) return;
+
+  select.innerHTML = '';
+  if (isLocal) {
+    const disabled = document.createElement('option');
+    disabled.value = '';
+    disabled.textContent = '오프라인 기본 평가에서는 모델 선택이 없습니다.';
+    disabled.selected = true;
+    select.appendChild(disabled);
+    select.disabled = true;
+    renderModelPicker();
+    return;
+  }
+
+  if (!state.apiHandshake[mode]?.ready) {
+    const disabled = document.createElement('option');
+    disabled.value = '';
+    disabled.textContent = '연결 후 선택 가능';
+    disabled.selected = true;
+    disabled.disabled = true;
+    select.appendChild(disabled);
+    select.disabled = true;
+    renderModelPicker();
+    return;
+  }
+
+  const models = mode === 'gemini'
+    ? sortGeminiModels(modelSource)
+    : Array.from(new Set(modelSource)).filter(Boolean);
+  models.forEach((m) => {
+    const option = document.createElement('option');
+    option.value = m;
+    option.textContent = m;
+    select.appendChild(option);
+  });
+  const saved = (state.apiHandshake[mode]?.model && Array.isArray(models) && models.includes(state.apiHandshake[mode].model))
+    ? state.apiHandshake[mode].model
+    : models[0];
+  select.value = saved || models[0];
+  select.disabled = false;
+  renderModelPicker();
+}
+
+function setModelPickerOpen(open) {
+  const button = document.getElementById('modelPickerButton');
+  const menu = document.getElementById('modelPickerMenu');
+  if (!button || !menu) return;
+  const shouldOpen = Boolean(open) && !button.disabled && menu.childElementCount > 0;
+  button.setAttribute('aria-expanded', String(shouldOpen));
+  menu.hidden = !shouldOpen;
+}
+
+function renderModelPicker() {
+  const select = document.getElementById('modelSelect');
+  const button = document.getElementById('modelPickerButton');
+  const value = document.getElementById('modelPickerValue');
+  const menu = document.getElementById('modelPickerMenu');
+  if (!select || !button || !value || !menu) return;
+
+  const selectedOption = Array.from(select.options).find((option) => option.value === select.value)
+    || select.options[0];
+  value.textContent = selectedOption?.textContent || '연결 후 선택할 수 있습니다';
+  button.disabled = select.disabled;
+  menu.innerHTML = '';
+
+  Array.from(select.options).filter((option) => !option.disabled && option.value).forEach((option) => {
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'model-picker-option';
+    item.setAttribute('role', 'option');
+    item.setAttribute('aria-selected', String(option.value === select.value));
+    item.textContent = option.textContent;
+    item.addEventListener('click', () => {
+      select.value = option.value;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      setModelPickerOpen(false);
+    });
+    menu.appendChild(item);
+  });
+  setModelPickerOpen(false);
+}
+
+function normalizeGeminiModelName(name) {
+  return String(name || '').replace(/^models\//, '').trim();
+}
+
+function isGeminiFlashModel(name) {
+  return /^gemini-(?:(?:\d+(?:\.\d+)?)-)?flash(?:$|-)/i.test(normalizeGeminiModelName(name));
+}
+
+function isGeminiFlashLiteModel(name) {
+  return /-flash-lite(?:$|-)/i.test(normalizeGeminiModelName(name));
+}
+
+function isGeminiPreviewModel(name) {
+  return /(?:preview|experimental|exp)/i.test(normalizeGeminiModelName(name));
+}
+
+function geminiModelVersionScore(name) {
+  const id = normalizeGeminiModelName(name).toLowerCase();
+  if (id === DEFAULT_MODELS.gemini) return 100000000;
+  const match = id.match(/^gemini-(\d+)(?:\.(\d+))?-flash(?:-|$)/i);
+  if (!match) return 0;
+  return (Number(match[1]) || 0) * 100000 + (Number(match[2]) || 0) * 1000;
+}
+
+function sortGeminiModels(models) {
+  const unique = Array.from(new Set(models.map(normalizeGeminiModelName).filter(Boolean)));
+  return unique.sort((a, b) => {
+    const aFlash = isGeminiFlashModel(a);
+    const bFlash = isGeminiFlashModel(b);
+    if (aFlash !== bFlash) return aFlash ? -1 : 1;
+    if (aFlash && bFlash) {
+      const aLite = isGeminiFlashLiteModel(a);
+      const bLite = isGeminiFlashLiteModel(b);
+      if (aLite !== bLite) return aLite ? 1 : -1;
+      const aPreview = isGeminiPreviewModel(a);
+      const bPreview = isGeminiPreviewModel(b);
+      if (aPreview !== bPreview) return aPreview ? 1 : -1;
+      const version = geminiModelVersionScore(b) - geminiModelVersionScore(a);
+      if (version) return version;
+    }
+    return a.localeCompare(b);
+  });
+}
+
+function chooseLatestGeminiFlash(models) {
+  const available = Array.from(new Set(models.map(normalizeGeminiModelName).filter(Boolean)));
+  const flashes = available.filter(isGeminiFlashModel);
+  if (!flashes.length) return available.includes(DEFAULT_MODELS.gemini) ? DEFAULT_MODELS.gemini : available[0];
+
+  // 안정 버전의 일반 Flash를 우선하고, 해당 버전이 없을 때만 Lite/preview를 사용합니다.
+  const standard = flashes.filter((model) => !isGeminiFlashLiteModel(model));
+  const stable = standard.filter((model) => !isGeminiPreviewModel(model));
+  const candidates = stable.length ? stable : (standard.length ? standard : flashes);
+  return [...candidates].sort((a, b) => geminiModelVersionScore(b) - geminiModelVersionScore(a) || a.localeCompare(b))[0];
+}
+
+async function performApiHandshake() {
+  const mode = getEvalMode();
+  if (mode === 'local') return;
+  const keyInput = document.getElementById('apiKeyInput');
+  const key = keyInput.value.trim();
+  const info = document.getElementById('handshakeInfo');
+  const button = document.getElementById('handshakeBtn');
+  if (!key) {
+    updateEvalStatus();
+    alert('먼저 API 키를 입력해 주세요.');
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = '연결 확인 중...';
+  info.textContent = `${mode.toUpperCase()} API 연결과 사용 가능한 모델을 확인하고 있습니다.`;
+  try {
+    let available = [];
+    if (mode === 'openai') {
+      const res = await fetch('https://api.openai.com/v1/models', {
+        headers: { Authorization: `Bearer ${key}` },
+      });
+      if (!res.ok) {
+        const txt = await res.text().catch(() => '');
+        throw new Error(`OpenAI API 오류 ${res.status}: ${txt}`);
+      }
+      const data = await res.json();
+      const ids = Array.isArray(data?.data) ? data.data.map((item) => String(item.id || '')) : [];
+      const preferred = state.modelCatalog.openai.filter((model) => ids.includes(model));
+      const fallback = ids.filter((id) => /^gpt-(4|5)/i.test(id) && !/instruct|embedding|audio|realtime|transcription|moderation/i.test(id));
+      available = Array.from(new Set([...preferred, ...fallback]));
+      if (!available.length) throw new Error('이 키로 사용할 수 있는 대화 모델을 찾지 못했습니다.');
+    } else {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`);
+      if (!res.ok) {
+        const txt = await res.text().catch(() => '');
+        throw new Error(`Gemini API 오류 ${res.status}: ${txt}`);
+      }
+      const data = await res.json();
+      const models = Array.isArray(data?.models) ? data.models : [];
+      available = models
+        .filter((item) => Array.isArray(item.supportedGenerationMethods) && item.supportedGenerationMethods.includes('generateContent'))
+        .map((item) => normalizeGeminiModelName(item.name))
+        .filter((id) => /^gemini-/i.test(id) && !/embedding|aqa|image|audio|tts|live|robotics|transcribe/i.test(id));
+      available = sortGeminiModels(available);
+      if (!available.length) throw new Error('이 키로 사용할 수 있는 Gemini 생성 모델을 찾지 못했습니다.');
+    }
+
+    state.modelCatalog[mode] = available;
+    const previousHandshake = state.apiHandshake[mode] || {};
+    const manualSelection = mode === 'gemini' && previousHandshake.selectionSource === 'manual'
+      ? previousHandshake.model
+      : '';
+    const selected = mode === 'gemini'
+      ? (available.includes(manualSelection) ? manualSelection : chooseLatestGeminiFlash(available))
+      : (available.includes(previousHandshake.model) ? previousHandshake.model : (available.includes(getDefaultModel(mode)) ? getDefaultModel(mode) : available[0]));
+    state.apiHandshake[mode] = {
+      ready: true,
+      fingerprint: makeKeyFingerprint(key),
+      model: selected,
+      selectionSource: mode === 'gemini' && selected !== manualSelection ? 'auto' : (mode === 'gemini' ? 'manual' : ''),
+      verifiedAt: new Date().toISOString(),
+    };
+    renderModelSelect(mode);
+    saveEvalConfig();
+    updateEvalStatus();
+    const selectionNote = mode === 'gemini' && state.apiHandshake[mode].selectionSource === 'auto'
+      ? ' · 최신 Flash 자동 선택'
+      : '';
+    info.textContent = `연결 상태: 완료 · ${mode.toUpperCase()} / ${selected}${selectionNote} (${available.length}개 모델 확인)`;
+  } catch (err) {
+    resetCurrentApiHandshake(mode);
+    info.textContent = `연결 실패: ${err.message}`;
+    updateEvalStatus();
+    alert(`연결에 실패했습니다.\n${err.message}`);
+  } finally {
+    button.disabled = false;
+    if (isApiReadyForMode(mode, key)) button.textContent = '재연결';
+    else button.textContent = '연결';
+  }
+}
+
+function resetCurrentApiHandshake(mode) {
+  if (!state.apiHandshake[mode]) return;
+  state.apiHandshake[mode] = { ready: false, fingerprint: '', model: '', selectionSource: '', verifiedAt: '' };
+  renderModelSelect(mode);
+  updateEvalStatus();
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function isRoleplayQuestion(question) {
+  return !!question && (question.type.includes('롤플레이') || (question.id >= 161 && question.id <= 190));
+}
+
+function pickQuestions(count = 15) {
+  if (count <= 1) {
+    const one = shuffle(activeQuestionBank)[0];
+    return one ? [one] : [];
+  }
+  const role = activeQuestionBank.filter(isRoleplayQuestion);
+  const backup = activeQuestionBank.filter(q => !isRoleplayQuestion(q));
+  const selected = [];
+  shuffle(role).slice(0, Math.min(2, role.length)).forEach(q => selected.push(q));
+  const rest = shuffle(backup).filter(q => !selected.some(s => s.id === q.id));
+  rest.forEach(q => {
+    if (selected.length >= count) return;
+    selected.push(q);
+  });
+  return selected.slice(0, count);
+}
+
+function restoreProgress() {
+  const raw = localStorage.getItem(state.storageKey);
+  if (!raw) return null;
+  try {
+    const data = JSON.parse(raw);
+    if (!isValidSavedState(data)) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+function saveProgress() {
+  const payload = {
+    questions: state.questions,
+    answers: state.answers,
+    questionFeedback: state.questionFeedback,
+    questionScores: state.questionScores,
+    promptPlayCount: state.promptPlayCount,
+    sessionMode: state.sessionMode,
+    idx: state.idx,
+    totalSeconds: state.totalSeconds,
+    questionSeconds: state.questionSeconds,
+    questionTimerStarted: state.questionTimerStarted,
+    startedAt: state.startedAt,
+    updatedAt: new Date().toISOString(),
+  };
+  localStorage.setItem(state.storageKey, JSON.stringify(payload));
+}
+
+function clearProgress() {
+  localStorage.removeItem(state.storageKey);
+  localStorage.removeItem('opic-mock-progress-v1');
+  alert('저장 데이터가 삭제되었습니다.');
+}
+
+function startExam() {
+  const cfg = readEvalConfig();
+  if (cfg.mode !== 'local' && !cfg.apiKey) {
+    alert('온라인 AI 평가로 시작하려면 연결 키를 입력해 주세요.');
+    return;
+  }
+  if (cfg.mode !== 'local' && !isApiReadyForMode(cfg.mode, cfg.apiKey)) {
+    alert('API 방식으로 시작하려면 먼저 연결을 완료해 주세요.');
+    return;
+  }
+
+  state.sessionMode = getSessionMode();
+  const restored = restoreProgress();
+  const restoredMode = restored?.sessionMode || (restored?.questions?.length === 1 ? 'practice' : 'exam');
+  if (restored && restoredMode === state.sessionMode) {
+    const use = confirm('이전에 중단한 시험 기록이 있습니다. 이어서 시작할까요?');
+    if (use) {
+      state.sessionMode = restoredMode;
+      state.questions = restored.questions;
+      state.answers = restored.answers || {};
+      state.questionFeedback = restored.questionFeedback || {};
+      state.questionScores = restored.questionScores || {};
+      if (restored.promptPlayCount) {
+        state.promptPlayCount = restored.promptPlayCount;
+      } else if (restored.promptPlayed) {
+        const legacy = {};
+        Object.entries(restored.promptPlayed).forEach(([k, v]) => {
+          legacy[k] = v ? 1 : 0;
+        });
+        state.promptPlayCount = legacy;
+      } else {
+        state.promptPlayCount = {};
+      }
+      state.idx = restored.idx || 0;
+      state.startedAt = restored.startedAt || new Date().toISOString();
+      state.totalSeconds = Math.max(0, Math.min(TOTAL_EXAM_SECONDS, Number(restored.totalSeconds) || TOTAL_EXAM_SECONDS));
+      state.questionSeconds = Math.max(0, Math.min(QUESTION_SECONDS, Number(restored.questionSeconds) || QUESTION_SECONDS));
+      state.questionTimerStarted = Boolean(restored.questionTimerStarted || Number(restored.questionSeconds) < QUESTION_SECONDS);
+    } else {
+      buildNewExam();
+    }
+  } else {
+    buildNewExam();
+  }
+  setSessionMode(state.sessionMode, { skipSave: true });
+  renderExam();
+  document.getElementById('examPanel').classList.remove('hide');
+  document.getElementById('resultPanel').classList.add('hide');
+  document.getElementById('startBtn').disabled = true;
+  setSessionModeButtonsDisabled(true);
+  setEvaluationControlsDisabled(true);
+  state.examFinished = false;
+  state.questionExpired = false;
+  if (!isPracticeMode()) startTimer();
+  if (state.questionTimerStarted) startQuestionTimer();
+  else updateTimerDisplays();
+  focusExamPanel();
+}
+
+function buildNewExam() {
+  const practice = state.sessionMode === 'practice';
+  state.questions = pickQuestions(practice ? 1 : 15).map((q, i) => ({
+    no: i + 1,
+    id: q.id,
+    type: q.type,
+    prompt: q.prompt,
+  }));
+  state.idx = 0;
+  state.answers = {};
+  state.questionFeedback = {};
+  state.questionScores = {};
+  state.promptPlayCount = {};
+  state.evaluationJobs = {};
+  state.transcriptionJobs = {};
+  state.speechSignalsByQuestion = {};
+  state.startedAt = new Date().toISOString();
+  state.totalSeconds = practice ? 0 : TOTAL_EXAM_SECONDS;
+  state.questionSeconds = QUESTION_SECONDS;
+  state.questionTimerStarted = false;
+  state.questionExpired = false;
+  state.examFinished = false;
+  saveProgress();
+}
+
+function formatClock(seconds) {
+  const safe = Math.max(0, Number(seconds) || 0);
+  const min = Math.floor(safe / 60).toString().padStart(2, '0');
+  const sec = Math.floor(safe % 60).toString().padStart(2, '0');
+  return `${min}:${sec}`;
+}
+
+function updateTimerDisplays() {
+  const total = document.getElementById('timer');
+  const question = document.getElementById('questionTimer');
+  if (total) total.textContent = isPracticeMode()
+    ? '연습모드 · 1문항'
+    : `전체 남은 시간 ${formatClock(state.totalSeconds)}`;
+  if (question) {
+    question.textContent = `문항 남은 시간 ${formatClock(state.questionSeconds)}`;
+    question.title = state.questionTimerStarted ? '문항 듣기 후부터 시간이 흐릅니다.' : '문항 듣기를 누르면 2분 타이머가 시작됩니다.';
+    question.classList.toggle('warning', state.questionTimerStarted && state.questionSeconds <= 30);
+    question.classList.toggle('not-started', !state.questionTimerStarted);
+  }
+}
+
+function startTimer() {
+  if (isPracticeMode()) return;
+  if (state.timerId) clearInterval(state.timerId);
+  const tick = () => {
+    updateTimerDisplays();
+    if (state.totalSeconds <= 0) {
+      clearInterval(state.timerId);
+      state.timerId = null;
+      if (state.questionTimerId) clearInterval(state.questionTimerId);
+      state.questionTimerId = null;
+      state.examFinished = true;
+      stopActiveVoiceCapture();
+      submitExam();
+      return;
+    }
+    state.totalSeconds -= 1;
+    if (state.totalSeconds % 5 === 0) saveProgress();
+  };
+  tick();
+  state.timerId = setInterval(tick, 1000);
+}
+
+function startQuestionTimer() {
+  if (state.questionTimerId) clearInterval(state.questionTimerId);
+  if (!state.questionTimerStarted) {
+    updateTimerDisplays();
+    return;
+  }
+  updateTimerDisplays();
+  const tick = () => {
+    updateTimerDisplays();
+    if (state.questionSeconds <= 0) {
+      clearInterval(state.questionTimerId);
+      state.questionTimerId = null;
+      handleQuestionTimeout();
+      return;
+    }
+    state.questionSeconds -= 1;
+    if (state.questionSeconds % 10 === 0) saveProgress();
+  };
+  tick();
+  state.questionTimerId = setInterval(tick, 1000);
+}
+
+function beginQuestionTimer() {
+  if (state.questionTimerStarted || state.examFinished) return;
+  state.questionTimerStarted = true;
+  state.questionSeconds = QUESTION_SECONDS;
+  state.questionExpired = false;
+  startQuestionTimer();
+  saveProgress();
+}
+
+function resetQuestionTimer() {
+  if (state.questionTimerId) clearInterval(state.questionTimerId);
+  state.questionTimerId = null;
+  state.questionTimerStarted = false;
+  state.questionSeconds = QUESTION_SECONDS;
+  state.questionExpired = false;
+  updateTimerDisplays();
+  if (state.questions.length) saveProgress();
+}
+
+function focusExamPanel() {
+  const panel = document.getElementById('examPanel');
+  if (!panel) return;
+  window.setTimeout(() => {
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('playQuestionBtn')?.focus({ preventScroll: true });
+  }, 60);
+}
+
+function stopActiveVoiceCapture(options = {}) {
+  state.manualStopRequested = true;
+  state.questionExpired = false;
+  if (state.recognitionRestartTimer) {
+    clearTimeout(state.recognitionRestartTimer);
+    state.recognitionRestartTimer = null;
+  }
+  if (state.recognition && state.isRecording) {
+    state.isRecording = false;
+    try { state.recognition.stop(); } catch (error) { console.warn('음성 인식을 종료하지 못했습니다.', error); }
+  }
+  updateVoiceButton();
+  const capturePromise = stopAudioCapture();
+  if (options.release) capturePromise.finally(releaseMicrophoneStream);
+  return capturePromise;
+}
+
+function recordTimedOutQuestion(q) {
+  const resultHtml = '<div><strong>문항 시간 종료</strong> · 답변이 제출되지 않아 0점으로 기록했습니다.</div>'
+    + '<div class="small" style="margin-top:6px;">다음 문제부터는 2분 안에 핵심 내용·이유·구체적인 사례를 순서대로 말해 보세요.</div>';
+  state.questionFeedback[q.no] = resultHtml;
+  state.questionScores[q.no] = 0;
+  saveProgress();
+}
+
+async function advanceAfterQuestionTimeout() {
+  if (!state.questionExpired || state.examFinished) return;
+  const q = state.questions[state.idx];
+  if (!q) return;
+  const answer = (document.getElementById('answerInput').value || '').trim();
+  if (!state.questionFeedback[q.no]) {
+    if (answer) {
+      state.answers[q.no] = answer;
+      state.speechSignalsByQuestion[q.no] = getSpeechSignalSummary(answer);
+      queueQuestionEvaluation(q, answer);
+    }
+    else recordTimedOutQuestion(q);
+  }
+  state.questionExpired = false;
+  if (isPracticeMode()) {
+    renderEvaluationForQuestion(q);
+    return;
+  }
+  if (state.examFinished || state.questions[state.idx]?.no !== q.no) return;
+  if (state.idx < state.questions.length - 1) {
+    state.idx += 1;
+    resetQuestionTimer();
+    renderExam();
+    focusExamPanel();
+  } else {
+    submitExam();
+  }
+}
+
+function handleQuestionTimeout() {
+  if (state.examFinished || state.questionExpired) return;
+  state.questionExpired = true;
+  const status = document.getElementById('voiceStatus');
+  status.textContent = '문항 시간이 끝났습니다. 답변을 정리한 뒤 다음 문제로 이동합니다.';
+  if (state.isRecording) {
+    state.manualStopRequested = false;
+    if (state.recognition) {
+      try {
+        state.recognition.stop();
+        return;
+      } catch (error) {
+        console.warn('시간 종료 후 음성 인식을 중지하지 못했습니다.', error);
+      }
+    }
+    state.isRecording = false;
+    updateVoiceButton();
+    finalizeVoiceTurn();
+    return;
+  }
+  advanceAfterQuestionTimeout();
+}
+
+function renderExam() {
+  const q = state.questions[state.idx];
+  document.getElementById('examInfo').textContent = isPracticeMode()
+    ? `연습모드 · 원문 ID: Q${String(q.id).padStart(3, '0')}`
+    : `문항 ${q.no} / ${state.questions.length} (원문 ID: Q${String(q.id).padStart(3, '0')})`;
+  document.getElementById('qType').textContent = `[${q.type}]`;
+  document.getElementById('qPrompt').textContent = '문항은 음성으로만 제공됩니다. 아래 [문항 듣기]를 눌러 질문을 듣고 답하세요.';
+  const answerField = document.getElementById('answerInput');
+  const existing = state.answers[q.no] || '';
+  answerField.value = existing;
+  state.recognitionText = existing;
+  resetSpeechMetrics();
+  answerField.readOnly = true;
+  const hasFeedback = !!state.questionFeedback[q.no];
+  const feedbackBox = document.getElementById('questionFeedback');
+  if (hasFeedback) {
+    feedbackBox.classList.remove('hide');
+    feedbackBox.innerHTML = state.questionFeedback[q.no];
+  } else {
+    feedbackBox.classList.add('hide');
+    feedbackBox.innerHTML = '';
+  }
+  if (hasFeedback || state.evaluationJobs[q.no]) {
+    document.getElementById('voiceBtn').disabled = true;
+    document.getElementById('playQuestionBtn').disabled = true;
+  } else {
+    document.getElementById('voiceBtn').disabled = false;
+    document.getElementById('playQuestionBtn').disabled = (state.promptPlayCount[q.no] || 0) >= 2;
+  }
+
+  const isLast = state.idx === state.questions.length - 1;
+  document.getElementById('nextBtn').textContent = isPracticeMode()
+    ? (hasFeedback ? '새 연습 문제' : '평가 후 다음 문제')
+    : (isLast ? '마감 및 제출' : '다음 문제');
+  document.getElementById('nextBtn').disabled = isPracticeMode() ? !hasFeedback : false;
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('submitBtn').textContent = isPracticeMode() ? '연습 종료' : '전체 제출';
+
+  const answered = Object.values(state.answers).filter(v => (v || '').trim().length > 0).length;
+  document.getElementById('progress').textContent = `진행률: ${answered}/${state.questions.length}`;
+
+  const map = document.getElementById('qMap');
+  map.innerHTML = '';
+  for (let i = 0; i < state.questions.length; i++) {
+    const it = state.questions[i];
+    const b = document.createElement('button');
+    b.className = 'q-dot';
+    b.textContent = it.no;
+    b.disabled = i !== state.idx;
+    if (state.answers[it.no] && state.answers[it.no].trim()) b.classList.add('done');
+    if (i === state.idx) b.classList.add('current');
+    b.onclick = () => {
+      saveCurrent();
+      state.idx = i;
+      renderExam();
+    };
+    map.appendChild(b);
+  }
+
+  updateVoiceButton();
+  updatePromptButton();
+  if (!state.isRecording) {
+    document.getElementById('voiceStatus').textContent = hasFeedback
+      ? (isPracticeMode() ? '피드백을 확인한 뒤 새 연습 문제를 시작하세요.' : '평가가 완료되었습니다. 다음 문제로 이동하세요.')
+      : state.evaluationJobs[q.no]
+        ? '평가 중입니다. 다음 문제를 눌러 진행할 수 있습니다.'
+        : '문항 듣기를 누르면 2분이 시작됩니다. 먼저 질문을 들어 주세요.';
+  }
+  renderEvaluationForQuestion(q);
+}
+
+function updatePromptButton() {
+  const button = document.getElementById('playQuestionBtn');
+  const q = state.questions[state.idx];
+  if (!button || !q) return;
+  const played = (state.promptPlayCount[q.no] || 0);
+  const remaining = Math.max(0, 2 - played);
+  if (remaining <= 0) {
+    button.textContent = '문항 듣기 (완료)';
+    button.disabled = true;
+  } else {
+    button.textContent = `문항 듣기 (${remaining}회 남음)`;
+    button.disabled = false;
+  }
+}
+
+function chooseNaturalEnglishVoice() {
+  if (!('speechSynthesis' in window)) return null;
+  const voices = speechSynthesis.getVoices().filter((voice) => /^en(-|_)/i.test(voice.lang || ''));
+  return voices.find((voice) => /en-US/i.test(voice.lang) && /Google US English|Microsoft.*(Jenny|Aria|Guy)|Samantha/i.test(voice.name))
+    || voices.find((voice) => /en-US/i.test(voice.lang))
+    || voices[0]
+    || null;
+}
+
+function speakQuestion() {
+  const q = state.questions[state.idx];
+  if (!q) return;
+
+  const canUseTTS = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+  const button = document.getElementById('playQuestionBtn');
+  const status = document.getElementById('voiceStatus');
+
+  const playCount = state.promptPlayCount[q.no] || 0;
+  if (playCount >= 2) {
+    status.textContent = '문항은 2회까지만 들을 수 있습니다.';
+    return;
+  }
+  if (!canUseTTS) {
+    status.textContent = '이 브라우저는 음성 재생을 지원하지 않습니다.';
+    button.disabled = true;
+    return;
+  }
+
+  beginQuestionTimer();
+  const utterance = new SpeechSynthesisUtterance(q.prompt);
+  utterance.lang = 'en-US';
+  utterance.rate = 0.86;
+  utterance.pitch = 0.98;
+  utterance.volume = 0.96;
+  const voice = chooseNaturalEnglishVoice();
+  if (voice) utterance.voice = voice;
+  utterance.onstart = () => {
+    status.textContent = '질문을 읽어드리는 중...';
+  };
+  utterance.onend = () => {
+    state.promptPlayCount[q.no] = Math.min(2, (state.promptPlayCount[q.no] || 0) + 1);
+    updatePromptButton();
+    status.textContent = '문항을 듣기 완료. 답변을 마이크로 진행하세요.';
+    saveProgress();
+  };
+  utterance.onerror = () => {
+    state.promptPlayCount[q.no] = Math.min(2, (state.promptPlayCount[q.no] || 0) + 1);
+    updatePromptButton();
+    status.textContent = '재생 오류가 발생해 문항 듣기로 간주됩니다.';
+    saveProgress();
+  };
+
+  updatePromptButton();
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utterance);
+}
+
+function normalizeTranscriptText(text) {
+  return (text || '').replace(/\s+/g, ' ').replace(/\s+([?.!,])/g, '$1').trim();
+}
+
+function resetSpeechMetrics() {
+  state.speechMetrics = {
+    speechSegments: 0,
+    pauseDurations: [],
+    speechStartedAt: null,
+    lastSpeechEndAt: null,
+  };
+}
+
+function closeSpeechSegment() {
+  const metrics = state.speechMetrics;
+  if (metrics.speechStartedAt !== null) {
+    metrics.lastSpeechEndAt = performance.now();
+    metrics.speechStartedAt = null;
+  }
+}
+
+function getSpeechSignalSummary(text) {
+  const tokens = wordTokens(text);
+  let repeatedWords = 0;
+  for (let i = 1; i < tokens.length; i += 1) {
+    if (tokens[i] === tokens[i - 1]) repeatedWords += 1;
+  }
+  const fillers = tokens.filter((token) => ['um', 'uh', 'er', 'erm', 'like'].includes(token)).length;
+  const pauses = Array.isArray(state.speechMetrics.pauseDurations) ? state.speechMetrics.pauseDurations : [];
+  return {
+    speechSegments: Number(state.speechMetrics.speechSegments) || 0,
+    pauseCount: pauses.length,
+    longPauseCount: pauses.filter((seconds) => seconds >= 1.5).length,
+    maxPauseSeconds: pauses.length ? Math.round(Math.max(...pauses) * 10) / 10 : 0,
+    repeatedWords,
+    fillerCount: fillers,
+  };
+}
+
+function mergeTranscript(existing, incoming) {
+  const base = normalizeTranscriptText(existing);
+  const next = normalizeTranscriptText(incoming);
+  if (!next) return base;
+  if (!base) return next;
+  if (base.endsWith(next)) return base;
+
+  const baseTokens = base.toLowerCase().split(' ');
+  const nextTokens = next.toLowerCase().split(' ');
+  const maxOverlap = Math.min(baseTokens.length, nextTokens.length, 12);
+  for (let i = maxOverlap; i >= 1; i--) {
+    const baseTail = baseTokens.slice(-i).join(' ');
+    const nextHead = nextTokens.slice(0, i).join(' ');
+    if (baseTail === nextHead) {
+      const tail = nextTokens.slice(i).join(' ');
+      return tail ? `${base} ${tail}` : base;
+    }
+  }
+
+  return `${base} ${next}`;
+}
+
+function chooseSpeechAlternative(result) {
+  if (!result || !result.length) return null;
+  let best = result[0];
+  for (let i = 1; i < result.length; i += 1) {
+    const candidate = result[i];
+    if ((Number(candidate.confidence) || 0) > (Number(best.confidence) || 0)) best = candidate;
+  }
+  return best;
+}
+
+async function startAudioCapture() {
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) return false;
+  try {
+    const streamIsUsable = state.audioStream?.active && state.audioStream.getAudioTracks?.().some((track) => track.readyState === 'live');
+    const stream = streamIsUsable
+      ? state.audioStream
+      : await navigator.mediaDevices.getUserMedia({
+          audio: {
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
+        });
+    const preferredTypes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'];
+    const mimeType = preferredTypes.find((type) => MediaRecorder.isTypeSupported?.(type)) || '';
+    const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+    state.audioStream = stream;
+    state.audioRecorder = recorder;
+    state.audioChunks = [];
+    state.audioMimeType = recorder.mimeType || mimeType || 'audio/webm';
+    state.audioStopPromise = new Promise((resolve) => {
+      recorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) state.audioChunks.push(event.data);
+      };
+      recorder.onstop = () => {
+        resolve(new Blob(state.audioChunks, { type: state.audioMimeType }));
+      };
+    });
+    recorder.start(250);
+    return true;
+  } catch (error) {
+    console.warn('고품질 음성 캡처를 시작하지 못했습니다.', error);
+    state.audioRecorder = null;
+    return false;
+  }
+}
+
+async function stopAudioCapture() {
+  const recorder = state.audioRecorder;
+  const stopPromise = state.audioStopPromise;
+  if (!recorder || !stopPromise) {
+    return null;
+  }
+  if (recorder.state !== 'inactive') recorder.stop();
+  const blob = await stopPromise;
+  state.audioRecorder = null;
+  state.audioChunks = [];
+  state.audioStopPromise = null;
+  return blob;
+}
+
+function releaseMicrophoneStream() {
+  state.audioStream?.getTracks().forEach((track) => track.stop());
+  state.audioStream = null;
+}
+
+async function transcribeCapturedAudio(blob) {
+  const cfg = readEvalConfig();
+  if (!blob || blob.size < 1000) return '';
+  if (cfg.mode === 'local') return transcribeCapturedAudioWithWhisper(blob);
+  if (!['openai', 'gemini'].includes(cfg.mode) || !cfg.apiKey) return '';
+  if (cfg.mode === 'gemini') return transcribeCapturedAudioWithGemini(blob, cfg);
+  const form = new FormData();
+  const extension = blob.type.includes('mp4') ? 'm4a' : 'webm';
+  form.append('file', blob, `opic-answer.${extension}`);
+  form.append('model', 'gpt-4o-mini-transcribe');
+  form.append('language', 'en');
+  form.append('prompt', 'English OPIc speaking practice. Preserve numbers, names, and short function words exactly as spoken.');
+  form.append('response_format', 'json');
+  const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${cfg.apiKey}` },
+    body: form,
+  });
+  if (!response.ok) {
+    const detail = await response.text().catch(() => '');
+    throw new Error(`고품질 STT 오류 ${response.status}: ${detail}`);
+  }
+  const data = await response.json();
+  return normalizeTranscriptText(data?.text || '');
+}
+
+async function transcribeCapturedAudioWithGemini(blob, cfg) {
+  const buffer = await blob.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  const base64 = btoa(binary);
+  const model = (cfg.model || DEFAULT_MODELS.gemini).trim();
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(cfg.apiKey)}`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{
+        parts: [
+          { text: 'Transcribe the spoken English in this audio verbatim. Return only the transcript, with no explanation and no correction.' },
+          { inline_data: { mime_type: blob.type.split(';')[0] || 'audio/webm', data: base64 } },
+        ],
+      }],
+      generationConfig: { temperature: 0 },
+    }),
+  });
+  if (!response.ok) {
+    const detail = await response.text().catch(() => '');
+    throw new Error(`Gemini 고품질 STT 오류 ${response.status}: ${detail}`);
+  }
+  const data = await response.json();
+  return normalizeTranscriptText(data?.candidates?.[0]?.content?.parts?.[0]?.text || '');
+}
+
+function queueCapturedAudioTranscription(q, blob, fallbackTranscript = '') {
+  if (!q || !blob) return null;
+  if (state.transcriptionJobs[q.no]) return state.transcriptionJobs[q.no];
+  const job = transcribeCapturedAudio(blob)
+    .catch((error) => {
+      console.warn('백그라운드 고품질 전사 실패:', error);
+      return '';
+    })
+    .then((polishedTranscript) => {
+      const transcript = normalizeTranscriptText(polishedTranscript || fallbackTranscript || '');
+      if (!transcript) {
+        if (!state.examFinished && state.questions[state.idx]?.no === q.no) {
+          document.getElementById('voiceStatus').textContent = '음성이 충분히 인식되지 않았습니다. 다시 녹음해 주세요.';
+        }
+        return '';
+      }
+      state.answers[q.no] = transcript;
+      state.speechSignalsByQuestion[q.no] = state.speechSignalsByQuestion[q.no] || getSpeechSignalSummary(transcript);
+      if (!state.examFinished) saveProgress();
+      queueQuestionEvaluation(q, transcript);
+      if (!state.examFinished && state.questions[state.idx]?.no === q.no) {
+        document.getElementById('voiceStatus').textContent = '전사가 완료되었습니다. 평가를 백그라운드에서 처리 중입니다.';
+      }
+      return transcript;
+    })
+    .finally(() => {
+      delete state.transcriptionJobs[q.no];
+    });
+  state.transcriptionJobs[q.no] = job;
+  return job;
+}
+
+async function finalizeVoiceTurn() {
+  if (state.voiceFinalizing) return;
+  state.voiceFinalizing = true;
+  const q = state.questions[state.idx];
+  const status = document.getElementById('voiceStatus');
+  const answerField = document.getElementById('answerInput');
+  const nextButton = document.getElementById('nextBtn');
+  if (nextButton) nextButton.disabled = true;
+  try {
+    const audioBlob = await stopAudioCapture();
+    const evalMode = readEvalConfig().mode;
+    const canUseBackgroundStt = audioBlob && (
+      ['openai', 'gemini'].includes(evalMode) || (evalMode === 'local' && whisperModelReady)
+    );
+    const fallbackTranscript = normalizeTranscriptText(state.recognitionText || answerField.value);
+    if (!audioBlob && !fallbackTranscript) {
+      status.textContent = '입력된 음성이 없습니다. 문항 듣기 후 다시 말해주세요.';
+      return;
+    }
+    if (q) {
+      if (fallbackTranscript) {
+        state.answers[q.no] = fallbackTranscript;
+        state.speechSignalsByQuestion[q.no] = getSpeechSignalSummary(fallbackTranscript);
+        saveProgress();
+      }
+      if (canUseBackgroundStt) {
+        status.textContent = evalMode === 'local'
+          ? `로컬 Whisper ${WHISPER_MODEL_NAME} 전사를 백그라운드에서 처리 중...`
+          : '고정밀 음성 전사를 백그라운드에서 처리 중...';
+        queueCapturedAudioTranscription(q, audioBlob, fallbackTranscript);
+      } else if (fallbackTranscript) {
+        queueQuestionEvaluation(q, fallbackTranscript);
+      }
+    }
+    status.textContent = isPracticeMode()
+      ? (canUseBackgroundStt ? '답변을 저장했습니다. 전사와 평가가 끝나면 피드백이 표시됩니다.' : '답변을 저장했습니다. 평가가 끝나면 피드백이 표시됩니다.')
+      : (canUseBackgroundStt ? '답변을 저장했습니다. 전사와 평가를 백그라운드에서 처리하며 다음 문제로 이동할 수 있습니다.' : '답변을 저장했습니다. 평가를 백그라운드에서 처리하며 다음 문제로 이동할 수 있습니다.');
+    if (state.questionExpired) await advanceAfterQuestionTimeout();
+  } finally {
+    state.voiceFinalizing = false;
+    if (nextButton && q && state.questions[state.idx]?.no === q.no && !isPracticeMode()) {
+      nextButton.disabled = false;
+    }
+  }
+}
+
+function restartRecognitionSoon() {
+  if (state.recognitionRestartTimer || !state.recognition) return;
+  state.recognitionRestartTimer = window.setTimeout(() => {
+    state.recognitionRestartTimer = null;
+    if (!state.isRecording || state.manualStopRequested || state.questionExpired || state.examFinished) return;
+    try {
+      state.recognition.start();
+    } catch (error) {
+      if (error.name !== 'InvalidStateError') console.warn('음성 인식을 재시작하지 못했습니다.', error);
+    }
+  }, 180);
+}
+
+function initVoiceInput() {
+  const mode = readEvalConfig().mode;
+  const needsBrowserRecognition = mode === 'local' && !whisperModelReady;
+  if (!needsBrowserRecognition) {
+    state.recognition = null;
+    return Boolean(window.MediaRecorder && navigator.mediaDevices?.getUserMedia);
+  }
+  if (state.recognition) return true;
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    return Boolean(
+      window.MediaRecorder && navigator.mediaDevices?.getUserMedia &&
+      mode === 'local' && whisperModelReady
+    );
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = 'en-US';
+  recognition.interimResults = true;
+  recognition.continuous = true;
+  recognition.maxAlternatives = 5;
+
+  const status = document.getElementById('voiceStatus');
+  const answerField = document.getElementById('answerInput');
+
+  recognition.onstart = () => {
+    state.isRecording = true;
+    state.manualStopRequested = false;
+    const mode = readEvalConfig().mode;
+    status.textContent = mode === 'local' && whisperModelReady
+      ? `음성 입력 시작됨 · 종료 후 로컬 Whisper ${WHISPER_MODEL_NAME}로 다시 전사합니다.`
+      : ['openai', 'gemini'].includes(mode)
+        ? '음성 입력 시작됨 · 종료 후 고정밀 STT로 한 번 더 정리합니다.'
+        : '음성 입력 시작됨';
+    updateVoiceButton();
+  };
+  recognition.onspeechstart = () => {
+    const now = performance.now();
+    const metrics = state.speechMetrics;
+    if (metrics.lastSpeechEndAt !== null) {
+      const pauseSeconds = (now - metrics.lastSpeechEndAt) / 1000;
+      if (pauseSeconds >= 0.3) metrics.pauseDurations.push(pauseSeconds);
+    }
+    metrics.speechStartedAt = now;
+    metrics.speechSegments += 1;
+    status.textContent = '입력이 시작되었습니다. 천천히 또박또박 말해 보세요.';
+  };
+  recognition.onresult = (event) => {
+    let finalText = '';
+    let interimText = '';
+    for (let i = event.resultIndex; i < event.results.length; i += 1) {
+      const result = event.results[i];
+      const best = chooseSpeechAlternative(result);
+      const transcript = normalizeTranscriptText(best?.transcript || '');
+      if (!transcript) continue;
+      if (result.isFinal) {
+        finalText += ` ${transcript}`;
+      } else {
+        interimText += ` ${transcript}`;
+      }
+    }
+    if (finalText) {
+      const merged = mergeTranscript(state.recognitionText, finalText);
+      state.recognitionText = merged;
+      answerField.value = merged;
+      saveCurrent();
+    }
+    if (state.isRecording && !finalText) {
+      answerField.value = state.recognitionText;
+    }
+    if (interimText) {
+      const compactInterim = normalizeTranscriptText(interimText);
+      status.textContent = compactInterim ? `인식 중: ${compactInterim}` : '녹음 중';
+    } else if (finalText) {
+      status.textContent = '녹음 중';
+    }
+  };
+  recognition.onend = async () => {
+    closeSpeechSegment();
+    if (state.isRecording && !state.manualStopRequested && !state.questionExpired && !state.examFinished) {
+      status.textContent = '음성 인식 연결을 잠시 재개하는 중...';
+      restartRecognitionSoon();
+      return;
+    }
+    if (!state.isRecording) return;
+    state.isRecording = false;
+    updateVoiceButton();
+    await finalizeVoiceTurn();
+  };
+  recognition.onspeechend = () => {
+    closeSpeechSegment();
+    if (state.isRecording) {
+      status.textContent = '입력 멈춤이 감지됨. 잠시 더 말하면 이어서 인식됩니다.';
+    }
+  };
+  recognition.onnomatch = () => {
+    status.textContent = '음성이 정확히 인식되지 않았습니다. 천천히 한 번 더 말해주세요.';
+  };
+  recognition.onerror = (event) => {
+    const recoverable = ['no-speech', 'aborted', 'network'].includes(event.error);
+    if (recoverable && state.isRecording && !state.manualStopRequested && !state.questionExpired && !state.examFinished) {
+      status.textContent = '음성 인식 연결을 다시 시도하는 중...';
+      return;
+    }
+    state.isRecording = false;
+    updateVoiceButton();
+    if (event.error === 'not-allowed') {
+      status.textContent = '마이크 접근이 거부되었습니다.';
+    } else if (event.error === 'audio-capture') {
+      status.textContent = '마이크를 찾을 수 없습니다.';
+    } else {
+      status.textContent = `음성 입력 오류: ${event.error}`;
+    }
+    stopAudioCapture();
+  };
+
+  state.recognition = recognition;
+  return true;
+}
+
+function buildFeedbackFromRules(prompt, answer, type, speechSignals = getSpeechSignalSummary(answer)) {
+  const result = calcScoreForAnswer(answer, type);
+  const tips = [];
+  if (result.words < 20) tips.push('문항당 최소 2-3문장 이상으로 늘려보세요.');
+  if (result.details['문장 구성'] < 10) tips.push('because/for example/then 같은 연결어를 추가해 구조를 명확히 하세요.');
+  if (!/\b(when|because|so|therefore|for example|while|after|before)\b/i.test((answer || ''))) tips.push('시간 순서와 원인·결과를 함께 말해 완성도를 높이세요.');
+  const suggestion = tips.length ? tips : ['현재 규칙에서 뚜렷한 결손은 적습니다. 구체적인 사례를 추가하면 내용 점수를 확인할 수 있습니다.'];
+  return {
+    score: result.score,
+    details: result.details,
+    words: result.words,
+    feedback: result.words ? `핵심 포인트 ${Math.min(100, Math.round(result.score))}/100` : '답변이 너무 짧습니다.',
+    strengths: result.words ? ['답변 내용이 텍스트로 확인됨'] : [],
+    weaknesses: suggestion,
+    rubric: {
+      task: result.details['내용 밀도'],
+      fluency: result.details['연결·유창성'],
+      vocabulary: result.details['어휘 다양성'],
+      grammar: result.details['문장 구성'],
+      interaction: 0,
+    },
+    confidence: 0.35,
+    evidence: [
+      '브라우저 음성 인식 텍스트의 길이·연결어·반복 패턴을 사용한 규칙 평가입니다.',
+      `음성 이벤트 관찰값: ${speechSignals.pauseCount}회 멈춤, ${speechSignals.longPauseCount}회 긴 멈춤, ${speechSignals.repeatedWords}회 연속 반복 단어`,
+    ],
+  };
+}
+
+function buildEvalPrompt(prompt, answer, type, speechSignals = {}) {
+  return `You are a cold, evidence-based OPIc speaking evaluator. Do not cheerlead, inflate scores, or infer abilities that are not supported by the transcript. Judge only the answer below and return JSON only.
+
+Scoring rubric (the total score must equal the sum, 0-100):
+- task: task fulfillment, relevant details, and completeness (0-30)
+- fluency: organization, continuity, and readable spoken flow visible in the transcript (0-25)
+- vocabulary: range and specificity (0-20)
+- grammar: sentence control and accuracy visible in the transcript (0-15)
+- interaction: appropriateness for a role-play/request or pragmatic response (0-10; use 0-5 for non-role-play)
+
+Rules:
+- Base every claim on observable text evidence. If evidence is absent, score conservatively.
+- Do not assess pronunciation, accent, volume, or exact pause duration from text; mark those as unverified.
+- Do not reward politeness or generic encouragement. Feedback must identify a concrete strength or defect.
+- Keep feedback in Korean and concise. Include at least one actionable correction.
+
+Question type: ${type}
+Question: ${prompt}
+Answer: ${answer}
+
+Browser speech signals (use only as supporting evidence; a browser may miss or merge events):
+${JSON.stringify(speechSignals)}
+
+Return JSON only with:
+score: 0-100,
+words: estimated number of words,
+rubric: {task: 0-30, fluency: 0-25, vocabulary: 0-20, grammar: 0-15, interaction: 0-10},
+confidence: 0-1,
+evidence: ["관찰 가능한 근거 1", "관찰 가능한 근거 2"],
+feedback: 한글로 1줄,
+strengths: ["관찰된 장점"],
+weaknesses: ["관찰된 약점과 개선 행동"]`;
+}
+
+function normalizeEvalResult(raw) {
+  if (!raw || typeof raw !== 'string') return null;
+  const match = raw.match(/\{[\s\S]*\}/);
+  if (!match) return null;
+  try {
+    const parsed = JSON.parse(match[0]);
+    if (!parsed || typeof parsed !== 'object') return null;
+    const score = Number(parsed.score);
+    const words = Number(parsed.words);
+    const rubricRaw = parsed.rubric && typeof parsed.rubric === 'object' ? parsed.rubric : {};
+    const rubric = {
+      task: Math.max(0, Math.min(30, Number(rubricRaw.task) || 0)),
+      fluency: Math.max(0, Math.min(25, Number(rubricRaw.fluency) || 0)),
+      vocabulary: Math.max(0, Math.min(20, Number(rubricRaw.vocabulary) || 0)),
+      grammar: Math.max(0, Math.min(15, Number(rubricRaw.grammar) || 0)),
+      interaction: Math.max(0, Math.min(10, Number(rubricRaw.interaction) || 0)),
+    };
+    const rubricTotal = Object.values(rubric).reduce((sum, value) => sum + value, 0);
+    return {
+      score: rubricTotal > 0 ? rubricTotal : (Number.isFinite(score) ? Math.max(0, Math.min(100, score)) : 0),
+      words: Number.isFinite(words) ? words : 0,
+      feedback: parsed.feedback ? String(parsed.feedback) : '',
+      strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
+      weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses : [],
+      rubric,
+      confidence: Number.isFinite(Number(parsed.confidence)) ? Math.max(0, Math.min(1, Number(parsed.confidence))) : 0.5,
+      evidence: Array.isArray(parsed.evidence) ? parsed.evidence : [],
+    };
+  } catch {
+    return null;
+  }
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+async function evaluateWithOpenAI(prompt, answer, type, speechSignals) {
+  const cfg = readEvalConfig();
+  const model = (cfg.model || DEFAULT_MODELS.openai).trim();
+  const promptText = buildEvalPrompt(prompt, answer, type, speechSignals);
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${cfg.apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      response_format: { type: 'json_object' },
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a strict, neutral, evidence-based English speaking evaluator. Never inflate scores or add encouragement that is not supported by evidence. Return valid JSON only.',
+        },
+        { role: 'user', content: promptText },
+      ],
+      temperature: 0.2,
+    }),
+  });
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '');
+    throw new Error(`OpenAI API 오류 ${res.status}: ${txt}`);
+  }
+  const data = await res.json();
+  const text = data?.choices?.[0]?.message?.content || '';
+  const parsed = normalizeEvalResult(text);
+  if (!parsed) throw new Error('OpenAI 응답을 파싱하지 못했습니다.');
+  return parsed;
+}
+
+async function evaluateWithGemini(prompt, answer, type, speechSignals) {
+  const cfg = readEvalConfig();
+  const model = (cfg.model || DEFAULT_MODELS.gemini).trim();
+  const promptText = buildEvalPrompt(prompt, answer, type, speechSignals);
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(cfg.apiKey)}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: promptText }] }],
+      generationConfig: { temperature: 0.2 },
+    }),
+  });
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '');
+    throw new Error(`Gemini API 오류 ${res.status}: ${txt}`);
+  }
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  const parsed = normalizeEvalResult(text);
+  if (!parsed) throw new Error('Gemini 응답을 파싱하지 못했습니다.');
+  return parsed;
+}
+
+async function evaluateWithLocalLLM(prompt, answer, type, speechSignals) {
+  if (!localLlmEngine || !localLlmReady) throw new Error('로컬 AI가 준비되지 않았습니다.');
+  const promptText = buildEvalPrompt(prompt, answer, type, speechSignals);
+  const response = await localLlmEngine.chat.completions.create({
+    messages: [
+      {
+        role: 'system',
+        content: 'You are a neutral OPIc speaking evaluator. Use only evidence in the transcript. Return compact JSON only. Do not praise the learner or inflate scores.',
+      },
+      { role: 'user', content: promptText },
+    ],
+    temperature: 0.1,
+    max_tokens: 420,
+  });
+  const text = response?.choices?.[0]?.message?.content || '';
+  const parsed = normalizeEvalResult(text);
+  if (!parsed) throw new Error('로컬 AI 응답을 읽지 못했습니다.');
+  return parsed;
+}
+
+function combineOfflineEvaluation(ruleResult, localResult) {
+  const ruleScore = Number(ruleResult.score) || 0;
+  const localScore = Number(localResult.score) || ruleScore;
+  const blendedScore = Math.round((ruleScore * 0.7) + (localScore * 0.3));
+  return {
+    ...localResult,
+    score: blendedScore,
+    words: ruleResult.words,
+    details: ruleResult.details,
+    feedback: localResult.feedback || ruleResult.feedback,
+    strengths: localResult.strengths?.length ? localResult.strengths : ruleResult.strengths,
+    weaknesses: localResult.weaknesses?.length ? localResult.weaknesses : ruleResult.weaknesses,
+    confidence: Math.min(Number(localResult.confidence) || 0.4, 0.75),
+    evidence: [
+      ...(localResult.evidence || []),
+      `오프라인 최종 점수: 규칙 평가 70%(${Math.round(ruleScore)}) + 로컬 AI 30%(${Math.round(localScore)})`,
+    ],
+  };
+}
+
+function buildEvaluationHtml(result) {
+  const strengths = (result.strengths && result.strengths.length)
+    ? result.strengths
+    : ['관찰 가능한 답변 근거가 확인되었습니다.'];
+  const weaknesses = (result.weaknesses && result.weaknesses.length)
+    ? result.weaknesses
+    : ['더 구체적인 사례와 연결어를 추가해 보세요.'];
+  const rubric = result.rubric || {};
+  const rubricHtml = Object.keys(rubric).length
+    ? `<div class="small" style="margin-top:8px;">세부 지표: 과업 ${escapeHtml(rubric.task ?? 0)}/30 · 유창성 ${escapeHtml(rubric.fluency ?? 0)}/25 · 어휘 ${escapeHtml(rubric.vocabulary ?? 0)}/20 · 문법 ${escapeHtml(rubric.grammar ?? 0)}/15 · 상호작용 ${escapeHtml(rubric.interaction ?? 0)}/10</div>`
+    : '';
+  const evidence = (result.evidence && result.evidence.length) ? result.evidence : [];
+  const evidenceHtml = evidence.length
+    ? `<div style="margin-top:8px;color:#5b6380;font-size:13px;">평가 근거</div><ul style="margin:4px 0 0 18px;color:#30446d;">${evidence.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul>`
+    : '';
+  return `<div><strong>AI 평가 점수:</strong> ${Math.round(result.score)}/100 · 단어 수 ${escapeHtml(result.words)} · 신뢰도 ${Math.round((Number(result.confidence) || 0) * 100)}%</div>` +
+    `<div class="small" style="margin-top:6px;">문항 피드백: ${escapeHtml(result.feedback)}</div>` +
+    rubricHtml + evidenceHtml +
+    `<div style="margin-top:8px;color:#1f6feb;font-size:13px;">강점</div>` +
+    `<ul style="margin:4px 0 0 18px;color:#30446d;">${strengths.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul>` +
+    `<div style="margin-top:8px;color:#c57a00;font-size:13px;">개선점</div>` +
+    `<ul style="margin:4px 0 0 18px;color:#30446d;">${weaknesses.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul>`;
+}
+
+function renderEvaluationForQuestion(q) {
+  if (!q || state.questions[state.idx]?.no !== q.no) return;
+  const feedbackArea = document.getElementById('questionFeedback');
+  const btnNext = document.getElementById('nextBtn');
+  const btnVoice = document.getElementById('voiceBtn');
+  const btnPlay = document.getElementById('playQuestionBtn');
+  const pending = Boolean(state.evaluationJobs[q.no]);
+  const hasFeedback = Boolean(state.questionFeedback[q.no]);
+  if (hasFeedback) {
+    feedbackArea.classList.remove('hide');
+    feedbackArea.innerHTML = state.questionFeedback[q.no];
+  } else if (pending) {
+    feedbackArea.classList.remove('hide');
+    feedbackArea.innerHTML = '<div>평가 중입니다. 다음 문제를 먼저 풀어도 됩니다.</div>';
+  }
+  btnVoice.disabled = pending || hasFeedback;
+  btnPlay.disabled = pending || hasFeedback;
+  if (isPracticeMode()) {
+    btnNext.textContent = hasFeedback ? '새 연습 문제' : '평가 후 다음 문제';
+    btnNext.disabled = !hasFeedback;
+  } else {
+    btnNext.textContent = state.idx === state.questions.length - 1 ? '마감 및 제출' : '다음 문제';
+    btnNext.disabled = false;
+  }
+  if (hasFeedback) {
+    document.getElementById('voiceStatus').textContent = isPracticeMode()
+      ? '피드백이 준비되었습니다. 새 연습 문제를 시작할 수 있습니다.'
+      : '평가 완료. 다음 문제를 눌러 진행하세요.';
+  }
+}
+
+async function evaluateQuestionByNo(questionNo, answer, speechSignals) {
+  const q = state.questions.find((item) => item.no === questionNo);
+  if (!q || !answer) return null;
+  const cfg = readEvalConfig();
+  let result;
+  try {
+    if (cfg.mode === 'openai') {
+      result = await evaluateWithOpenAI(q.prompt, answer, q.type, speechSignals);
+    } else if (cfg.mode === 'gemini') {
+      result = await evaluateWithGemini(q.prompt, answer, q.type, speechSignals);
+    } else {
+      const ruleResult = buildFeedbackFromRules(q.prompt, answer, q.type, speechSignals);
+      if (localLlmReady) {
+        try {
+          const localResult = await evaluateWithLocalLLM(q.prompt, answer, q.type, speechSignals);
+          result = combineOfflineEvaluation(ruleResult, localResult);
+        } catch (localError) {
+          console.warn('로컬 AI 평가 실패, 기본 평가로 전환합니다.', localError);
+          setLocalAiStatus(`로컬 AI 평가에 실패해 기본 평가를 사용합니다. (${localError.message})`, 'warn');
+          result = ruleResult;
+        }
+      } else {
+        result = ruleResult;
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    result = buildFeedbackFromRules(q.prompt, answer, q.type, speechSignals);
+    result.evidence = [...(result.evidence || []), `온라인 평가 실패로 오프라인 기본 평가를 사용했습니다: ${error.message}`];
+  }
+  return result;
+}
+
+function queueQuestionEvaluation(q, answerOverride = '') {
+  if (!q) return null;
+  const answer = normalizeTranscriptText(answerOverride || state.answers[q.no] || '');
+  if (!answer) return null;
+  state.answers[q.no] = answer;
+  const existing = state.evaluationJobs[q.no];
+  if (existing) return existing;
+  const speechSignals = state.speechSignalsByQuestion[q.no] || getSpeechSignalSummary(answer);
+  state.speechSignalsByQuestion[q.no] = speechSignals;
+  const job = evaluateQuestionByNo(q.no, answer, speechSignals)
+    .then((result) => {
+      if (!result) return null;
+      state.questionFeedback[q.no] = buildEvaluationHtml(result);
+      state.questionScores[q.no] = Math.round(result.score);
+      if (!state.examFinished) saveProgress();
+      renderEvaluationForQuestion(q);
+      return result;
+    })
+    .catch((error) => {
+      console.error('평가 작업 실패:', error);
+      return null;
+    });
+  state.evaluationJobs[q.no] = job;
+  job.finally(() => {
+    delete state.evaluationJobs[q.no];
+    renderEvaluationForQuestion(q);
+  }).catch(() => {});
+  renderEvaluationForQuestion(q);
+  return job;
+}
+
+async function evaluateCurrentQuestion(options = {}) {
+  const q = state.questions[state.idx];
+  if (!q) return null;
+  const answer = normalizeTranscriptText(document.getElementById('answerInput').value || state.answers[q.no] || '');
+  if (!answer) {
+    document.getElementById('voiceStatus').textContent = '답변이 비어 있습니다. 먼저 답변을 녹음해 주세요.';
+    return null;
+  }
+  state.answers[q.no] = answer;
+  state.speechSignalsByQuestion[q.no] = getSpeechSignalSummary(answer);
+  const job = queueQuestionEvaluation(q, answer);
+  if (options.awaitResult && job) return job;
+  return job;
+}
+
+function updateVoiceButton() {
+  const btn = document.getElementById('voiceBtn');
+  if (!btn) return;
+  btn.textContent = state.isRecording ? '음성 입력 중지' : '음성 입력';
+}
+
+async function toggleVoiceInput() {
+  const canUse = initVoiceInput();
+  if (!canUse) {
+    alert('이 브라우저는 음성 인식을 지원하지 않습니다. Chrome/Edge에서 HTTPS 또는 localhost로 실행해 주세요.');
+    return;
+  }
+
+  const status = document.getElementById('voiceStatus');
+  if (state.isRecording) {
+    state.manualStopRequested = true;
+    if (state.recognitionRestartTimer) {
+      clearTimeout(state.recognitionRestartTimer);
+      state.recognitionRestartTimer = null;
+    }
+    if (state.recognition) {
+      try {
+        state.recognition.stop();
+      } catch (error) {
+        state.isRecording = false;
+        updateVoiceButton();
+        await finalizeVoiceTurn();
+      }
+    } else {
+      state.isRecording = false;
+      updateVoiceButton();
+      await finalizeVoiceTurn();
+    }
+    status.textContent = '음성 입력 중지 요청';
+    return;
+  }
+
+  if (state.voiceStarting) return;
+  state.voiceStarting = true;
+  try {
+    const answerField = document.getElementById('answerInput');
+    state.recognitionText = answerField.value || '';
+    resetSpeechMetrics();
+    state.manualStopRequested = false;
+    state.questionExpired = false;
+    const captured = await startAudioCapture();
+    if (!captured && !state.recognition) {
+      throw new Error('마이크 오디오를 준비하지 못했습니다.');
+    }
+    if (state.recognition) {
+      state.recognition.start();
+    } else {
+      state.isRecording = true;
+      updateVoiceButton();
+      status.textContent = '음성 입력 중... 답변을 마치면 다시 눌러 중지하세요.';
+    }
+  } catch (err) {
+    state.isRecording = false;
+    updateVoiceButton();
+    await stopAudioCapture();
+    status.textContent = `음성 입력 시작 실패: ${err.message || ''}`;
+  } finally {
+    state.voiceStarting = false;
+  }
+}
+
+function saveCurrent() {
+  const q = state.questions[state.idx];
+  if (!q) return;
+  const v = document.getElementById('answerInput').value;
+  state.answers[q.no] = v;
+  saveProgress();
+}
+
+async function nextQuestion() {
+  if (state.examFinished) return;
+  const q = state.questions[state.idx];
+  if (!q) return;
+  saveCurrent();
+  const answer = normalizeTranscriptText(state.answers[q.no] || document.getElementById('answerInput').value || '');
+  if (isPracticeMode()) {
+    if (!state.questionFeedback[q.no]) {
+      if (answer) {
+        queueQuestionEvaluation(q, answer);
+        document.getElementById('voiceStatus').textContent = '평가 중입니다. 잠시 후 피드백이 표시됩니다.';
+      } else {
+        document.getElementById('voiceStatus').textContent = '먼저 문항을 듣고 음성으로 답변해 주세요.';
+      }
+      return;
+    }
+    buildNewPracticeQuestion();
+    return;
+  }
+  if (answer && !state.questionFeedback[q.no]) {
+    queueQuestionEvaluation(q, answer);
+  }
+  if (state.idx < state.questions.length - 1) {
+    state.idx += 1;
+    resetQuestionTimer();
+    renderExam();
+    focusExamPanel();
+  } else {
+    submitExam();
+  }
+}
+
+function buildNewPracticeQuestion() {
+  const q = pickQuestions(1)[0];
+  if (!q) return;
+  state.questions = [{ no: 1, id: q.id, type: q.type, prompt: q.prompt }];
+  state.idx = 0;
+  state.answers = {};
+  state.questionFeedback = {};
+  state.questionScores = {};
+  state.promptPlayCount = {};
+  state.evaluationJobs = {};
+  state.transcriptionJobs = {};
+  state.speechSignalsByQuestion = {};
+  state.questionSeconds = QUESTION_SECONDS;
+  state.questionTimerStarted = false;
+  state.questionExpired = false;
+  state.examFinished = false;
+  state.startedAt = new Date().toISOString();
+  saveProgress();
+  renderExam();
+  focusExamPanel();
+}
+
+function wordTokens(text) {
+  return (text || '').toLowerCase().match(/[a-z']+/g) || [];
+}
+
+function calcScoreForAnswer(text, type) {
+  const t = text.trim();
+  const words = wordTokens(t);
+  const wCount = words.length;
+  const sentences = Math.max(1, (t.match(/[.!?]/g) || []).length);
+  const connectors = ['because', 'first', 'then', 'after that', 'for example', 'for instance', 'however', 'although', 'while', 'when', 'so', 'therefore', 'in addition'];
+  const hasConnector = connectors.filter(c => new RegExp(`\\b${c}\\b`, 'i').test(t)).length;
+  const details = (t.match(/[0-9a-z]{2,}/gi) || []).length;
+
+  let contentScore = 0;
+  if (wCount >= 45) contentScore = 30;
+  else if (wCount >= 30) contentScore = 22;
+  else if (wCount >= 20) contentScore = 15;
+  else if (wCount >= 10) contentScore = 8;
+
+  let structure = 0;
+  if (sentences >= 2) structure += 10;
+  if (hasConnector >= 1) structure += 8;
+  if (hasConnector >= 2) structure += 5;
+  if (/\bfor example\b|\bfor instance\b|\bI think\b|\bI like\b/i.test(t)) structure += 2;
+
+  const uniqueRate = words.length ? (new Set(words).size / words.length) : 0;
+  let vocabulary = 0;
+  if (uniqueRate >= 0.85) vocabulary = 20;
+  else if (uniqueRate >= 0.75) vocabulary = 16;
+  else if (uniqueRate >= 0.65) vocabulary = 12;
+  else if (uniqueRate >= 0.5) vocabulary = 8;
+  else vocabulary = 4;
+
+  let fluency = 0;
+  if (/\b(then|next|after|at first|while|because|so|therefore|in order to|if\b)/i.test(t)) fluency += 8;
+  if (/\b(also|and|but|however|actually|especially|exactly)\b/i.test(t)) fluency += 8;
+  if (details >= 3) fluency += 6;
+  if (/\b(and|or|because|although|however|for example|usually|often|sometimes|always|never)\b/i.test(t)) fluency += 3;
+
+  if (type.includes('롤플레이') || type.includes('정보 문의') || type.includes('문제 해결')) {
+    if (/\b(agree|sorry|actually|I would|I'd|I can|I can’t|can I|could you|I'd like|please)\b/i.test(t)) fluency += 5;
+    if (wCount >= 25) contentScore += 2;
+  }
+
+  const total = Math.max(0, Math.min(100, contentScore + structure + vocabulary + fluency));
+
+  return {
+    score: total,
+    details: {
+      '내용 밀도': contentScore,
+      '문장 구성': structure,
+      '어휘 다양성': vocabulary,
+      '연결·유창성': fluency,
+    },
+    words: wCount,
+  };
+}
+
+function scoreToLevel(score) {
+  if (score >= 85) return ['상', '#1f7c49'];
+  if (score >= 70) return ['중상', '#2670bd'];
+  if (score >= 55) return ['중', '#a45f00'];
+  return ['중하', '#a53a3a'];
+}
+
+function scoreToOpicGrade(score) {
+  if (score >= 85) return ['AL', 'Advanced Low', '#1f7c49', '상위 응답 구조와 확장력이 안정적'];
+  if (score >= 77) return ['IH', 'Intermediate High', '#2670bd', '대체로 정확하고 유창한 응답'];
+  if (score >= 69) return ['IM3', 'Intermediate Mid 3', '#2670bd', '핵심 내용과 이유가 비교적 분명함'];
+  if (score >= 61) return ['IM2', 'Intermediate Mid 2', '#2670bd', '기본 응답은 가능하나 확장이 필요함'];
+  if (score >= 53) return ['IM1', 'Intermediate Mid 1', '#a45f00', '짧은 문장 연결과 구체화가 필요함'];
+  if (score >= 45) return ['IL', 'Intermediate Low', '#a45f00', '기초 문장을 주제에 맞게 확장해야 함'];
+  if (score >= 35) return ['NH', 'Novice High', '#a45f00', '짧은 응답을 이어 말하는 연습이 필요함'];
+  if (score >= 23) return ['NM', 'Novice Mid', '#a53a3a', '기본 문장과 핵심 어휘부터 강화해야 함'];
+  return ['NL', 'Novice Low', '#a53a3a', '단어와 기본 문장 구성부터 연습해야 함'];
+}
+
+function submitExam() {
+  if (state.examFinished && document.getElementById('resultPanel')?.classList.contains('hide') === false) return;
+  state.examFinished = true;
+  clearInterval(state.timerId);
+  clearInterval(state.questionTimerId);
+  state.timerId = null;
+  state.questionTimerId = null;
+  if (state.isRecording || state.audioRecorder) stopActiveVoiceCapture({ release: true });
+  else releaseMicrophoneStream();
+  saveCurrent();
+
+  let total = 0;
+  const list = [];
+  const attemptedQuestions = state.questions.filter((q) => (state.answers[q.no] || '').trim().length > 0);
+  for (const q of attemptedQuestions) {
+    const ans = state.answers[q.no] || '';
+    const result = calcScoreForAnswer(ans, q.type);
+    list.push({ q, ans, ...result });
+    const score = Number(state.questionScores[q.no]);
+    total += Number.isFinite(score) ? score : result.score;
+  }
+  const avg = attemptedQuestions.length ? Math.round(total / attemptedQuestions.length) : 0;
+  const [level, color] = scoreToLevel(avg);
+  const [opicCode, opicName, opicColor, opicComment] = scoreToOpicGrade(avg);
+  const usedMode = readEvalConfig().mode;
+  const modeLabel = usedMode === 'local'
+    ? `${whisperModelReady ? `오프라인 Whisper ${WHISPER_MODEL_NAME} 전사` : '오프라인 기본 평가'}${localLlmReady ? ' + 로컬 AI' : ''}`
+    : '온라인 AI 평가';
+
+  const tips = [];
+  const shortCount = list.filter(x => x.words < 20).length;
+  const noConnector = list.filter(x => x.details['문장 구성'] < 10).length;
+  if (shortCount >= 3) tips.push('많은 문항에서 단어 수가 부족합니다. 문항당 2-4문장 정도로 늘려보세요.');
+  if (noConnector >= 4) tips.push('접속어(because, then, for example 등)가 부족합니다. 구조가 단순해집니다. 연결어를 넣어 답변하세요.');
+  if (avg < 55) tips.push('주제별 핵심 키워드(장소/사람/시간/이유/경험)를 한 번씩 언급해 보세요.');
+  if (tips.length === 0) tips.push('전반적으로 좋은 밀도로 답변했습니다. 다음엔 구체 사례를 더 추가해보면 점수가 더 올라갑니다.');
+
+  const resultPanel = document.getElementById('resultPanel');
+  resultPanel.classList.remove('hide');
+  resultPanel.innerHTML = `<h2>${isPracticeMode() ? '연습 결과' : '모의고사 완료'}</h2>` +
+    `<div class="summary">` +
+    `<div class="summary-card"><div class="small">총점</div><h1>${avg}/100</h1><span class="level" style="background:${color}20;color:${color}">텍스트 규칙 등급 ${level}</span></div>` +
+    `<div class="summary-card"><div class="small">OPIc 예상 등급</div><h1>${opicCode} · ${opicName}</h1><span class="level" style="background:${opicColor}20;color:${opicColor}">${opicComment}</span></div>` +
+    `<div class="summary-card"><div class="small">채점 문항</div><p>${attemptedQuestions.length} / ${state.questions.length}문항</p></div>` +
+    `<div class="summary-card"><div class="small">완료 시간</div><p>${isPracticeMode() ? '연습모드' : `${Math.round((TOTAL_EXAM_SECONDS - state.totalSeconds) / 60)}분 ${((TOTAL_EXAM_SECONDS - state.totalSeconds) % 60)}초`}</p></div>` +
+    `<div class="summary-card"><div class="small">채점 방식</div><p>${modeLabel}</p></div>` +
+    `<div class="summary-card"><div class="small">권장 학습</div><ul style="padding-left:16px;margin:8px 0;color:#3a4d72;line-height:1.4;">${tips.map(t=>`<li>${t}</li>`).join('')}</ul></div>` +
+    `</div>` +
+    `<div class="small" style="margin-top:10px;display:block;">${attemptedQuestions.length ? (usedMode === 'local' ? (localLlmReady ? `Whisper ${WHISPER_MODEL_NAME}이 음성을 전사하고, 규칙 평가와 로컬 AI가 답변을 함께 분석했습니다.` : whisperModelReady ? `Whisper ${WHISPER_MODEL_NAME} 전사 후 규칙 평가를 사용했습니다.` : '피드백은 브라우저 음성인식 결과와 답변의 길이·구성을 기반으로 한 오프라인 기본 평가입니다.') : '점수는 온라인 AI 평가를 사용하며, 연결에 실패한 문항은 기본 평가로 대체합니다.') : '아직 답변이 없어 채점할 문항이 없습니다. 다음 연습에서 답변을 녹음해 보세요.'}</div>` +
+    '<div id="detailWrap" style="margin-top:10px"></div>';
+
+  const detailWrap = document.getElementById('detailWrap');
+  list.forEach((x) => {
+    const rank = x.score >= 70 ? 'good' : x.score >= 55 ? 'warn' : 'bad';
+    const item = document.createElement('div');
+    item.className = 'feedback-item';
+    item.innerHTML = `
+      <div style="font-weight:700">Q${x.q.id.toString().padStart(3, '0')} · ${x.q.type}</div>
+      <div class="score-line"><span>문항 점수</span><strong class="${rank}">${x.score} / 100</strong></div>
+      <div class="bar-wrap"><div class="bar" style="width:${x.score}%;"></div></div>
+      <div class="small" style="margin-top:6px;">단어 수: ${x.words} · 문항 유형: ${x.q.type}</div>
+      <div class="small" style="margin-top:2px;">샘플 답안: ${(x.ans || '(미입력)').slice(0, 120)}${(x.ans && x.ans.length > 120) ? '...' : ''}</div>
+      <div class="small" style="margin-top:4px;">항목 점수: 내용 ${x.details['내용 밀도']} / 구성 ${x.details['문장 구성']} / 어휘 ${x.details['어휘 다양성']} / 연결·유창성 ${x.details['연결·유창성']}</div>`;
+    detailWrap.appendChild(item);
+  });
+
+  document.getElementById('examPanel').classList.add('hide');
+  localStorage.removeItem(state.storageKey);
+  document.getElementById('startBtn').disabled = false;
+  setSessionModeButtonsDisabled(false);
+  setEvaluationControlsDisabled(false);
+  setSessionMode(state.sessionMode, { skipSave: true });
+}
+
+document.getElementById('startBtn').addEventListener('click', startExam);
+document.getElementById('clearBtn').addEventListener('click', clearProgress);
+document.getElementById('playQuestionBtn').addEventListener('click', speakQuestion);
+document.getElementById('voiceBtn').addEventListener('click', toggleVoiceInput);
+document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+document.getElementById('submitBtn').addEventListener('click', submitExam);
+document.getElementById('saveConfigBtn').addEventListener('click', saveEvalConfig);
+document.getElementById('clearConfigBtn').addEventListener('click', clearEvalConfig);
+document.querySelectorAll('.session-mode-btn[data-session-mode]').forEach((button) => {
+  button.addEventListener('click', () => setSessionMode(button.dataset.sessionMode));
+});
+document.querySelectorAll('.mode-btn[data-mode]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    setEvalMode(btn.dataset.mode);
+  });
+});
+document.getElementById('handshakeBtn').addEventListener('click', performApiHandshake);
+document.getElementById('prepareLocalAiBtn').addEventListener('click', prepareLocalLlm);
+document.getElementById('apiKeyInput').addEventListener('input', () => {
+  const mode = getEvalMode();
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (mode !== 'local' && state.apiHandshake[mode]?.fingerprint !== makeKeyFingerprint(key)) {
+    resetCurrentApiHandshake(mode);
+  }
+  updateEvalStatus();
+});
+document.getElementById('modelSelect').addEventListener('change', () => {
+  const mode = getEvalMode();
+  if (mode !== 'local' && state.apiHandshake[mode]?.ready) {
+    state.apiHandshake[mode].model = document.getElementById('modelSelect').value;
+    if (mode === 'gemini') state.apiHandshake[mode].selectionSource = 'manual';
+    saveEvalConfig();
+  }
+  updateEvalStatus();
+});
+document.getElementById('modelPickerButton').addEventListener('click', () => {
+  const button = document.getElementById('modelPickerButton');
+  setModelPickerOpen(button.getAttribute('aria-expanded') !== 'true');
+});
+document.getElementById('modelPickerButton').addEventListener('keydown', (event) => {
+  if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    setModelPickerOpen(true);
+    document.querySelector('#modelPickerMenu .model-picker-option')?.focus();
+  }
+  if (event.key === 'Escape') setModelPickerOpen(false);
+});
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('#modelPicker')) setModelPickerOpen(false);
+});
+document.getElementById('settingsBtn').addEventListener('click', openQuestionEditor);
+document.getElementById('closeQuestionEditorBtn').addEventListener('click', closeQuestionEditor);
+document.getElementById('cancelQuestionEditorBtn').addEventListener('click', closeQuestionEditor);
+document.getElementById('questionSearchInput').addEventListener('input', () => {
+  questionEditorPage = 1;
+  renderQuestionEditor();
+});
+document.getElementById('questionPrevBtn').addEventListener('click', () => {
+  questionEditorPage -= 1;
+  renderQuestionEditor();
+});
+document.getElementById('questionNextBtn').addEventListener('click', () => {
+  questionEditorPage += 1;
+  renderQuestionEditor();
+});
+document.getElementById('resetQuestionsBtn').addEventListener('click', resetQuestionBank);
+document.getElementById('saveQuestionsBtn').addEventListener('click', () => {
+  collectQuestionEditorChanges();
+  closeQuestionEditor();
+  alert('연습 질문을 저장했습니다. 다음 모의고사부터 반영됩니다.');
+});
+document.getElementById('questionEditorModal').addEventListener('click', (event) => {
+  if (event.target.id === 'questionEditorModal') closeQuestionEditor();
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') closeQuestionEditor();
+});
+loadQuestionBank();
+setSessionMode(localStorage.getItem('opic-session-mode-v1') || 'exam', { skipSave: true });
+loadEvalConfig();
+window.addEventListener('beforeunload', (e) => {
+  saveCurrent();
+  releaseMicrophoneStream();
+  const answered = Object.values(state.answers).filter(v => (v || '').trim().length > 0).length;
+  if (answered > 0 && answered < state.questions.length) {
+    e.preventDefault();
+    e.returnValue = '진행 중인 시험이 있습니다. 이 페이지를 나가면 진행 내용이 저장됩니다.';
+  }
+});
+
+</script>
+</body>
+</html>
+
