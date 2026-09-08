@@ -69,6 +69,8 @@ API를 선택해도 별도 중계 서버를 거치지 않습니다. 따라서 �
 
 누적 다운로드 수는 GitHub Release asset으로 배포한 ZIP에서 집계합니다. `v*` 태그를 만들면 `.github/workflows/release.yml`이 `index.html`과 실행에 필요한 안내 파일을 ZIP으로 묶어 Release asset으로 게시합니다. 다운로드 수는 저장소의 [Releases](https://github.com/SILVERBRINE/opic-mock-exam/releases) 화면에서 확인할 수 있습니다.
 
+첫 Release는 저장소의 **Actions → Publish downloadable release → Run workflow**에서 `v1.0.0`을 입력해 한 번 실행하면 됩니다. 이후에는 `v*` 태그를 push할 때마다 새 Release와 누적 다운로드 집계가 만들어집니다.
+
 이 프로젝트는 앱 실행자 수, 개인 식별 정보, 제3자 추적 스크립트를 수집하지 않습니다. GitHub의 저장소 조회·clone 통계는 다운로드 누적 수와 다른 별도 지표입니다.
 
 ## 라이선스
