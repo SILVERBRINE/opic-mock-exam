@@ -36,7 +36,7 @@
 3. 키를 복사해 앱의 Gemini API 입력란에 붙여넣습니다.
 4. **연결**을 눌러 사용 가능한 최신 Flash 모델을 확인합니다.
 
- API 키는 이 정적 페이지에서 Google API로 직접 전송됩니다. 키를 공개 저장소나 다른 사람에게 공유하지 말고, Google AI Studio에서 사용량·제한을 확인하세요.
+API 키는 이 정적 페이지에서 Google API로 직접 전송됩니다. 키를 공개 저장소나 다른 사람에게 공유하지 말고, Google AI Studio에서 사용량·제한을 확인하세요.
 
 ## GitHub Pages
 
