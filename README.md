@@ -4,11 +4,9 @@
 
 누적 다운로드: [![누적 다운로드](https://img.shields.io/github/downloads/SILVERBRINE/opic-mock-exam/total?label=downloads&cacheSeconds=60)](https://github.com/SILVERBRINE/opic-mock-exam/releases)
 
-처음에는 Release를 한 번 발행해야 숫자가 표시돼요. 그 뒤 ZIP을 내려받을 때마다 GitHub가 누적해서 올려 줍니다.
-
 [⬇️ 최신 버전 다운로드](https://github.com/SILVERBRINE/opic-mock-exam/releases/latest)
 
-문제는 귀로 듣고, 답변은 마이크로 녹음해요. 한 문제 끝나면 바로 피드백을 보고 다음 문제로 넘어가는 OPIc 연습 도구입니다. 서버 없이 정적 HTML 하나로 실행되고, 오프라인 평가와 API 평가 중 편한 방식을 고르면 됩니다.
+문제는 귀로 듣고 답변은 마이크로 녹음하면 됨. 한 문제 끝나면 바로 피드백 보고 다음 문제로 넘어가는 OPIc 연습용 보조도구임. 서버 없이 HTML 하나로 돌아가고, 오프라인 평가/API 평가 중 편한 거 고르면 됨. 실제 OPIc 시험의 문항·난이도·진행·채점과는 다를 수 있으니 실전 대비 연습용으로 보면 됨.
 
 ## 주요 기능
 
@@ -24,29 +22,31 @@
 
 ## 실행
 
-1. 저장소의 `index.html`을 내려받아요.
-2. 마이크 권한을 안정적으로 쓰려면 Chrome 또는 Edge에서 `localhost`/HTTPS로 열어 주세요.
-3. **평가 방식**을 골라요.
+1. 저장소의 `index.html` 다운 ㄱㄱ
+2. 마이크 권한이 꼬이지 않게 Chrome이나 Edge에서 `localhost`/HTTPS로 열면 됨.
+3. 아래에서 **평가 방식** 고르면 됨.
    - **오프라인 기본 평가**: 인터넷 없이 규칙 기반 평가
    - **오프라인 Whisper**: `whisper.cpp`의 양자화 `base.en Q5_1` 모델(약 57MB)을 브라우저 저장소에 내려받아 로컬 전사
-   - **OpenAI API / Gemini API**: 전사와 평가 품질을 높일 수 있지만 개인 API 키가 필요
+   - **OpenAI API / Gemini API**: 전사와 답변 평가가 더 정확하고 고품질로 나올 수 있지만 개인 API 키가 필요함
 
 오프라인 Whisper 모델은 브라우저의 IndexedDB에 저장돼요. 비공개 모드에서는 브라우저를 닫을 때 저장 데이터가 사라져서 다음에 다시 받을 수 있습니다.
 
-## Gemini API 키 발급
+## Gemini API 키 발급 [무료]
 
-[Google AI Studio API 키 발급 페이지](https://aistudio.google.com/app/apikey)를 열고 다음 순서로 진행합니다.
+API 방식을 쓰면 오프라인 기본 평가보다 음성 전사와 답변 분석이 더 정밀해져서, 연습 피드백 품질을 높일 수 있음. Google AI Studio의 무료 사용량과 정책은 계정·시점에 따라 달라질 수 있으니 발급 화면에서 확인하면 됨.
 
-1. Google 계정으로 로그인해요.
-2. **API key 만들기**를 누릅니다.
-3. 키를 복사해 앱의 Gemini API 입력란에 붙여 넣어요.
-4. **연결**을 누르면 사용 가능한 최신 Flash 모델을 확인할 수 있습니다.
+[Google AI Studio API 키 발급 페이지](https://aistudio.google.com/app/apikey) ㄱㄱ
 
-API 키는 이 정적 페이지에서 Google API로 직접 전송됩니다. 키를 공개 저장소나 다른 사람에게 공유하지 말고, Google AI Studio에서 사용량·제한을 확인하세요.
+1. Google 계정으로 로그인
+2. **API key 만들기** 클릭
+3. 키 복사해서 앱의 Gemini API 입력란에 붙여 넣기
+4. **연결** 누르면 사용 가능한 최신 Flash 모델 확인 가능
+
+API 키는 이 정적 페이지에서 Google API로 직접 전송됨. 키를 저장소나 다른 사람에게 공유하지 말고, Google AI Studio에서 사용량·제한을 확인하면 됨.
 
 ## GitHub Pages
 
-`main` 브랜치에 push하면 `.github/workflows/pages.yml`이 정적 파일을 GitHub Pages에 배포합니다. 저장소 설정에서 **Settings → Pages → Source: GitHub Actions**를 한 번 선택하면 됩니다. Pages 주소는 저장소의 **Actions** 실행 결과와 **Settings → Pages**에서 확인할 수 있습니다.
+`main` 브랜치에 push하면 `.github/workflows/pages.yml`이 정적 파일을 GitHub Pages에 자동 배포함. 저장소 설정에서 **Settings → Pages → Source: GitHub Actions**만 한 번 골라두면 됨. Pages 주소는 **Actions** 실행 결과나 **Settings → Pages**에서 확인 가능.
 
 ## 구조
 
