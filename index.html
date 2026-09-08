@@ -1269,6 +1269,7 @@ function collectQuestionEditorChanges() {
 function loadEvalConfig() {
   const raw = localStorage.getItem(state.configStorageKey);
   if (!raw) {
+    localStorage.removeItem('opic-mock-api-key-plain');
     setEvalMode('local', { skipSave: true });
     document.getElementById('apiKeyInput').value = '';
     state.apiHandshake.openai = { ready: false, fingerprint: '', model: '', selectionSource: '', verifiedAt: '' };
@@ -1312,6 +1313,7 @@ function loadEvalConfig() {
     updateEvalStatus();
   } catch {
     localStorage.removeItem(state.configStorageKey);
+    localStorage.removeItem('opic-mock-api-key-plain');
   }
 }
 
