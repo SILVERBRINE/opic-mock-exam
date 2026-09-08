@@ -3642,6 +3642,7 @@ function queueQuestionEvaluation(q, answerOverride = '') {
   const job = evaluateQuestionByNo(q.no, answer, speechSignals)
     .then((result) => {
       if (!result) return null;
+      result.words = Number(result.words) || wordTokens(answer).length;
       state.questionFeedback[q.no] = buildEvaluationHtml(result, q, answer);
       state.questionScores[q.no] = Math.round(result.score);
       state.questionCriteria[q.no] = result.criteria || {};
