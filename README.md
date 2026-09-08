@@ -47,7 +47,7 @@ API 키는 이 정적 페이지에서 Google API로 직접 전송됩니다. 키�
 ```text
 index.html                         정적 앱 진입점·UI·질문 데이터
 docs/ARCHITECTURE.md                실행·평가·저장 흐름
-docs/ANALYTICS.md                   다운로드·익명 통계의 범위와 한계
+docs/ANALYTICS.md                   Release 다운로드 집계 방식
 ```
 
 질문 문제은행 200개는 별도 공개 문서가 아니라 `index.html` 안에 포함되어 있습니다. 앱의 **연습 질문 수정**에서 개인별로 바꾼 내용은 해당 브라우저에만 저장됩니다.
