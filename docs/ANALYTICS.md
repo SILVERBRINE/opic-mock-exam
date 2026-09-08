@@ -1,26 +1,20 @@
-# Analytics and download counts
+# Download counts
 
-## GitHub에서 확인할 수 있는 값
+## 집계 대상
 
-공개 저장소의 관리자는 GitHub의 **Insights → Traffic**에서 다음 집계값을 확인할 수 있습니다.
+이 프로젝트에서 공개적으로 집계하는 값은 GitHub Release asset의 다운로드 수뿐입니다. 앱을 실행했는지, 몇 번 방문했는지, 어떤 답변을 했는지는 수집하지 않습니다.
 
-- 저장소 페이지 조회 수
-- 고유 방문자 수
-- Git clone 수와 고유 cloner 수
+## 누적 다운로드 방식
 
-이 값은 GitHub가 익명으로 집계하며, 일반적으로 최근 14일 범위로 제공됩니다. 개인별 방문자나 실제 앱 실행 여부는 알 수 없습니다.
+`.github/workflows/release.yml`은 `v*` 태그가 만들어지거나 수동 실행될 때 다음 파일을 ZIP으로 묶어 Release asset으로 게시합니다.
 
-## 배포 파일 다운로드 수
+- `index.html`
+- `README.md`
+- `LICENSE`
 
-HTML을 GitHub Release asset으로 올리면 release asset별 다운로드 횟수를 확인할 수 있습니다. 저장소의 일반 파일을 웹에서 보거나 `git clone`한 경우는 이 값에 포함되지 않습니다.
+GitHub Release의 asset별 `download_count`가 누적 다운로드 수입니다. 저장소 웹페이지 조회 수, Git clone 수, GitHub Actions artifact 다운로드 수는 이 값에 포함되지 않습니다.
 
-## 앱 사용자 수의 한계
+## 개인정보와 보안 범위
 
-이 앱은 정적 HTML이며 기본적으로 외부 분석 스크립트를 포함하지 않습니다. 따라서 다음 값은 자동으로 수집하지 않습니다.
-
-- 실제로 `모의고사 시작`을 누른 사람 수
-- 익명 사용자의 반복 방문 수
-- 특정 사용자의 학습 결과
-
-사용자 동의 없이 제3자 추적기를 추가하지 않는 것이 현재의 기본 정책입니다. 향후 정확한 익명 시작 수가 필요해지면 개인정보 고지와 보존 기간을 정한 뒤, IP를 저장하지 않는 Plausible·GoatCounter 같은 별도 분석 서비스를 선택적으로 연결하는 방식이 적합합니다.
+앱에는 분석 스크립트나 사용자 식별용 전송 코드를 넣지 않습니다. 공개 페이지에서 GitHub API 토큰을 사용하지 않으며, 다운로드 수는 GitHub가 Release asset에 제공하는 집계값으로만 확인합니다.
 
