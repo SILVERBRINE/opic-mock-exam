@@ -196,6 +196,61 @@
     .device-test-status { grid-column: 1 / -1; min-height: 18px; color: #4d6792; font-size: 12px; }
     .mic-meter { grid-column: 1 / -1; height: 7px; overflow: hidden; border-radius: 999px; background: #dce7f8; }
     .mic-meter span { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #67a5ff, #2f6bdc); transition: width .08s linear; }
+    .tts-choice { grid-column: 1 / -1; display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid #e1e9f7; }
+    .tts-choice > strong { color: #29466f; font-size: 12px; }
+    .tts-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .tts-option { display: grid; gap: 2px; padding: 9px 10px; border: 1px solid #cbd9ef; border-radius: 10px; background: #fff; color: #31517f; text-align: left; font-size: 12px; }
+    .tts-option span { font-weight: 800; }
+    .tts-option small { color: #7384a2; font-size: 10px; font-weight: 600; }
+    .tts-option.active { border-color: #397cff; background: #eaf2ff; box-shadow: inset 0 0 0 1px rgba(57,124,255,.25); color: #1b55b5; }
+    .tts-option:disabled { opacity: .52; cursor: not-allowed; }
+    .tts-status { color: #61769a; font-size: 11px; }
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+    .header-actions button { padding: 9px 12px; font-size: 12px; }
+    .processing-overlay { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 20px; background: rgba(19, 37, 72, .24); backdrop-filter: blur(3px); }
+    .processing-overlay[hidden] { display: none; }
+    .processing-card { display: flex; align-items: center; gap: 14px; width: min(440px, 100%); padding: 20px; border: 1px solid #cddcf5; border-radius: 16px; background: rgba(255,255,255,.98); box-shadow: 0 20px 55px rgba(20,45,95,.2); }
+    .processing-spinner { width: 32px; height: 32px; flex: 0 0 auto; border: 4px solid #dce8fb; border-top-color: #2671ee; border-radius: 50%; animation: processingSpin .8s linear infinite; }
+    @keyframes processingSpin { to { transform: rotate(360deg); } }
+    .processing-copy { min-width: 0; flex: 1; }
+    .processing-copy strong { display: block; color: #203d70; font-size: 15px; }
+    .processing-copy p { margin: 4px 0 9px; color: #63779a; font-size: 12px; }
+    .processing-progress { height: 6px; overflow: hidden; border-radius: 999px; background: #e4ecfa; }
+    .processing-progress span { display: block; width: 42%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #4d94ff, #1f6feb); animation: processingProgress 1.2s ease-in-out infinite; }
+    @keyframes processingProgress { 0% { transform: translateX(-120%); } 100% { transform: translateX(260%); } }
+    .history-list { max-height: 58vh; overflow: auto; padding: 12px 24px; }
+    .history-empty { padding: 28px 8px; color: #6b7d9c; text-align: center; font-size: 13px; }
+    .history-item { padding: 14px 0; border-bottom: 1px solid #e8edf7; }
+    .history-item:last-child { border-bottom: 0; }
+    .history-item-head { display: flex; justify-content: space-between; gap: 12px; color: #244477; font-weight: 800; font-size: 13px; }
+    .history-item-head small { color: #8796af; font-weight: 600; white-space: nowrap; }
+    .history-item-question { margin-top: 6px; color: #3d547d; font-size: 12px; line-height: 1.5; }
+    .history-item-answer { margin-top: 6px; padding: 8px 10px; border-radius: 9px; background: #f5f8fe; color: #4e6388; font-size: 12px; line-height: 1.5; }
+    .history-item-scores { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 9px; }
+    .history-score { padding: 6px; border-radius: 8px; background: #edf4ff; color: #27528d; text-align: center; font-size: 11px; font-weight: 800; }
+    .history-score strong { display: block; color: #194fae; font-size: 16px; }
+    .evaluation-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; color: #294875; }
+    .evaluation-total { color: #1f6feb; font-size: 22px; }
+    .evaluation-context { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin-top: 11px; }
+    .evaluation-context > div { padding: 9px 10px; border-radius: 9px; background: #f3f7ff; }
+    .evaluation-context strong { color: #50698f; font-size: 11px; }
+    .evaluation-context p { margin: 4px 0 0; color: #39557f; font-size: 12px; line-height: 1.5; }
+    .metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 11px; }
+    .metric-card { padding: 9px; border: 1px solid #d9e5f8; border-radius: 10px; background: #fbfdff; }
+    .metric-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 5px; color: #456188; font-size: 11px; }
+    .metric-card-head strong { color: #1f6feb; font-size: 19px; }
+    .metric-card-head strong small { color: #7183a0; font-size: 10px; }
+    .metric-card > small { display: block; margin-top: 5px; color: #7183a0; font-size: 10px; line-height: 1.35; }
+    .metric-bar { height: 5px; overflow: hidden; margin-top: 6px; border-radius: 999px; background: #e3ebf9; }
+    .metric-bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #4c96ff, #1f6feb); }
+    .evaluation-tip { margin-top: 10px; padding: 9px 10px; border-radius: 9px; background: #f5f8fe; }
+    .evaluation-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 10px; font-size: 12px; }
+    .evaluation-columns ul { margin: 5px 0 0; padding-left: 17px; color: #3d547d; line-height: 1.45; }
+    .evaluation-evidence { margin-top: 9px; color: #60769a; font-size: 11px; }
+    .evaluation-evidence summary { cursor: pointer; }
+    .evaluation-evidence ul { margin: 5px 0 0 17px; padding: 0; line-height: 1.45; }
+    .inline-processing { display: flex; align-items: center; gap: 8px; color: #526b94; }
+    .mini-spinner { width: 14px; height: 14px; border: 2px solid #d5e3fa; border-top-color: #2771eb; border-radius: 50%; animation: processingSpin .75s linear infinite; }
 
     h2 {
       margin-top: 0;
@@ -937,6 +992,11 @@
       .exam-panel .status-line > .controls { justify-content: flex-start; }
       .device-test-panel { grid-template-columns: 1fr; }
       .device-test-actions { justify-content: flex-start; }
+      .tts-options { grid-template-columns: 1fr; }
+      .header-actions { align-items: stretch; flex-direction: column; }
+      .history-item-scores { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .evaluation-context, .evaluation-columns { grid-template-columns: 1fr; }
+      .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
   </style>
 </head>
@@ -951,7 +1011,10 @@
             <div class="brand-title">OPIc 모의고사 <span>v1.0</span></div>
           </div>
         </div>
-        <button id="settingsBtn" type="button" class="top-settings" aria-haspopup="dialog">⚙ 환경 설정</button>
+        <div class="header-actions">
+          <button id="historyBtn" type="button" class="top-settings" aria-haspopup="dialog">🗂 히스토리</button>
+          <button id="settingsBtn" type="button" class="top-settings" aria-haspopup="dialog">⚙ 환경 설정</button>
+        </div>
       </header>
       <div class="hero-heading">
         <div>
@@ -987,6 +1050,21 @@
         </div>
         <div id="deviceTestStatus" class="device-test-status" role="status">테스트 결과가 여기에 표시됩니다.</div>
         <div class="mic-meter" aria-hidden="true"><span id="micMeterBar"></span></div>
+        <div class="tts-choice">
+          <strong>문항 음성 방식</strong>
+          <div class="tts-options" role="group" aria-label="문항 음성 방식">
+            <button type="button" class="tts-option active" data-tts-mode="browser">
+              <span>브라우저 TTS</span><small>지금 바로 사용 가능</small>
+            </button>
+            <button type="button" class="tts-option" data-tts-mode="local" disabled>
+              <span>로컬 TTS</span><small>음성 모델 준비 후 제공</small>
+            </button>
+            <button type="button" class="tts-option" data-tts-mode="recording" disabled>
+              <span>녹음본</span><small>문항 음원 제작 후 제공</small>
+            </button>
+          </div>
+          <div id="ttsStatus" class="tts-status">현재 브라우저 기본 음성으로 문항을 읽습니다.</div>
+        </div>
       </div>
       <div class="section-divider"><span>평가 방식</span><small>처음 사용한다면 ‘오프라인 기본 평가’를 추천합니다.</small></div>
       <div class="setup-row config-row">
@@ -1079,6 +1157,27 @@
       </div>
     </div>
 
+    <div id="historyModal" class="modal hide" role="dialog" aria-modal="true" aria-labelledby="historyTitle">
+      <div class="modal-card">
+        <header class="modal-header">
+          <div>
+            <div class="eyebrow">연습 기록</div>
+            <h2 id="historyTitle">히스토리</h2>
+            <p>이 브라우저에 저장된 연습 질문·답변·평가를 다시 확인합니다.</p>
+          </div>
+          <button id="closeHistoryBtn" type="button" class="icon-button" aria-label="닫기">×</button>
+        </header>
+        <div id="historyList" class="history-list"></div>
+        <footer class="modal-footer">
+          <span class="small">기록은 이 브라우저에만 저장됩니다.</span>
+          <div>
+            <button id="clearHistoryBtn" type="button" class="ghost danger-action">기록 삭제</button>
+            <button id="closeHistoryFooterBtn" type="button" class="primary-action">닫기</button>
+          </div>
+        </footer>
+      </div>
+    </div>
+
     <section class="panel hide exam-panel" id="examPanel">
       <div class="exam-hud">
         <div class="exam-hud-topline">
@@ -1111,6 +1210,17 @@
     </section>
 
     <section class="panel hide" id="resultPanel"></section>
+  </div>
+
+  <div id="processingOverlay" class="processing-overlay" hidden role="status" aria-live="polite" aria-label="처리 중">
+    <div class="processing-card">
+      <div class="processing-spinner" aria-hidden="true"></div>
+      <div class="processing-copy">
+        <strong id="processingTitle">처리 중입니다</strong>
+        <p id="processingDetail">잠시만 기다려 주세요.</p>
+        <div class="processing-progress" aria-hidden="true"><span></span></div>
+      </div>
+    </div>
   </div>
 
 <script>
@@ -1162,6 +1272,8 @@ const state = {
   audioMimeType: '',
   audioStopPromise: null,
   recognitionRestartTimer: null,
+  voiceStopPending: false,
+  voiceStopFallbackTimer: null,
   voiceFinalizing: false,
   submitInProgress: false,
   deviceTestStream: null,
@@ -1178,6 +1290,8 @@ const state = {
     pauseDurations: [],
     speechStartedAt: null,
     lastSpeechEndAt: null,
+    recognitionConfidenceTotal: 0,
+    recognitionConfidenceCount: 0,
   },
   promptPlayCount: {},
   isEvaluating: false,
@@ -1185,6 +1299,11 @@ const state = {
   transcriptionJobs: {},
   speechSignalsByQuestion: {},
   questionScores: {},
+  questionCriteria: {},
+  processingTasks: 0,
+  ttsMode: 'browser',
+  history: [],
+  historyStorageKey: 'opic-practice-history-v1',
   modelCatalog: {
     openai: ['gpt-4.1-mini', 'gpt-4o-mini', 'gpt-4o'],
     gemini: [],
@@ -1200,6 +1319,126 @@ const DEFAULT_MODELS = {
   // Google의 latest 별칭은 현재 제공되는 Flash 릴리스를 가리킵니다.
   gemini: 'gemini-flash-latest',
 };
+
+function updateProcessingOverlay(title = '처리 중입니다', detail = '잠시만 기다려 주세요.') {
+  const overlay = document.getElementById('processingOverlay');
+  if (!overlay) return;
+  document.getElementById('processingTitle').textContent = title;
+  document.getElementById('processingDetail').textContent = detail;
+  overlay.hidden = state.processingTasks <= 0;
+}
+
+function beginProcessing(title, detail) {
+  state.processingTasks += 1;
+  updateProcessingOverlay(title, detail);
+}
+
+function endProcessing() {
+  state.processingTasks = Math.max(0, state.processingTasks - 1);
+  updateProcessingOverlay();
+}
+
+function loadPracticeHistory() {
+  try {
+    const raw = localStorage.getItem(state.historyStorageKey);
+    const parsed = raw ? JSON.parse(raw) : [];
+    state.history = Array.isArray(parsed) ? parsed.slice(0, 60) : [];
+  } catch {
+    state.history = [];
+  }
+}
+
+function savePracticeHistory() {
+  try {
+    localStorage.setItem(state.historyStorageKey, JSON.stringify(state.history.slice(0, 60)));
+  } catch (error) {
+    console.warn('연습 기록을 저장하지 못했습니다.', error);
+  }
+}
+
+function recordHistoryEntry(q, answer, result, mode = readEvalConfig().mode) {
+  if (!q || !answer || !result) return;
+  const id = `${state.startedAt || 'session'}:${q.no}:${answer}`;
+  if (state.history.some((item) => item.id === id)) return;
+  const criteria = result.criteria || {};
+  state.history.unshift({
+    id,
+    timestamp: new Date().toISOString(),
+    mode,
+    questionId: q.id,
+    type: q.type,
+    prompt: q.prompt,
+    answer,
+    score: Number(result.score) || 0,
+    criteria: {
+      content: Number(criteria.content) || 0,
+      fluency: Number(criteria.fluency) || 0,
+      grammar: Number(criteria.grammar) || 0,
+      pronunciation: Number(criteria.pronunciation) || 0,
+    },
+    feedback: result.feedback || '',
+    weaknesses: Array.isArray(result.weaknesses) ? result.weaknesses.slice(0, 3) : [],
+  });
+  savePracticeHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  if (!list) return;
+  if (!state.history.length) {
+    list.innerHTML = '<div class="history-empty">아직 완료된 연습 기록이 없습니다.</div>';
+    return;
+  }
+  list.innerHTML = state.history.map((item) => {
+    const date = new Date(item.timestamp);
+    const when = Number.isNaN(date.getTime()) ? '' : date.toLocaleString('ko-KR', { dateStyle: 'short', timeStyle: 'short' });
+    const c = item.criteria || {};
+    return `<article class="history-item">
+      <div class="history-item-head"><span>Q${escapeHtml(String(item.questionId || '').padStart(3, '0'))} · ${escapeHtml(item.type || '')}</span><small>${escapeHtml(when)}</small></div>
+      <div class="history-item-question">${escapeHtml(item.prompt || '')}</div>
+      <div class="history-item-answer">${escapeHtml(item.answer || '')}</div>
+      <div class="history-item-scores">
+        <div class="history-score"><strong>${escapeHtml(c.content || 0)}</strong>내용</div>
+        <div class="history-score"><strong>${escapeHtml(c.fluency || 0)}</strong>유창성</div>
+        <div class="history-score"><strong>${escapeHtml(c.grammar || 0)}</strong>문법</div>
+        <div class="history-score"><strong>${escapeHtml(c.pronunciation || 0)}</strong>발음</div>
+      </div>
+      <div class="small" style="margin-top:8px;">총점 ${escapeHtml(Math.round(Number(item.score) || 0))}/100 · ${escapeHtml(item.feedback || '간결한 답변 평가가 저장되었습니다.')}</div>
+    </article>`;
+  }).join('');
+}
+
+function openHistory() {
+  renderHistory();
+  document.getElementById('historyModal')?.classList.remove('hide');
+}
+
+function closeHistory() {
+  document.getElementById('historyModal')?.classList.add('hide');
+}
+
+function setTtsMode(mode, options = {}) {
+  const selected = ['browser', 'local', 'recording'].includes(mode) ? mode : 'browser';
+  state.ttsMode = selected;
+  document.querySelectorAll('.tts-option[data-tts-mode]').forEach((button) => {
+    const active = button.dataset.ttsMode === selected;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', String(active));
+  });
+  const status = document.getElementById('ttsStatus');
+  if (status) {
+    status.textContent = selected === 'browser'
+      ? '현재 브라우저 기본 음성으로 문항을 읽습니다.'
+      : selected === 'local'
+        ? '로컬 TTS 음성 모델이 아직 준비되지 않아 브라우저 TTS를 사용합니다.'
+        : '문항 녹음본이 아직 준비되지 않아 브라우저 TTS를 사용합니다.';
+  }
+  if (!options.skipSave) localStorage.setItem('opic-tts-mode-v1', selected);
+}
+
+function loadTtsPreference() {
+  setTtsMode(localStorage.getItem('opic-tts-mode-v1') || 'browser', { skipSave: true });
+}
 
 function isValidSavedState(data) {
   if (!data || !Array.isArray(data.questions)) return false;
@@ -2173,6 +2412,7 @@ function saveProgress() {
     answers: state.answers,
     questionFeedback: state.questionFeedback,
     questionScores: state.questionScores,
+    questionCriteria: state.questionCriteria,
     promptPlayCount: state.promptPlayCount,
     sessionMode: state.sessionMode,
     idx: state.idx,
@@ -2215,6 +2455,7 @@ function startExam(modeOverride = '') {
       state.answers = restored.answers || {};
       state.questionFeedback = restored.questionFeedback || {};
       state.questionScores = restored.questionScores || {};
+      state.questionCriteria = restored.questionCriteria || {};
       if (restored.promptPlayCount) {
         state.promptPlayCount = restored.promptPlayCount;
       } else if (restored.promptPlayed) {
@@ -2263,6 +2504,7 @@ function buildNewExam() {
   state.answers = {};
   state.questionFeedback = {};
   state.questionScores = {};
+  state.questionCriteria = {};
   state.promptPlayCount = {};
   state.evaluationJobs = {};
   state.transcriptionJobs = {};
@@ -2369,7 +2611,52 @@ function focusExamPanel() {
   }, 60);
 }
 
+function clearVoiceStopFallback() {
+  if (state.voiceStopFallbackTimer) {
+    clearTimeout(state.voiceStopFallbackTimer);
+    state.voiceStopFallbackTimer = null;
+  }
+}
+
+function armVoiceStopFallback() {
+  clearVoiceStopFallback();
+  state.voiceStopFallbackTimer = window.setTimeout(() => {
+    state.voiceStopFallbackTimer = null;
+    if (!state.voiceStopPending && !state.isRecording && !state.audioRecorder) return;
+    try { state.recognition?.abort?.(); } catch (error) { console.warn('음성 인식을 강제 종료하지 못했습니다.', error); }
+    state.isRecording = false;
+    updateVoiceButton();
+    finalizeVoiceTurn().catch((error) => console.warn('음성 종료 처리를 완료하지 못했습니다.', error));
+  }, 1800);
+}
+
+async function requestVoiceCaptureStop() {
+  if (state.voiceFinalizing || state.voiceStopPending) return;
+  state.voiceStopPending = true;
+  state.manualStopRequested = true;
+  updateVoiceButton();
+  if (state.recognitionRestartTimer) {
+    clearTimeout(state.recognitionRestartTimer);
+    state.recognitionRestartTimer = null;
+  }
+  armVoiceStopFallback();
+  if (state.recognition && state.isRecording) {
+    try {
+      state.recognition.stop();
+    } catch (error) {
+      state.isRecording = false;
+      await finalizeVoiceTurn();
+    }
+    return;
+  }
+  state.isRecording = false;
+  updateVoiceButton();
+  await finalizeVoiceTurn();
+}
+
 function stopActiveVoiceCapture(options = {}) {
+  clearVoiceStopFallback();
+  state.voiceStopPending = false;
   state.manualStopRequested = true;
   state.questionExpired = false;
   if (state.recognitionRestartTimer) {
@@ -2380,6 +2667,7 @@ function stopActiveVoiceCapture(options = {}) {
     state.isRecording = false;
     try { state.recognition.stop(); } catch (error) { console.warn('음성 인식을 종료하지 못했습니다.', error); }
   }
+  state.isRecording = false;
   updateVoiceButton();
   const capturePromise = stopAudioCapture();
   if (options.release) capturePromise.finally(releaseMicrophoneStream);
@@ -2429,18 +2717,7 @@ function handleQuestionTimeout() {
   const status = document.getElementById('voiceStatus');
   status.textContent = '문항 시간이 끝났습니다. 답변을 정리한 뒤 다음 문제로 이동합니다.';
   if (state.isRecording) {
-    state.manualStopRequested = false;
-    if (state.recognition) {
-      try {
-        state.recognition.stop();
-        return;
-      } catch (error) {
-        console.warn('시간 종료 후 음성 인식을 중지하지 못했습니다.', error);
-      }
-    }
-    state.isRecording = false;
-    updateVoiceButton();
-    finalizeVoiceTurn();
+    requestVoiceCaptureStop();
     return;
   }
   advanceAfterQuestionTimeout();
@@ -2559,6 +2836,11 @@ function speakQuestion() {
     button.disabled = true;
     return;
   }
+  if (state.ttsMode !== 'browser') {
+    status.textContent = state.ttsMode === 'local'
+      ? '로컬 TTS 모델이 아직 준비되지 않아 브라우저 TTS로 재생합니다.'
+      : '녹음본이 아직 준비되지 않아 브라우저 TTS로 재생합니다.';
+  }
 
   beginQuestionTimer();
   const utterance = new SpeechSynthesisUtterance(q.prompt);
@@ -2625,6 +2907,9 @@ function getSpeechSignalSummary(text) {
     maxPauseSeconds: pauses.length ? Math.round(Math.max(...pauses) * 10) / 10 : 0,
     repeatedWords,
     fillerCount: fillers,
+    recognitionConfidence: state.speechMetrics.recognitionConfidenceCount
+      ? Math.round((state.speechMetrics.recognitionConfidenceTotal / state.speechMetrics.recognitionConfidenceCount) * 100) / 100
+      : 0,
   };
 }
 
@@ -2779,6 +3064,7 @@ async function transcribeCapturedAudioWithGemini(blob, cfg) {
 function queueCapturedAudioTranscription(q, blob, fallbackTranscript = '') {
   if (!q || !blob) return null;
   if (state.transcriptionJobs[q.no]) return state.transcriptionJobs[q.no];
+  beginProcessing('음성 전사 중', '녹음된 답변을 문장으로 정리하고 있습니다.');
   const job = transcribeCapturedAudio(blob)
     .catch((error) => {
       console.warn('백그라운드 고품질 전사 실패:', error);
@@ -2808,6 +3094,7 @@ function queueCapturedAudioTranscription(q, blob, fallbackTranscript = '') {
     })
     .finally(() => {
       delete state.transcriptionJobs[q.no];
+      endProcessing();
     });
   state.transcriptionJobs[q.no] = job;
   return job;
@@ -2852,7 +3139,10 @@ async function finalizeVoiceTurn() {
       : (canUseBackgroundStt ? '답변을 저장했습니다. 전사와 평가를 백그라운드에서 처리하며 다음 문제로 이동할 수 있습니다.' : '답변을 저장했습니다. 평가를 백그라운드에서 처리하며 다음 문제로 이동할 수 있습니다.');
     if (state.questionExpired) await advanceAfterQuestionTimeout();
   } finally {
+    clearVoiceStopFallback();
+    state.voiceStopPending = false;
     state.voiceFinalizing = false;
+    updateVoiceButton();
     if (nextButton && q && state.questions[state.idx]?.no === q.no && !isPracticeMode()) {
       nextButton.disabled = false;
     }
@@ -2901,7 +3191,7 @@ function initVoiceInput() {
 
   recognition.onstart = () => {
     state.isRecording = true;
-    state.manualStopRequested = false;
+    if (!state.voiceStopPending) state.manualStopRequested = false;
     const mode = readEvalConfig().mode;
     status.textContent = mode === 'local' && whisperModelReady
       ? `음성 입력 시작됨 · 종료 후 로컬 Whisper ${WHISPER_MODEL_NAME}로 다시 전사합니다.`
@@ -2909,6 +3199,9 @@ function initVoiceInput() {
         ? '음성 입력 시작됨 · 화면에 실시간 미리보기가 표시되며 종료 후 고정밀 STT로 정리합니다.'
         : '음성 입력 시작됨';
     updateVoiceButton();
+    if (state.voiceStopPending) {
+      try { state.recognition.stop(); } catch (error) { console.warn('대기 중인 음성 인식을 중지하지 못했습니다.', error); }
+    }
   };
   recognition.onspeechstart = () => {
     const now = performance.now();
@@ -2927,6 +3220,11 @@ function initVoiceInput() {
     for (let i = event.resultIndex; i < event.results.length; i += 1) {
       const result = event.results[i];
       const best = chooseSpeechAlternative(result);
+      const confidence = Number(best?.confidence);
+      if (Number.isFinite(confidence) && confidence > 0) {
+        state.speechMetrics.recognitionConfidenceTotal += confidence;
+        state.speechMetrics.recognitionConfidenceCount += 1;
+      }
       const transcript = normalizeTranscriptText(best?.transcript || '');
       if (!transcript) continue;
       if (result.isFinal) {
@@ -2959,6 +3257,7 @@ function initVoiceInput() {
       return;
     }
     if (!state.isRecording) return;
+    clearVoiceStopFallback();
     state.isRecording = false;
     updateVoiceButton();
     await finalizeVoiceTurn();
@@ -2987,6 +3286,7 @@ function initVoiceInput() {
     } else {
       status.textContent = `음성 입력 오류: ${event.error}`;
     }
+    clearVoiceStopFallback();
     finalizeVoiceTurn();
   };
 
@@ -3001,13 +3301,22 @@ function buildFeedbackFromRules(prompt, answer, type, speechSignals = getSpeechS
   if (result.details['문장 구성'] < 10) tips.push('because/for example/then 같은 연결어를 추가해 구조를 명확히 하세요.');
   if (!/\b(when|because|so|therefore|for example|while|after|before)\b/i.test((answer || ''))) tips.push('시간 순서와 원인·결과를 함께 말해 완성도를 높이세요.');
   const suggestion = tips.length ? tips : ['현재 규칙에서 뚜렷한 결손은 적습니다. 구체적인 사례를 추가하면 내용 점수를 확인할 수 있습니다.'];
+  const criteria = {
+    content: Math.max(1, Math.min(10, Math.round((result.details['내용 밀도'] / 30) * 10))),
+    fluency: Math.max(1, Math.min(10, Math.round((result.details['연결·유창성'] / 25) * 10))),
+    grammar: Math.max(1, Math.min(10, Math.round((result.details['문장 구성'] / 25) * 10))),
+    pronunciation: speechSignals.recognitionConfidence
+      ? Math.max(1, Math.min(10, Math.round(speechSignals.recognitionConfidence * 10)))
+      : 5,
+  };
   return {
-    score: result.score,
+    score: Math.round(((criteria.content + criteria.fluency + criteria.grammar + criteria.pronunciation) / 40) * 100),
     details: result.details,
     words: result.words,
-    feedback: result.words ? `핵심 포인트 ${Math.min(100, Math.round(result.score))}/100` : '답변이 너무 짧습니다.',
+    feedback: result.words ? suggestion[0] : '답변이 너무 짧습니다.',
     strengths: result.words ? ['답변 내용이 텍스트로 확인됨'] : [],
     weaknesses: suggestion,
+    criteria,
     rubric: {
       task: result.details['내용 밀도'],
       fluency: result.details['연결·유창성'],
@@ -3017,44 +3326,28 @@ function buildFeedbackFromRules(prompt, answer, type, speechSignals = getSpeechS
     },
     confidence: 0.35,
     evidence: [
-      '브라우저 음성 인식 텍스트의 길이·연결어·반복 패턴을 사용한 규칙 평가입니다.',
-      `음성 이벤트 관찰값: ${speechSignals.pauseCount}회 멈춤, ${speechSignals.longPauseCount}회 긴 멈춤, ${speechSignals.repeatedWords}회 연속 반복 단어`,
+      '텍스트 길이·연결어·반복 패턴을 사용한 오프라인 규칙 평가입니다.',
+      `음성 이벤트 관찰값: ${speechSignals.pauseCount}회 멈춤, ${speechSignals.longPauseCount}회 긴 멈춤, 발음 프록시 ${speechSignals.recognitionConfidence || '미확인'}`,
     ],
   };
 }
 
 function buildEvalPrompt(prompt, answer, type, speechSignals = {}) {
-  return `You are a cold, evidence-based OPIc speaking evaluator. Do not cheerlead, inflate scores, or infer abilities that are not supported by the transcript. Judge only the answer below and return JSON only.
+  return `Evaluate this OPIc speaking answer strictly and conservatively. Do not encourage, inflate, or infer unsupported ability. Return JSON only, with no markdown and no extra keys.
 
-Scoring rubric (the total score must equal the sum, 0-100):
-- task: task fulfillment, relevant details, and completeness (0-30)
-- fluency: organization, continuity, and readable spoken flow visible in the transcript (0-25)
-- vocabulary: range and specificity (0-20)
-- grammar: sentence control and accuracy visible in the transcript (0-15)
-- interaction: appropriateness for a role-play/request or pragmatic response (0-10; use 0-5 for non-role-play)
+Score each criterion from 1 to 10:
+content = completeness, relevance, concrete and interesting details;
+fluency = natural continuity, pauses, repetitions and conversational flow;
+grammar = accuracy and natural control in communication, not native-level perfection;
+pronunciation = clarity for a listener. Use the supplied speech-confidence proxy only; if unavailable, use 5.
+Use observable evidence only. Keep tip in one short Korean sentence. Total is the average of the four scores converted to 100.
 
-Rules:
-- Base every claim on observable text evidence. If evidence is absent, score conservatively.
-- Do not assess pronunciation, accent, volume, or exact pause duration from text; mark those as unverified.
-- Do not reward politeness or generic encouragement. Feedback must identify a concrete strength or defect.
-- Keep feedback in Korean and concise. Include at least one actionable correction.
-
-Question type: ${type}
+Type: ${type}
 Question: ${prompt}
-Answer: ${answer}
+Answer transcript: ${answer}
+Speech proxy: ${JSON.stringify(speechSignals)}
 
-Browser speech signals (use only as supporting evidence; a browser may miss or merge events):
-${JSON.stringify(speechSignals)}
-
-Return JSON only with:
-score: 0-100,
-words: estimated number of words,
-rubric: {task: 0-30, fluency: 0-25, vocabulary: 0-20, grammar: 0-15, interaction: 0-10},
-confidence: 0-1,
-evidence: ["관찰 가능한 근거 1", "관찰 가능한 근거 2"],
-feedback: 한글로 1줄,
-strengths: ["관찰된 장점"],
-weaknesses: ["관찰된 약점과 개선 행동"]`;
+JSON schema: {"content":1,"fluency":1,"grammar":1,"pronunciation":1,"total":0,"tip":"한 줄 개선점"}`;
 }
 
 function normalizeEvalResult(raw) {
@@ -3064,7 +3357,7 @@ function normalizeEvalResult(raw) {
   try {
     const parsed = JSON.parse(match[0]);
     if (!parsed || typeof parsed !== 'object') return null;
-    const score = Number(parsed.score);
+    const score = Number(parsed.total ?? parsed.score);
     const words = Number(parsed.words);
     const rubricRaw = parsed.rubric && typeof parsed.rubric === 'object' ? parsed.rubric : {};
     const rubric = {
@@ -3074,14 +3367,22 @@ function normalizeEvalResult(raw) {
       grammar: Math.max(0, Math.min(15, Number(rubricRaw.grammar) || 0)),
       interaction: Math.max(0, Math.min(10, Number(rubricRaw.interaction) || 0)),
     };
+    const criteria = {
+      content: Math.max(1, Math.min(10, Number(parsed.content) || Math.round((Number(rubricRaw.task) || 15) / 3))),
+      fluency: Math.max(1, Math.min(10, Number(parsed.fluency) || Math.round((Number(rubricRaw.fluency) || 12.5) / 2.5))),
+      grammar: Math.max(1, Math.min(10, Number(parsed.grammar) || Math.round((Number(rubricRaw.grammar) || 7.5) / 1.5))),
+      pronunciation: Math.max(1, Math.min(10, Number(parsed.pronunciation) || 5)),
+    };
+    const criteriaTotal = Object.values(criteria).reduce((sum, value) => sum + value, 0);
     const rubricTotal = Object.values(rubric).reduce((sum, value) => sum + value, 0);
     return {
-      score: rubricTotal > 0 ? rubricTotal : (Number.isFinite(score) ? Math.max(0, Math.min(100, score)) : 0),
+      score: Number.isFinite(score) ? Math.max(0, Math.min(100, score)) : Math.round((criteriaTotal / 40) * 100),
       words: Number.isFinite(words) ? words : 0,
-      feedback: parsed.feedback ? String(parsed.feedback) : '',
+      feedback: parsed.tip ? String(parsed.tip) : (parsed.feedback ? String(parsed.feedback) : ''),
       strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
       weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses : [],
       rubric,
+      criteria,
       confidence: Number.isFinite(Number(parsed.confidence)) ? Math.max(0, Math.min(1, Number(parsed.confidence))) : 0.5,
       evidence: Array.isArray(parsed.evidence) ? parsed.evidence : [],
     };
@@ -3137,7 +3438,8 @@ async function evaluateWithOpenAI(prompt, answer, type, speechSignals) {
         },
         { role: 'user', content: promptText },
       ],
-      temperature: 0.2,
+      temperature: 0.1,
+      max_tokens: 160,
     }),
   });
   if (!res.ok) {
@@ -3162,7 +3464,7 @@ async function evaluateWithGemini(prompt, answer, type, speechSignals) {
     referrerPolicy: 'no-referrer',
     body: JSON.stringify({
       contents: [{ parts: [{ text: promptText }] }],
-      generationConfig: { temperature: 0.2 },
+      generationConfig: { temperature: 0.1, maxOutputTokens: 160, responseMimeType: 'application/json' },
     }),
   });
   if (!res.ok) {
@@ -3188,7 +3490,7 @@ async function evaluateWithLocalLLM(prompt, answer, type, speechSignals) {
       { role: 'user', content: promptText },
     ],
     temperature: 0.1,
-    max_tokens: 420,
+    max_tokens: 220,
   });
   const text = response?.choices?.[0]?.message?.content || '';
   const parsed = normalizeEvalResult(text);
@@ -3199,10 +3501,19 @@ async function evaluateWithLocalLLM(prompt, answer, type, speechSignals) {
 function combineOfflineEvaluation(ruleResult, localResult) {
   const ruleScore = Number(ruleResult.score) || 0;
   const localScore = Number(localResult.score) || ruleScore;
+  const ruleCriteria = ruleResult.criteria || {};
+  const localCriteria = localResult.criteria || ruleCriteria;
+  const criteria = {
+    content: Math.round((Number(ruleCriteria.content || 5) * 0.7) + (Number(localCriteria.content || 5) * 0.3)),
+    fluency: Math.round((Number(ruleCriteria.fluency || 5) * 0.7) + (Number(localCriteria.fluency || 5) * 0.3)),
+    grammar: Math.round((Number(ruleCriteria.grammar || 5) * 0.7) + (Number(localCriteria.grammar || 5) * 0.3)),
+    pronunciation: Math.round((Number(ruleCriteria.pronunciation || 5) * 0.7) + (Number(localCriteria.pronunciation || 5) * 0.3)),
+  };
   const blendedScore = Math.round((ruleScore * 0.7) + (localScore * 0.3));
   return {
     ...localResult,
     score: blendedScore,
+    criteria,
     words: ruleResult.words,
     details: ruleResult.details,
     feedback: localResult.feedback || ruleResult.feedback,
@@ -3216,28 +3527,37 @@ function combineOfflineEvaluation(ruleResult, localResult) {
   };
 }
 
-function buildEvaluationHtml(result) {
+function buildEvaluationHtml(result, question = null, answer = '') {
   const strengths = (result.strengths && result.strengths.length)
     ? result.strengths
     : ['관찰 가능한 답변 근거가 확인되었습니다.'];
   const weaknesses = (result.weaknesses && result.weaknesses.length)
     ? result.weaknesses
     : ['더 구체적인 사례와 연결어를 추가해 보세요.'];
-  const rubric = result.rubric || {};
-  const rubricHtml = Object.keys(rubric).length
-    ? `<div class="small" style="margin-top:8px;">세부 지표: 과업 ${escapeHtml(rubric.task ?? 0)}/30 · 유창성 ${escapeHtml(rubric.fluency ?? 0)}/25 · 어휘 ${escapeHtml(rubric.vocabulary ?? 0)}/20 · 문법 ${escapeHtml(rubric.grammar ?? 0)}/15 · 상호작용 ${escapeHtml(rubric.interaction ?? 0)}/10</div>`
+  const criteria = result.criteria || {};
+  const metricItems = [
+    ['content', '내용의 완성도', '질문의 의도·구체성·흥미'],
+    ['fluency', '유창성', '자연스러운 흐름·멈춤'],
+    ['grammar', '문법의 정확성', '의사소통에 필요한 문법'],
+    ['pronunciation', '발음의 명확성', '상대가 이해하기 쉬운 정도'],
+  ];
+  const metricsHtml = metricItems.map(([key, label, hint]) => {
+    const score = Math.max(1, Math.min(10, Number(criteria[key]) || 5));
+    return `<div class="metric-card"><div class="metric-card-head"><span>${label}</span><strong>${score}<small>/10</small></strong></div><div class="metric-bar"><span style="width:${score * 10}%"></span></div><small>${hint}</small></div>`;
+  }).join('');
+  const questionHtml = question
+    ? `<div class="evaluation-context"><div><strong>문항</strong><p>${escapeHtml(question.prompt)}</p></div><div><strong>내 답변</strong><p>${escapeHtml(answer || '(인식된 답변 없음)')}</p></div></div>`
     : '';
   const evidence = (result.evidence && result.evidence.length) ? result.evidence : [];
   const evidenceHtml = evidence.length
-    ? `<div style="margin-top:8px;color:#5b6380;font-size:13px;">평가 근거</div><ul style="margin:4px 0 0 18px;color:#30446d;">${evidence.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul>`
+    ? `<details class="evaluation-evidence"><summary>평가 근거 보기</summary><ul>${evidence.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul></details>`
     : '';
-  return `<div><strong>AI 평가 점수:</strong> ${Math.round(result.score)}/100 · 단어 수 ${escapeHtml(result.words)} · 신뢰도 ${Math.round((Number(result.confidence) || 0) * 100)}%</div>` +
-    `<div class="small" style="margin-top:6px;">문항 피드백: ${escapeHtml(result.feedback)}</div>` +
-    rubricHtml + evidenceHtml +
-    `<div style="margin-top:8px;color:#1f6feb;font-size:13px;">강점</div>` +
-    `<ul style="margin:4px 0 0 18px;color:#30446d;">${strengths.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul>` +
-    `<div style="margin-top:8px;color:#c57a00;font-size:13px;">개선점</div>` +
-    `<ul style="margin:4px 0 0 18px;color:#30446d;">${weaknesses.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul>`;
+  return `<div class="evaluation-head"><div><strong>평가 결과</strong><span class="small"> · ${escapeHtml(result.words || 0)}단어</span></div><strong class="evaluation-total">${Math.round(result.score)}/100</strong></div>` +
+    questionHtml +
+    `<div class="metric-grid">${metricsHtml}</div>` +
+    `<div class="small evaluation-tip">개선 포인트: ${escapeHtml(result.feedback || '구체적인 사례와 연결어를 추가해 보세요.')}</div>` +
+    `<div class="evaluation-columns"><div><strong class="good">잘된 점</strong><ul>${strengths.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul></div><div><strong class="warn">다음에 고칠 점</strong><ul>${weaknesses.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul></div></div>` +
+    evidenceHtml;
 }
 
 function renderEvaluationForQuestion(q) {
@@ -3253,7 +3573,7 @@ function renderEvaluationForQuestion(q) {
     feedbackArea.innerHTML = sanitizeFeedbackHtml(state.questionFeedback[q.no]);
   } else if (pending) {
     feedbackArea.classList.remove('hide');
-    feedbackArea.innerHTML = '<div>평가 중입니다. 다음 문제를 먼저 풀어도 됩니다.</div>';
+    feedbackArea.innerHTML = '<div class="inline-processing"><span class="mini-spinner" aria-hidden="true"></span><span>답변을 평가하는 중입니다. 잠시만 기다려 주세요.</span></div>';
   }
   btnVoice.disabled = pending || hasFeedback;
   btnPlay.disabled = pending || hasFeedback;
@@ -3269,6 +3589,7 @@ function renderEvaluationForQuestion(q) {
       ? '피드백이 준비되었습니다. 새 연습 문제를 시작할 수 있습니다.'
       : '평가 완료. 다음 문제를 눌러 진행하세요.';
   }
+  updateVoiceButton();
 }
 
 async function evaluateQuestionByNo(questionNo, answer, speechSignals) {
@@ -3313,11 +3634,14 @@ function queueQuestionEvaluation(q, answerOverride = '') {
   if (existing) return existing;
   const speechSignals = state.speechSignalsByQuestion[q.no] || getSpeechSignalSummary(answer);
   state.speechSignalsByQuestion[q.no] = speechSignals;
+  beginProcessing('답변 평가 중', '네 가지 기준으로 답변을 차분하게 채점하고 있습니다.');
   const job = evaluateQuestionByNo(q.no, answer, speechSignals)
     .then((result) => {
       if (!result) return null;
-      state.questionFeedback[q.no] = buildEvaluationHtml(result);
+      state.questionFeedback[q.no] = buildEvaluationHtml(result, q, answer);
       state.questionScores[q.no] = Math.round(result.score);
+      state.questionCriteria[q.no] = result.criteria || {};
+      if (isPracticeMode()) recordHistoryEntry(q, answer, result);
       if (!state.examFinished) saveProgress();
       renderEvaluationForQuestion(q);
       return result;
@@ -3329,6 +3653,7 @@ function queueQuestionEvaluation(q, answerOverride = '') {
   state.evaluationJobs[q.no] = job;
   job.finally(() => {
     delete state.evaluationJobs[q.no];
+    endProcessing();
     renderEvaluationForQuestion(q);
   }).catch(() => {});
   renderEvaluationForQuestion(q);
@@ -3353,10 +3678,35 @@ async function evaluateCurrentQuestion(options = {}) {
 function updateVoiceButton() {
   const btn = document.getElementById('voiceBtn');
   if (!btn) return;
+  if (state.voiceFinalizing || state.voiceStopPending) {
+    btn.textContent = '음성 처리 중...';
+    btn.disabled = true;
+    return;
+  }
+  if (state.submitInProgress) {
+    btn.textContent = '전사·평가 대기 중...';
+    btn.disabled = true;
+    return;
+  }
+  const currentQuestion = state.questions[state.idx];
+  const currentJob = currentQuestion && state.evaluationJobs[currentQuestion.no];
+  const currentFeedback = currentQuestion && state.questionFeedback[currentQuestion.no];
+  if (currentJob) {
+    btn.textContent = '평가 중...';
+    btn.disabled = true;
+    return;
+  }
+  if (currentFeedback) {
+    btn.textContent = '평가 완료';
+    btn.disabled = true;
+    return;
+  }
   btn.textContent = state.isRecording ? '음성 입력 중지' : '음성 입력';
+  btn.disabled = false;
 }
 
 async function toggleVoiceInput() {
+  if (state.voiceFinalizing || state.voiceStopPending || state.submitInProgress) return;
   const canUse = initVoiceInput();
   if (!canUse) {
     alert('이 브라우저에서 마이크 녹음을 사용할 수 없습니다. Chrome/Edge에서 HTTPS 또는 localhost로 실행해 주세요.');
@@ -3365,25 +3715,8 @@ async function toggleVoiceInput() {
 
   const status = document.getElementById('voiceStatus');
   if (state.isRecording) {
-    state.manualStopRequested = true;
-    if (state.recognitionRestartTimer) {
-      clearTimeout(state.recognitionRestartTimer);
-      state.recognitionRestartTimer = null;
-    }
-    if (state.recognition) {
-      try {
-        state.recognition.stop();
-      } catch (error) {
-        state.isRecording = false;
-        updateVoiceButton();
-        await finalizeVoiceTurn();
-      }
-    } else {
-      state.isRecording = false;
-      updateVoiceButton();
-      await finalizeVoiceTurn();
-    }
-    status.textContent = '음성 입력 중지 요청';
+    status.textContent = '음성 입력 종료 중입니다. 잠시만 기다려 주세요.';
+    await requestVoiceCaptureStop();
     return;
   }
 
@@ -3399,11 +3732,11 @@ async function toggleVoiceInput() {
     if (!captured && !state.recognition) {
       throw new Error('마이크 오디오를 준비하지 못했습니다.');
     }
+    state.isRecording = true;
+    updateVoiceButton();
     if (state.recognition) {
       state.recognition.start();
     } else {
-      state.isRecording = true;
-      updateVoiceButton();
       status.textContent = '음성 입력 중... 답변을 마치면 다시 눌러 중지하세요.';
     }
   } catch (err) {
@@ -3464,6 +3797,7 @@ function buildNewPracticeQuestion() {
   state.answers = {};
   state.questionFeedback = {};
   state.questionScores = {};
+  state.questionCriteria = {};
   state.promptPlayCount = {};
   state.evaluationJobs = {};
   state.transcriptionJobs = {};
@@ -3577,22 +3911,17 @@ async function waitForVoiceFinalization() {
   const status = document.getElementById('voiceStatus');
   if (state.isRecording || state.audioRecorder) {
     if (status) status.textContent = '녹음 종료와 전사를 준비하는 중입니다. 잠시만 기다려 주세요.';
-    if (state.recognition && state.isRecording) {
-      state.manualStopRequested = true;
-      try {
-        state.recognition.stop();
-      } catch (error) {
-        state.isRecording = false;
-        await finalizeVoiceTurn();
-      }
-    } else {
-      state.isRecording = false;
-      await finalizeVoiceTurn();
-    }
+    await requestVoiceCaptureStop();
   }
   const deadline = Date.now() + 120000;
   while ((state.voiceFinalizing || state.isRecording || state.audioRecorder) && Date.now() < deadline) {
     await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  if (state.voiceFinalizing || state.isRecording || state.audioRecorder) {
+    try { state.recognition?.abort?.(); } catch (error) { console.warn('음성 인식 강제 종료 실패:', error); }
+    state.isRecording = false;
+    state.voiceStopPending = false;
+    await finalizeVoiceTurn();
   }
 }
 
@@ -3688,12 +4017,16 @@ async function submitExam() {
     submitButton.disabled = true;
     submitButton.textContent = '전사·평가 대기 중...';
   }
+  updateVoiceButton();
+  beginProcessing('결과 준비 중', '녹음 종료·전사·평가를 마무리한 뒤 결과를 표시합니다.');
   try {
     await waitForVoiceFinalization();
     await waitForPendingProcessing();
     finishExamNow();
   } finally {
+    endProcessing();
     state.submitInProgress = false;
+    updateVoiceButton();
   }
 }
 
@@ -3717,6 +4050,12 @@ function finishExamNow() {
     list.push({ q, ans, ...result });
     const score = Number(state.questionScores[q.no]);
     total += Number.isFinite(score) ? score : result.score;
+    recordHistoryEntry(q, ans, {
+      score: Number.isFinite(score) ? score : result.score,
+      criteria: state.questionCriteria[q.no] || result.criteria,
+      feedback: '모의고사 답변 기록',
+      weaknesses: [],
+    });
   }
   const avg = attemptedQuestions.length ? Math.round(total / attemptedQuestions.length) : 0;
   const [level, color] = scoreToLevel(avg);
@@ -3757,11 +4096,12 @@ function finishExamNow() {
     item.className = 'feedback-item';
     item.innerHTML = `
       <div style="font-weight:700">Q${escapeHtml(String(x.q.id).padStart(3, '0'))} · ${escapeHtml(x.q.type)}</div>
+      <div class="small" style="margin-top:5px;">문항: ${escapeHtml(x.q.prompt)}</div>
       <div class="score-line"><span>문항 점수</span><strong class="${rank}">${escapeHtml(safeScore)} / 100</strong></div>
       <div class="bar-wrap"><div class="bar" style="width:${safeScore}%;"></div></div>
       <div class="small" style="margin-top:6px;">단어 수: ${escapeHtml(x.words)} · 문항 유형: ${escapeHtml(x.q.type)}</div>
       <div class="small" style="margin-top:2px;">샘플 답안: ${escapeHtml(answerSample)}${(x.ans && String(x.ans).length > 120) ? '...' : ''}</div>
-      <div class="small" style="margin-top:4px;">항목 점수: 내용 ${escapeHtml(x.details['내용 밀도'])} / 구성 ${escapeHtml(x.details['문장 구성'])} / 어휘 ${escapeHtml(x.details['어휘 다양성'])} / 연결·유창성 ${escapeHtml(x.details['연결·유창성'])}</div>`;
+      <div class="small" style="margin-top:4px;">1~10 평가: 내용 ${escapeHtml(x.criteria?.content || 0)} · 유창성 ${escapeHtml(x.criteria?.fluency || 0)} · 문법 ${escapeHtml(x.criteria?.grammar || 0)} · 발음 ${escapeHtml(x.criteria?.pronunciation || 0)}</div>`;
     detailWrap.appendChild(item);
   });
 
@@ -3781,6 +4121,24 @@ document.getElementById('nextBtn').addEventListener('click', nextQuestion);
 document.getElementById('submitBtn').addEventListener('click', submitExam);
 document.getElementById('soundTestBtn').addEventListener('click', runSoundTest);
 document.getElementById('micTestBtn').addEventListener('click', toggleMicTest);
+document.getElementById('historyBtn').addEventListener('click', openHistory);
+document.getElementById('closeHistoryBtn').addEventListener('click', closeHistory);
+document.getElementById('closeHistoryFooterBtn').addEventListener('click', closeHistory);
+document.getElementById('historyModal').addEventListener('click', (event) => {
+  if (event.target.id === 'historyModal') closeHistory();
+});
+document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+  if (!state.history.length || !confirm('저장된 연습 기록을 모두 삭제할까요?')) return;
+  state.history = [];
+  savePracticeHistory();
+  renderHistory();
+});
+document.querySelectorAll('.tts-option[data-tts-mode]').forEach((button) => {
+  button.addEventListener('click', () => {
+    if (button.disabled) return;
+    setTtsMode(button.dataset.ttsMode);
+  });
+});
 document.getElementById('saveConfigBtn').addEventListener('click', saveEvalConfig);
 document.getElementById('clearConfigBtn').addEventListener('click', clearEvalConfig);
 document.querySelectorAll('.mode-btn[data-mode]').forEach((btn) => {
@@ -3847,9 +4205,14 @@ document.getElementById('questionEditorModal').addEventListener('click', (event)
   if (event.target.id === 'questionEditorModal') closeQuestionEditor();
 });
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') closeQuestionEditor();
+  if (event.key === 'Escape') {
+    closeQuestionEditor();
+    closeHistory();
+  }
 });
 loadQuestionBank();
+loadPracticeHistory();
+loadTtsPreference();
 setSessionMode(localStorage.getItem('opic-session-mode-v1') || 'exam', { skipSave: true });
 loadEvalConfig();
 window.addEventListener('beforeunload', (e) => {
