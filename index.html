@@ -990,6 +990,7 @@
           </div>
           <div id="handshakeInfo" class="small-note">오프라인 기본 평가에서는 키가 필요 없습니다.</div>
           <div class="small-note api-help">Gemini 무료 키 발급: <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio에서 API 키 만들기</a> → Google 계정 로그인 → <b>API key 만들기</b> → 키를 복사해 위 입력란에 붙여넣으세요.</div>
+          <div class="small-note">API 키는 현재 탭에서만 사용하고 브라우저 저장소에는 저장하지 않습니다. 새로고침하면 다시 입력해야 합니다.</div>
         </div>
         <div class="field small">
           <label for="modelPickerButton">사용할 모델</label>
@@ -1009,7 +1010,7 @@
       </div>
       <div class="setup-row action-row">
         <button id="saveConfigBtn" class="ghost">평가 설정 저장</button>
-        <button id="clearConfigBtn" class="ghost">저장된 키 삭제</button>
+        <button id="clearConfigBtn" class="ghost">평가 설정 초기화</button>
       </div>
       <div id="evalStatus" class="small"></div>
     </section>
@@ -1279,41 +1280,32 @@ function loadEvalConfig() {
   try {
     const cfg = JSON.parse(raw);
     if (!cfg || typeof cfg !== 'object') throw new Error('invalid cfg');
-    const mode = cfg.mode || 'local';
-    setEvalMode(mode, { skipSave: true });
-    const apiKey = cfg.apiKey || localStorage.getItem('opic-mock-api-key-plain') || '';
-    document.getElementById('apiKeyInput').value = apiKey;
+    const mode = ['local', 'openai', 'gemini'].includes(cfg.mode) ? cfg.mode : 'local';
     const modeHint = mode === 'gemini' ? 'gemini' : 'openai';
-    const fp = makeKeyFingerprint(apiKey);
-    const handshake = cfg.handshake && cfg.handshake.mode === modeHint
-      ? cfg.handshake
-      : null;
+    const persistedModel = typeof cfg.model === 'string' ? cfg.model : '';
+    const legacyKeyPresent = Object.prototype.hasOwnProperty.call(cfg, 'apiKey')
+      || Object.prototype.hasOwnProperty.call(cfg, 'handshake')
+      || localStorage.getItem('opic-mock-api-key-plain') !== null;
+    if (legacyKeyPresent) {
+      // 이전 버전에서 저장한 키와 핸드셰이크 지문을 즉시 폐기합니다.
+      localStorage.setItem(state.configStorageKey, JSON.stringify({
+        mode,
+        model: persistedModel,
+        modelCatalog: cfg.modelCatalog,
+      }));
+    }
+    localStorage.removeItem('opic-mock-api-key-plain');
+    setEvalMode(mode, { skipSave: true });
+    document.getElementById('apiKeyInput').value = '';
 
     state.apiHandshake.openai.ready = false;
     state.apiHandshake.gemini.ready = false;
-    if (handshake && handshake.ready && handshake.fingerprint === fp && handshake.model) {
-      const target = modeHint;
-      state.apiHandshake[target] = {
-        ready: true,
-        fingerprint: fp,
-        model: handshake.model,
-        selectionSource: handshake.selectionSource || '',
-        verifiedAt: handshake.verifiedAt || new Date().toISOString(),
-      };
-      if (Array.isArray(cfg.modelCatalog?.[target]) && cfg.modelCatalog[target].length) {
-        state.modelCatalog[target] = cfg.modelCatalog[target];
-      }
-      // 이전 버전은 모델을 자동 선택했는지 기록하지 않았습니다. 저장된
-      // 구형 Gemini 모델을 그대로 사용하지 않고, 다음 연결에서 최신 Flash를 고릅니다.
-      if (target === 'gemini' && !handshake.selectionSource) {
-        state.apiHandshake[target] = { ready: false, fingerprint: '', model: '', selectionSource: '', verifiedAt: '' };
-      }
+    if (Array.isArray(cfg.modelCatalog?.[modeHint]) && cfg.modelCatalog[modeHint].length) {
+      state.modelCatalog[modeHint] = cfg.modelCatalog[modeHint];
     }
-    if (cfg.model && state.apiHandshake[modeHint].ready) {
-      const target = modeHint;
-      if (!state.apiHandshake[target].model) {
-        state.apiHandshake[target].model = cfg.model;
-      }
+    // 모델 선택은 편의를 위해 남기되, API 키나 핸드셰이크 정보는 남기지 않습니다.
+    if (persistedModel) {
+      state.apiHandshake[modeHint].model = persistedModel;
     }
     applyEvalPresetByMode();
     renderModelSelect(mode);
@@ -1324,22 +1316,14 @@ function loadEvalConfig() {
 }
 
 function saveEvalConfig() {
-  const key = document.getElementById('apiKeyInput').value.trim();
   const mode = getEvalMode();
-  if (mode !== 'local' && !state.apiHandshake[mode]?.ready) {
-    alert('API 키는 저장할 수 있지만, 평가를 시작하려면 먼저 연결을 완료해야 합니다.');
-  }
   const cfg = {
     mode,
-    apiKey: key,
     model: document.getElementById('modelSelect').value || getDefaultModel(mode),
-    handshake: state.apiHandshake[mode] && state.apiHandshake[mode].ready
-      ? { ...state.apiHandshake[mode], mode: mode === 'gemini' ? 'gemini' : 'openai' }
-      : null,
     modelCatalog: state.modelCatalog,
   };
   localStorage.setItem(state.configStorageKey, JSON.stringify(cfg));
-  localStorage.setItem('opic-mock-api-key-plain', key || '');
+  localStorage.removeItem('opic-mock-api-key-plain');
   updateEvalStatus();
 }
 
@@ -1408,13 +1392,21 @@ function setEvalMode(mode, opts = {}) {
   document.getElementById('modeSelect').dataset.current = mode;
   applyEvalPresetByMode();
   if (!opts.skipSave) {
+    let previous = {};
+    try {
+      previous = JSON.parse(localStorage.getItem(state.configStorageKey) || '{}') || {};
+    } catch {
+      previous = {};
+    }
+    delete previous.apiKey;
+    delete previous.handshake;
     localStorage.setItem(state.configStorageKey, JSON.stringify({
-      ...JSON.parse(localStorage.getItem(state.configStorageKey) || '{}'),
+      ...previous,
       mode,
-      apiKey: document.getElementById('apiKeyInput').value.trim(),
       model: document.getElementById('modelSelect').value || getDefaultModel(mode),
       modelCatalog: state.modelCatalog,
     }));
+    localStorage.removeItem('opic-mock-api-key-plain');
     updateEvalStatus();
   }
   renderModelSelect(mode);
@@ -2034,7 +2026,10 @@ async function performApiHandshake() {
       available = Array.from(new Set([...preferred, ...fallback]));
       if (!available.length) throw new Error('이 키로 사용할 수 있는 대화 모델을 찾지 못했습니다.');
     } else {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`);
+      const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models', {
+        headers: { 'x-goog-api-key': key },
+        referrerPolicy: 'no-referrer',
+      });
       if (!res.ok) {
         const txt = await res.text().catch(() => '');
         throw new Error(`Gemini API 오류 ${res.status}: ${txt}`);
@@ -2428,7 +2423,7 @@ function renderExam() {
   const feedbackBox = document.getElementById('questionFeedback');
   if (hasFeedback) {
     feedbackBox.classList.remove('hide');
-    feedbackBox.innerHTML = state.questionFeedback[q.no];
+    feedbackBox.innerHTML = sanitizeFeedbackHtml(state.questionFeedback[q.no]);
   } else {
     feedbackBox.classList.add('hide');
     feedbackBox.innerHTML = '';
@@ -2718,10 +2713,11 @@ async function transcribeCapturedAudioWithGemini(blob, cfg) {
   }
   const base64 = btoa(binary);
   const model = (cfg.model || DEFAULT_MODELS.gemini).trim();
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(cfg.apiKey)}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
   const response = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': cfg.apiKey },
+    referrerPolicy: 'no-referrer',
     body: JSON.stringify({
       contents: [{
         parts: [
@@ -3056,6 +3052,24 @@ function escapeHtml(value) {
     .replace(/'/g, '&#039;');
 }
 
+function sanitizeFeedbackHtml(value) {
+  const template = document.createElement('template');
+  template.innerHTML = String(value ?? '');
+  template.content.querySelectorAll('script, iframe, object, embed, link, meta, base, form, svg, math')
+    .forEach((node) => node.remove());
+  template.content.querySelectorAll('*').forEach((element) => {
+    Array.from(element.attributes).forEach((attribute) => {
+      const name = attribute.name.toLowerCase();
+      const attributeValue = attribute.value.trim();
+      if (!['class', 'style'].includes(name)
+        || (name === 'style' && /(?:url\s*\(|expression\s*\(|@import)/i.test(attributeValue))) {
+        element.removeAttribute(attribute.name);
+      }
+    });
+  });
+  return template.innerHTML;
+}
+
 async function evaluateWithOpenAI(prompt, answer, type, speechSignals) {
   const cfg = readEvalConfig();
   const model = (cfg.model || DEFAULT_MODELS.openai).trim();
@@ -3094,10 +3108,11 @@ async function evaluateWithGemini(prompt, answer, type, speechSignals) {
   const cfg = readEvalConfig();
   const model = (cfg.model || DEFAULT_MODELS.gemini).trim();
   const promptText = buildEvalPrompt(prompt, answer, type, speechSignals);
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(cfg.apiKey)}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': cfg.apiKey },
+    referrerPolicy: 'no-referrer',
     body: JSON.stringify({
       contents: [{ parts: [{ text: promptText }] }],
       generationConfig: { temperature: 0.2 },
@@ -3188,7 +3203,7 @@ function renderEvaluationForQuestion(q) {
   const hasFeedback = Boolean(state.questionFeedback[q.no]);
   if (hasFeedback) {
     feedbackArea.classList.remove('hide');
-    feedbackArea.innerHTML = state.questionFeedback[q.no];
+    feedbackArea.innerHTML = sanitizeFeedbackHtml(state.questionFeedback[q.no]);
   } else if (pending) {
     feedbackArea.classList.remove('hide');
     feedbackArea.innerHTML = '<div>평가 중입니다. 다음 문제를 먼저 풀어도 됩니다.</div>';
@@ -3534,28 +3549,30 @@ function submitExam() {
   resultPanel.classList.remove('hide');
   resultPanel.innerHTML = `<h2>${isPracticeMode() ? '연습 결과' : '모의고사 완료'}</h2>` +
     `<div class="summary">` +
-    `<div class="summary-card"><div class="small">총점</div><h1>${avg}/100</h1><span class="level" style="background:${color}20;color:${color}">텍스트 규칙 등급 ${level}</span></div>` +
-    `<div class="summary-card"><div class="small">OPIc 예상 등급</div><h1>${opicCode} · ${opicName}</h1><span class="level" style="background:${opicColor}20;color:${opicColor}">${opicComment}</span></div>` +
-    `<div class="summary-card"><div class="small">채점 문항</div><p>${attemptedQuestions.length} / ${state.questions.length}문항</p></div>` +
+    `<div class="summary-card"><div class="small">총점</div><h1>${avg}/100</h1><span class="level" style="background:${color}20;color:${color}">텍스트 규칙 등급 ${escapeHtml(level)}</span></div>` +
+    `<div class="summary-card"><div class="small">OPIc 예상 등급</div><h1>${escapeHtml(opicCode)} · ${escapeHtml(opicName)}</h1><span class="level" style="background:${opicColor}20;color:${opicColor}">${escapeHtml(opicComment)}</span></div>` +
+    `<div class="summary-card"><div class="small">채점 문항</div><p>${escapeHtml(attemptedQuestions.length)} / ${escapeHtml(state.questions.length)}문항</p></div>` +
     `<div class="summary-card"><div class="small">완료 시간</div><p>${isPracticeMode() ? '연습모드' : `${Math.round((TOTAL_EXAM_SECONDS - state.totalSeconds) / 60)}분 ${((TOTAL_EXAM_SECONDS - state.totalSeconds) % 60)}초`}</p></div>` +
-    `<div class="summary-card"><div class="small">채점 방식</div><p>${modeLabel}</p></div>` +
-    `<div class="summary-card"><div class="small">권장 학습</div><ul style="padding-left:16px;margin:8px 0;color:#3a4d72;line-height:1.4;">${tips.map(t=>`<li>${t}</li>`).join('')}</ul></div>` +
+    `<div class="summary-card"><div class="small">채점 방식</div><p>${escapeHtml(modeLabel)}</p></div>` +
+    `<div class="summary-card"><div class="small">권장 학습</div><ul style="padding-left:16px;margin:8px 0;color:#3a4d72;line-height:1.4;">${tips.map(t=>`<li>${escapeHtml(t)}</li>`).join('')}</ul></div>` +
     `</div>` +
     `<div class="small" style="margin-top:10px;display:block;">${attemptedQuestions.length ? (usedMode === 'local' ? (localLlmReady ? `Whisper ${WHISPER_MODEL_NAME}이 음성을 전사하고, 규칙 평가와 로컬 AI가 답변을 함께 분석했습니다.` : whisperModelReady ? `Whisper ${WHISPER_MODEL_NAME} 전사 후 규칙 평가를 사용했습니다.` : '피드백은 브라우저 음성인식 결과와 답변의 길이·구성을 기반으로 한 오프라인 기본 평가입니다.') : '점수는 온라인 AI 평가를 사용하며, 연결에 실패한 문항은 기본 평가로 대체합니다.') : '아직 답변이 없어 채점할 문항이 없습니다. 다음 연습에서 답변을 녹음해 보세요.'}</div>` +
     '<div id="detailWrap" style="margin-top:10px"></div>';
 
   const detailWrap = document.getElementById('detailWrap');
   list.forEach((x) => {
-    const rank = x.score >= 70 ? 'good' : x.score >= 55 ? 'warn' : 'bad';
+    const safeScore = Math.max(0, Math.min(100, Number(x.score) || 0));
+    const rank = safeScore >= 70 ? 'good' : safeScore >= 55 ? 'warn' : 'bad';
+    const answerSample = String(x.ans || '(미입력)').slice(0, 120);
     const item = document.createElement('div');
     item.className = 'feedback-item';
     item.innerHTML = `
-      <div style="font-weight:700">Q${x.q.id.toString().padStart(3, '0')} · ${x.q.type}</div>
-      <div class="score-line"><span>문항 점수</span><strong class="${rank}">${x.score} / 100</strong></div>
-      <div class="bar-wrap"><div class="bar" style="width:${x.score}%;"></div></div>
-      <div class="small" style="margin-top:6px;">단어 수: ${x.words} · 문항 유형: ${x.q.type}</div>
-      <div class="small" style="margin-top:2px;">샘플 답안: ${(x.ans || '(미입력)').slice(0, 120)}${(x.ans && x.ans.length > 120) ? '...' : ''}</div>
-      <div class="small" style="margin-top:4px;">항목 점수: 내용 ${x.details['내용 밀도']} / 구성 ${x.details['문장 구성']} / 어휘 ${x.details['어휘 다양성']} / 연결·유창성 ${x.details['연결·유창성']}</div>`;
+      <div style="font-weight:700">Q${escapeHtml(String(x.q.id).padStart(3, '0'))} · ${escapeHtml(x.q.type)}</div>
+      <div class="score-line"><span>문항 점수</span><strong class="${rank}">${escapeHtml(safeScore)} / 100</strong></div>
+      <div class="bar-wrap"><div class="bar" style="width:${safeScore}%;"></div></div>
+      <div class="small" style="margin-top:6px;">단어 수: ${escapeHtml(x.words)} · 문항 유형: ${escapeHtml(x.q.type)}</div>
+      <div class="small" style="margin-top:2px;">샘플 답안: ${escapeHtml(answerSample)}${(x.ans && String(x.ans).length > 120) ? '...' : ''}</div>
+      <div class="small" style="margin-top:4px;">항목 점수: 내용 ${escapeHtml(x.details['내용 밀도'])} / 구성 ${escapeHtml(x.details['문장 구성'])} / 어휘 ${escapeHtml(x.details['어휘 다양성'])} / 연결·유창성 ${escapeHtml(x.details['연결·유창성'])}</div>`;
     detailWrap.appendChild(item);
   });
 
