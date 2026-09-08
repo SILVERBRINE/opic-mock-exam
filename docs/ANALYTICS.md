@@ -12,6 +12,8 @@
 - `README.md`
 - `LICENSE`
 
+첫 배포는 저장소의 **Actions → Publish downloadable release → Run workflow**에서 `v1.0.0`을 입력해 실행합니다. 이후 `v*` 태그를 push할 때마다 새 버전이 게시됩니다.
+
 GitHub Release의 asset별 `download_count`가 누적 다운로드 수입니다. 저장소 웹페이지 조회 수, Git clone 수, GitHub Actions artifact 다운로드 수는 이 값에 포함되지 않습니다.
 
 ## 개인정보와 보안 범위
