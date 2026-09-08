@@ -954,7 +954,7 @@
     .editor-pagination button { padding: 8px 12px; font-size: 12px; }
     .editor-pagination span { min-width: 70px; text-align: center; color: #607394; font-size: 12px; }
     .modal-footer { border-top: 1px solid #e8edf7; background: #fbfcfe; }
-    .modal-footer > div { display: flex; gap: 8px; flex: 0 0 auto; }
+    .modal-footer > div { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; flex: 0 0 auto; }
     .modal-footer button { padding: 9px 13px; font-size: 13px; }
     .exam-hud { margin-top: 0; }
     .exam-hud-topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -1169,8 +1169,11 @@
         </header>
         <div id="historyList" class="history-list"></div>
         <footer class="modal-footer">
-          <span class="small">기록은 이 브라우저에만 저장됩니다.</span>
+          <span class="small">같은 주소로 업데이트하면 자동으로 이어집니다. 파일을 새로 받거나 브라우저가 바뀌면 JSON 백업을 가져오세요.</span>
           <div>
+            <button id="exportHistoryBtn" type="button" class="ghost">기록 백업</button>
+            <button id="importHistoryBtn" type="button" class="ghost">백업 가져오기</button>
+            <input id="historyImportInput" type="file" accept="application/json,.json" hidden />
             <button id="clearHistoryBtn" type="button" class="ghost danger-action">기록 삭제</button>
             <button id="closeHistoryFooterBtn" type="button" class="primary-action">닫기</button>
           </div>
@@ -1300,6 +1303,12 @@ const state = {
   speechSignalsByQuestion: {},
   questionScores: {},
   questionCriteria: {},
+  geminiModelByQuestion: {},
+  geminiRuntime: {
+    cursor: 0,
+    usage: {},
+    lastModel: '',
+  },
   processingTasks: 0,
   processingTitle: '처리 중입니다',
   processingDetail: '잠시만 기다려 주세요.',
@@ -1321,6 +1330,11 @@ const DEFAULT_MODELS = {
   // Google의 latest 별칭은 현재 제공되는 Flash 릴리스를 가리킵니다.
   gemini: 'gemini-flash-latest',
 };
+const GEMINI_AUTO_MODEL = 'auto';
+// 브라우저에서 확인할 수 있는 것은 이 탭이 보낸 요청뿐이므로, 실제 계정 한도의 보장이 아닌 보수적 완충값으로 사용합니다.
+const GEMINI_CLIENT_RPM_CAP = 4;
+const GEMINI_CLIENT_RPD_CAP = 18;
+const GEMINI_REQUEST_TIMEOUT_MS = 30000;
 
 function updateProcessingOverlay(title = '', detail = '') {
   const overlay = document.getElementById('processingOverlay');
@@ -1360,6 +1374,84 @@ function savePracticeHistory() {
   }
 }
 
+function sanitizeImportedHistoryEntry(item, index) {
+  if (!item || typeof item !== 'object') return null;
+  const prompt = String(item.prompt || '').trim();
+  const answer = String(item.answer || '').trim();
+  if (!prompt && !answer) return null;
+  const criteria = item.criteria && typeof item.criteria === 'object' ? item.criteria : {};
+  const clamp = (value, min, max, fallback = 0) => {
+    const number = Number(value);
+    return Number.isFinite(number) ? Math.max(min, Math.min(max, number)) : fallback;
+  };
+  const parsedDate = new Date(item.timestamp || Date.now());
+  const timestamp = Number.isNaN(parsedDate.getTime()) ? new Date().toISOString() : parsedDate.toISOString();
+  return {
+    id: String(item.id || `import-${Date.now()}-${index}-${prompt.slice(0, 12)}`),
+    timestamp,
+    mode: ['local', 'openai', 'gemini'].includes(item.mode) ? item.mode : 'local',
+    model: String(item.model || '').slice(0, 120),
+    questionId: Number(item.questionId) || 0,
+    type: String(item.type || '').slice(0, 120),
+    prompt: prompt.slice(0, 2000),
+    answer: answer.slice(0, 10000),
+    score: Math.round(clamp(item.score, 0, 100)),
+    criteria: {
+      content: Math.round(clamp(criteria.content, 0, 10)),
+      fluency: Math.round(clamp(criteria.fluency, 0, 10)),
+      grammar: Math.round(clamp(criteria.grammar, 0, 10)),
+      pronunciation: Math.round(clamp(criteria.pronunciation, 0, 10)),
+    },
+    feedback: String(item.feedback || '').slice(0, 2000),
+    weaknesses: Array.isArray(item.weaknesses)
+      ? item.weaknesses.map((value) => String(value).slice(0, 500)).slice(0, 3)
+      : [],
+  };
+}
+
+function exportPracticeHistory() {
+  const payload = {
+    format: 'opic-practice-history',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    history: state.history,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `opic-practice-history-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function importPracticeHistory(file) {
+  if (!file) return;
+  try {
+    const raw = await file.text();
+    const parsed = JSON.parse(raw);
+    const source = Array.isArray(parsed) ? parsed : parsed?.history;
+    if (!Array.isArray(source)) throw new Error('히스토리 배열을 찾지 못했습니다.');
+    const imported = source.map(sanitizeImportedHistoryEntry).filter(Boolean).slice(0, 200);
+    if (!imported.length) throw new Error('가져올 수 있는 기록이 없습니다.');
+    const merged = new Map();
+    [...state.history, ...imported].forEach((entry) => {
+      const key = entry.id || `${entry.timestamp}:${entry.questionId}:${entry.answer}`;
+      if (!merged.has(key)) merged.set(key, entry);
+    });
+    state.history = [...merged.values()]
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, 60);
+    savePracticeHistory();
+    renderHistory();
+    alert(`${imported.length}개의 기록을 가져왔습니다. 기존 기록과 합쳐 저장했습니다.`);
+  } catch (error) {
+    alert(`히스토리를 가져오지 못했습니다. ${error.message}`);
+  }
+}
+
 function recordHistoryEntry(q, answer, result, mode = readEvalConfig().mode) {
   if (!q || !answer || !result) return;
   const id = `${state.startedAt || 'session'}:${q.no}:${answer}`;
@@ -1373,6 +1465,7 @@ function recordHistoryEntry(q, answer, result, mode = readEvalConfig().mode) {
     type: q.type,
     prompt: q.prompt,
     answer,
+    model: result.model || '',
     score: Number(result.score) || 0,
     criteria: {
       content: Number(criteria.content) || 0,
@@ -1407,7 +1500,7 @@ function renderHistory() {
         <div class="history-score"><strong>${escapeHtml(c.grammar || 0)}</strong>문법</div>
         <div class="history-score"><strong>${escapeHtml(c.pronunciation || 0)}</strong>발음</div>
       </div>
-      <div class="small" style="margin-top:8px;">총점 ${escapeHtml(Math.round(Number(item.score) || 0))}/100 · ${escapeHtml(item.feedback || '간결한 답변 평가가 저장되었습니다.')}</div>
+      <div class="small" style="margin-top:8px;">총점 ${escapeHtml(Math.round(Number(item.score) || 0))}/100 · ${escapeHtml(item.feedback || '간결한 답변 평가가 저장되었습니다.')}${item.model ? ` · ${escapeHtml(modelDisplayName(item.model))}` : ''}</div>
     </article>`;
   }).join('');
 }
@@ -1941,6 +2034,25 @@ function extractWhisperTranscript(lines, returnedValue) {
   return normalizeTranscriptText(rawLines.filter((line) => !/^(whisper_|js:|ggml_|system_info|loading model)/i.test(line)).join(' '));
 }
 
+function waitForWhisperCompletion(output, audioSeconds) {
+  // whisper.cpp의 full_default는 WASM 내부 worker를 시작하고 즉시 0을 반환합니다.
+  // 반환 직후 출력 버퍼를 읽으면 아직 전사 결과가 없어 "인식 안 됨"으로 처리됩니다.
+  const timeoutMs = Math.min(180000, Math.max(20000, Math.round(audioSeconds * 4000) + 20000));
+  const startedAt = Date.now();
+  return new Promise((resolve) => {
+    const poll = () => {
+      const text = output.join('\n');
+      const finished = /whisper_print_timings|whisper_full.*(done|end)|total time/i.test(text);
+      if (finished || Date.now() - startedAt >= timeoutMs) {
+        resolve();
+        return;
+      }
+      window.setTimeout(poll, 120);
+    };
+    poll();
+  });
+}
+
 async function transcribeCapturedAudioWithWhisper(blob) {
   if (!whisperModelReady || !whisperModule || !whisperInstance) return '';
   const audio = await decodeAudioForWhisper(blob);
@@ -1955,6 +2067,7 @@ async function transcribeCapturedAudioWithWhisper(blob) {
       ? Math.max(1, Math.min(4, Number(navigator.hardwareConcurrency) || 2))
       : 1;
     const returnedValue = whisperModule.full_default(whisperInstance, audio, 'en', threads, false);
+    await waitForWhisperCompletion(output, audio.length / 16000);
     applyWhisperSpeechMetrics(output.join('\n'));
     const transcript = extractWhisperTranscript(output.join('\n'), returnedValue);
     if (!transcript) throw new Error('Whisper가 음성을 전사하지 못했습니다.');
@@ -2071,7 +2184,7 @@ function updateEvalStatus() {
     if (handshakeInfo) handshakeInfo.textContent = 'API 키를 입력한 뒤 연결을 눌러 사용 가능한 모델을 확인하세요.';
     if (handshakeBtn) handshakeBtn.textContent = '연결';
     if (modelHint) modelHint.textContent = mode === 'gemini'
-      ? '연결하면 사용 가능한 최신 Gemini Flash를 자동으로 선택합니다.'
+      ? '연결하면 Auto가 기본 선택됩니다. 사용 가능한 Flash 모델을 순환해 한도 부담을 나눕니다.'
       : '연결 후 사용할 수 있는 모델을 선택할 수 있습니다.';
     return;
   }
@@ -2080,7 +2193,10 @@ function updateEvalStatus() {
   } else {
     const handshake = state.apiHandshake[mode];
     const verifiedAt = handshake.verifiedAt ? ` · ${new Date(handshake.verifiedAt).toLocaleString()}` : '';
-    document.getElementById('evalStatus').textContent = `${cfg.mode.toUpperCase()} 평가: ${model} 사용 (연결 완료${verifiedAt})`;
+    const modelStatus = mode === 'gemini' && model === GEMINI_AUTO_MODEL
+      ? `Auto 한도 분산${state.geminiRuntime.lastModel ? ` · 최근 ${state.geminiRuntime.lastModel}` : ''}`
+      : `${model} 사용`;
+    document.getElementById('evalStatus').textContent = `${cfg.mode.toUpperCase()} 평가: ${modelStatus} (연결 완료${verifiedAt})`;
   }
 
   if (handshakeInfo) {
@@ -2091,7 +2207,9 @@ function updateEvalStatus() {
       if (modelHint) {
         const selectionLabel = handshake.selectionSource === 'auto' ? '자동 선택' : '현재 선택';
         modelHint.textContent = mode === 'gemini'
-          ? `${handshake.model} ${selectionLabel} · 목록에서 다른 모델로 바꿀 수 있습니다.`
+          ? (handshake.model === GEMINI_AUTO_MODEL
+            ? 'Auto: 사용 가능한 Flash 모델을 순환하고 한도 오류가 나면 다음 모델로 전환합니다. 문항 안에서는 전사·채점 모델을 고정합니다.'
+            : `${handshake.model} ${selectionLabel} · 목록에서 다른 모델로 바꿀 수 있습니다.`)
           : '목록에서 사용할 모델을 선택할 수 있습니다.';
       }
       renderModelSelect(mode);
@@ -2099,7 +2217,7 @@ function updateEvalStatus() {
       handshakeInfo.textContent = 'API 키를 입력한 뒤 연결을 눌러 사용 가능한 모델을 확인하세요.';
       if (handshakeBtn) handshakeBtn.textContent = '연결';
       if (modelHint) modelHint.textContent = mode === 'gemini'
-        ? '연결하면 사용 가능한 최신 Gemini Flash를 자동으로 선택합니다.'
+        ? '연결하면 Auto가 기본 선택됩니다. 사용 가능한 Flash 모델을 순환해 한도 부담을 나눕니다.'
         : '연결 후 사용할 수 있는 모델을 선택할 수 있습니다.';
     }
   }
@@ -2165,12 +2283,13 @@ function renderModelSelect(mode) {
   }
 
   const models = mode === 'gemini'
-    ? sortGeminiModels(modelSource)
+    ? [GEMINI_AUTO_MODEL, ...sortGeminiModels(modelSource).filter((model) => model !== GEMINI_AUTO_MODEL)]
     : Array.from(new Set(modelSource)).filter(Boolean);
   models.forEach((m) => {
     const option = document.createElement('option');
     option.value = m;
-    option.textContent = m;
+    option.textContent = modelDisplayName(m);
+    if (m === GEMINI_AUTO_MODEL) option.title = '사용 가능한 Flash 모델을 순환하고 한도 오류 때 다음 모델로 전환합니다.';
     select.appendChild(option);
   });
   const saved = (state.apiHandshake[mode]?.model && Array.isArray(models) && models.includes(state.apiHandshake[mode].model))
@@ -2234,6 +2353,126 @@ function isGeminiFlashLiteModel(name) {
 
 function isGeminiPreviewModel(name) {
   return /(?:preview|experimental|exp)/i.test(normalizeGeminiModelName(name));
+}
+
+function isGeminiAutoEligibleModel(name) {
+  const id = normalizeGeminiModelName(name);
+  return isGeminiFlashModel(id)
+    && !/embedding|aqa|image|audio|tts|live|robotics|transcribe|pro/i.test(id);
+}
+
+function modelDisplayName(model) {
+  if (model === GEMINI_AUTO_MODEL) return 'Auto · 한도 분산';
+  return model;
+}
+
+function getGeminiAutoCandidates() {
+  const catalog = Array.isArray(state.modelCatalog.gemini) ? state.modelCatalog.gemini : [];
+  const candidates = catalog.filter(isGeminiAutoEligibleModel);
+  return sortGeminiModels(candidates);
+}
+
+function pruneGeminiUsage(model, now = Date.now()) {
+  const usage = state.geminiRuntime.usage[model] || { requests: [], failures: 0, blockedUntil: 0 };
+  usage.requests = usage.requests.filter((timestamp) => now - timestamp < 86400000);
+  state.geminiRuntime.usage[model] = usage;
+  return usage;
+}
+
+function isGeminiModelLocallyAvailable(model, now = Date.now()) {
+  const usage = pruneGeminiUsage(model, now);
+  const minuteCount = usage.requests.filter((timestamp) => now - timestamp < 60000).length;
+  return now >= (usage.blockedUntil || 0)
+    && minuteCount < GEMINI_CLIENT_RPM_CAP
+    && usage.requests.length < GEMINI_CLIENT_RPD_CAP;
+}
+
+function noteGeminiRequest(model) {
+  if (!model || model === GEMINI_AUTO_MODEL) return;
+  const usage = pruneGeminiUsage(model);
+  usage.requests.push(Date.now());
+  usage.failures = 0;
+  usage.blockedUntil = 0;
+  state.geminiRuntime.lastModel = model;
+}
+
+function noteGeminiFailure(model, status = 0) {
+  if (!model || model === GEMINI_AUTO_MODEL) return;
+  const usage = pruneGeminiUsage(model);
+  usage.failures = (usage.failures || 0) + 1;
+  // 한도 초과·권한·일시적 서버 오류는 짧게 제외하고 다음 후보로 넘깁니다.
+  const cooldown = status === 429 || status === 403 ? 120000 : 30000;
+  usage.blockedUntil = Date.now() + cooldown;
+}
+
+function getGeminiRequestCandidates(cfg, questionNo = '') {
+  const selected = normalizeGeminiModelName(cfg?.model || DEFAULT_MODELS.gemini);
+  if (selected !== GEMINI_AUTO_MODEL) return [selected];
+  const candidates = getGeminiAutoCandidates();
+  if (questionNo && state.geminiModelByQuestion[questionNo]) {
+    const pinned = state.geminiModelByQuestion[questionNo];
+    const remaining = candidates.filter((model) => model !== pinned);
+    if (isGeminiModelLocallyAvailable(pinned)) return [pinned, ...remaining];
+    return [...remaining, pinned];
+  }
+  if (!candidates.length) return [DEFAULT_MODELS.gemini];
+  const start = state.geminiRuntime.cursor % candidates.length;
+  const rotated = candidates.slice(start).concat(candidates.slice(0, start));
+  const available = rotated.find((model) => isGeminiModelLocallyAvailable(model));
+  const chosen = available || rotated[0];
+  state.geminiRuntime.cursor = (candidates.indexOf(chosen) + 1) % candidates.length;
+  return [chosen, ...rotated.filter((model) => model !== chosen)];
+}
+
+function geminiRequestError(status, detail, purpose = '요청') {
+  const label = status ? `Gemini ${purpose} 오류 ${status}` : `Gemini ${purpose} 실패`;
+  return new Error(`${label}: ${detail || '응답을 받지 못했습니다.'}`);
+}
+
+async function fetchGeminiGenerateContent(cfg, model, body, purpose = '요청') {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), GEMINI_REQUEST_TIMEOUT_MS);
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': cfg.apiKey },
+      referrerPolicy: 'no-referrer',
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      const detail = await response.text().catch(() => '');
+      throw geminiRequestError(response.status, detail, purpose);
+    }
+    return await response.json();
+  } catch (error) {
+    if (error?.name === 'AbortError') throw geminiRequestError(408, '응답 시간이 초과되었습니다.', purpose);
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function runGeminiWithFallback(cfg, bodyFactory, purpose = '요청', questionNo = '') {
+  const candidates = getGeminiRequestCandidates(cfg, questionNo);
+  let lastError = null;
+  for (const model of candidates) {
+    if (cfg.model === GEMINI_AUTO_MODEL && !isGeminiModelLocallyAvailable(model)) continue;
+    try {
+      const data = await fetchGeminiGenerateContent(cfg, model, bodyFactory(model), purpose);
+      noteGeminiRequest(model);
+      if (cfg.model === GEMINI_AUTO_MODEL && questionNo) state.geminiModelByQuestion[questionNo] = model;
+      return { data, model };
+    } catch (error) {
+      lastError = error;
+      const statusMatch = String(error?.message || '').match(/오류\s+(\d+)/);
+      const status = statusMatch ? Number(statusMatch[1]) : 0;
+      if (cfg.model !== GEMINI_AUTO_MODEL || ![408, 429, 403, 404, 408, 500, 502, 503, 504].includes(status)) throw error;
+      noteGeminiFailure(model, status);
+    }
+  }
+  throw lastError || new Error('사용 가능한 Gemini Flash 모델이 없습니다. 오프라인 평가로 전환합니다.');
 }
 
 function geminiModelVersionScore(name) {
@@ -2333,20 +2572,24 @@ async function performApiHandshake() {
       ? previousHandshake.model
       : '';
     const selected = mode === 'gemini'
-      ? (available.includes(manualSelection) ? manualSelection : chooseLatestGeminiFlash(available))
+      ? (available.includes(manualSelection) ? manualSelection : GEMINI_AUTO_MODEL)
       : (available.includes(previousHandshake.model) ? previousHandshake.model : (available.includes(getDefaultModel(mode)) ? getDefaultModel(mode) : available[0]));
     state.apiHandshake[mode] = {
       ready: true,
       fingerprint: makeKeyFingerprint(key),
       model: selected,
-      selectionSource: mode === 'gemini' && selected !== manualSelection ? 'auto' : (mode === 'gemini' ? 'manual' : ''),
+      selectionSource: mode === 'gemini' ? (selected === GEMINI_AUTO_MODEL ? 'auto' : 'manual') : '',
       verifiedAt: new Date().toISOString(),
     };
+    if (mode === 'gemini') {
+      state.geminiModelByQuestion = {};
+      state.geminiRuntime = { cursor: 0, usage: {}, lastModel: '' };
+    }
     renderModelSelect(mode);
     saveEvalConfig();
     updateEvalStatus();
     const selectionNote = mode === 'gemini' && state.apiHandshake[mode].selectionSource === 'auto'
-      ? ' · 최신 Flash 자동 선택'
+      ? ' · Auto 한도 분산'
       : '';
     info.textContent = `연결 상태: 완료 · ${mode.toUpperCase()} / ${selected}${selectionNote} (${available.length}개 모델 확인)`;
   } catch (err) {
@@ -3006,12 +3249,12 @@ function releaseMicrophoneStream() {
   state.audioStream = null;
 }
 
-async function transcribeCapturedAudio(blob) {
+async function transcribeCapturedAudio(blob, questionNo = '') {
   const cfg = readEvalConfig();
   if (!blob || blob.size < 1000) return '';
   if (cfg.mode === 'local') return transcribeCapturedAudioWithWhisper(blob);
   if (!['openai', 'gemini'].includes(cfg.mode) || !cfg.apiKey) return '';
-  if (cfg.mode === 'gemini') return transcribeCapturedAudioWithGemini(blob, cfg);
+  if (cfg.mode === 'gemini') return transcribeCapturedAudioWithGemini(blob, cfg, questionNo);
   const form = new FormData();
   const extension = blob.type.includes('mp4') ? 'm4a' : 'webm';
   form.append('file', blob, `opic-answer.${extension}`);
@@ -3032,7 +3275,7 @@ async function transcribeCapturedAudio(blob) {
   return normalizeTranscriptText(data?.text || '');
 }
 
-async function transcribeCapturedAudioWithGemini(blob, cfg) {
+async function transcribeCapturedAudioWithGemini(blob, cfg, questionNo = '') {
   const buffer = await blob.arrayBuffer();
   const bytes = new Uint8Array(buffer);
   let binary = '';
@@ -3041,13 +3284,7 @@ async function transcribeCapturedAudioWithGemini(blob, cfg) {
     binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
   }
   const base64 = btoa(binary);
-  const model = (cfg.model || DEFAULT_MODELS.gemini).trim();
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': cfg.apiKey },
-    referrerPolicy: 'no-referrer',
-    body: JSON.stringify({
+  const request = await runGeminiWithFallback(cfg, () => ({
       contents: [{
         parts: [
           { text: 'Transcribe the spoken English in this audio verbatim. Return only the transcript, with no explanation and no correction.' },
@@ -3055,21 +3292,15 @@ async function transcribeCapturedAudioWithGemini(blob, cfg) {
         ],
       }],
       generationConfig: { temperature: 0 },
-    }),
-  });
-  if (!response.ok) {
-    const detail = await response.text().catch(() => '');
-    throw new Error(`Gemini 고품질 STT 오류 ${response.status}: ${detail}`);
-  }
-  const data = await response.json();
-  return normalizeTranscriptText(data?.candidates?.[0]?.content?.parts?.[0]?.text || '');
+    }), '고품질 STT', questionNo);
+  return normalizeTranscriptText(request.data?.candidates?.[0]?.content?.parts?.[0]?.text || '');
 }
 
 function queueCapturedAudioTranscription(q, blob, fallbackTranscript = '') {
   if (!q || !blob) return null;
   if (state.transcriptionJobs[q.no]) return state.transcriptionJobs[q.no];
   beginProcessing('음성 전사 중', '녹음된 답변을 문장으로 정리하고 있습니다.');
-  const job = transcribeCapturedAudio(blob)
+  const job = transcribeCapturedAudio(blob, q.no)
     .catch((error) => {
       console.warn('백그라운드 고품질 전사 실패:', error);
       if (!state.examFinished && state.questions[state.idx]?.no === q.no) {
@@ -3169,8 +3400,10 @@ function restartRecognitionSoon() {
 function initVoiceInput() {
   const mode = readEvalConfig().mode;
   // API 모드도 브라우저 인식 결과를 실시간 미리보기로 표시하고,
-  // 녹음 종료 후에는 원본을 고품질 STT로 다시 전사합니다.
-  const needsBrowserRecognition = mode !== 'local' || !whisperModelReady;
+  // 녹음 종료 후에는 원본을 고품질 STT로 다시 전사합니다. 로컬 Whisper가
+  // 준비된 경우에도 브라우저 미리보기를 켜 두어, WASM 초기화·호환성 문제가
+  // 생기면 인식된 답변으로 안전하게 평가를 이어갈 수 있게 합니다.
+  const needsBrowserRecognition = true;
   if (!needsBrowserRecognition) {
     state.recognition = null;
     return Boolean(window.MediaRecorder && navigator.mediaDevices?.getUserMedia);
@@ -3378,9 +3611,13 @@ function normalizeEvalResult(raw) {
       pronunciation: Math.max(1, Math.min(10, Number(parsed.pronunciation) || 5)),
     };
     const criteriaTotal = Object.values(criteria).reduce((sum, value) => sum + value, 0);
-    const rubricTotal = Object.values(rubric).reduce((sum, value) => sum + value, 0);
+    const hasCompactCriteria = ['content', 'fluency', 'grammar', 'pronunciation']
+      .every((key) => Object.prototype.hasOwnProperty.call(parsed, key));
+    const derivedScore = Math.round((criteriaTotal / 40) * 100);
+    const reportedScore = Number(parsed.total ?? parsed.score);
     return {
-      score: Number.isFinite(score) ? Math.max(0, Math.min(100, score)) : Math.round((criteriaTotal / 40) * 100),
+      // 네 모델이 임의로 total을 부풀리지 않도록, 새 스키마에서는 네 기준의 평균만 총점으로 사용합니다.
+      score: hasCompactCriteria ? derivedScore : (Number.isFinite(reportedScore) ? Math.max(0, Math.min(100, reportedScore)) : derivedScore),
       words: Number.isFinite(words) ? words : 0,
       feedback: parsed.tip ? String(parsed.tip) : (parsed.feedback ? String(parsed.feedback) : ''),
       strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
@@ -3457,28 +3694,17 @@ async function evaluateWithOpenAI(prompt, answer, type, speechSignals) {
   return parsed;
 }
 
-async function evaluateWithGemini(prompt, answer, type, speechSignals) {
+async function evaluateWithGemini(prompt, answer, type, speechSignals, questionNo = '') {
   const cfg = readEvalConfig();
-  const model = (cfg.model || DEFAULT_MODELS.gemini).trim();
   const promptText = buildEvalPrompt(prompt, answer, type, speechSignals);
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': cfg.apiKey },
-    referrerPolicy: 'no-referrer',
-    body: JSON.stringify({
+  const request = await runGeminiWithFallback(cfg, () => ({
       contents: [{ parts: [{ text: promptText }] }],
       generationConfig: { temperature: 0.1, maxOutputTokens: 160, responseMimeType: 'application/json' },
-    }),
-  });
-  if (!res.ok) {
-    const txt = await res.text().catch(() => '');
-    throw new Error(`Gemini API 오류 ${res.status}: ${txt}`);
-  }
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    }), '평가', questionNo);
+  const text = request.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
   const parsed = normalizeEvalResult(text);
   if (!parsed) throw new Error('Gemini 응답을 파싱하지 못했습니다.');
+  parsed.model = request.model;
   return parsed;
 }
 
@@ -3556,7 +3782,8 @@ function buildEvaluationHtml(result, question = null, answer = '') {
   const evidenceHtml = evidence.length
     ? `<details class="evaluation-evidence"><summary>평가 근거 보기</summary><ul>${evidence.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul></details>`
     : '';
-  return `<div class="evaluation-head"><div><strong>평가 결과</strong><span class="small"> · ${escapeHtml(result.words || 0)}단어</span></div><strong class="evaluation-total">${Math.round(result.score)}/100</strong></div>` +
+  const modelNote = result.model ? ` · ${escapeHtml(modelDisplayName(result.model))}` : '';
+  return `<div class="evaluation-head"><div><strong>평가 결과</strong><span class="small"> · ${escapeHtml(result.words || 0)}단어${modelNote}</span></div><strong class="evaluation-total">${Math.round(result.score)}/100</strong></div>` +
     questionHtml +
     `<div class="metric-grid">${metricsHtml}</div>` +
     `<div class="small evaluation-tip">개선 포인트: ${escapeHtml(result.feedback || '구체적인 사례와 연결어를 추가해 보세요.')}</div>` +
@@ -3605,7 +3832,7 @@ async function evaluateQuestionByNo(questionNo, answer, speechSignals) {
     if (cfg.mode === 'openai') {
       result = await evaluateWithOpenAI(q.prompt, answer, q.type, speechSignals);
     } else if (cfg.mode === 'gemini') {
-      result = await evaluateWithGemini(q.prompt, answer, q.type, speechSignals);
+      result = await evaluateWithGemini(q.prompt, answer, q.type, speechSignals, q.no);
     } else {
       const ruleResult = buildFeedbackFromRules(q.prompt, answer, q.type, speechSignals);
       if (localLlmReady) {
@@ -3625,6 +3852,11 @@ async function evaluateQuestionByNo(questionNo, answer, speechSignals) {
     console.error(error);
     result = buildFeedbackFromRules(q.prompt, answer, q.type, speechSignals);
     result.evidence = [...(result.evidence || []), `온라인 평가 실패로 오프라인 기본 평가를 사용했습니다: ${error.message}`];
+  }
+  if (result && !result.model) {
+    result.model = cfg.mode === 'gemini'
+      ? (state.geminiModelByQuestion[q.no] || cfg.model)
+      : (cfg.mode === 'local' ? (localLlmReady ? LOCAL_LLM_MODEL : 'offline-rules') : cfg.model);
   }
   return result;
 }
@@ -4129,6 +4361,12 @@ document.getElementById('micTestBtn').addEventListener('click', toggleMicTest);
 document.getElementById('historyBtn').addEventListener('click', openHistory);
 document.getElementById('closeHistoryBtn').addEventListener('click', closeHistory);
 document.getElementById('closeHistoryFooterBtn').addEventListener('click', closeHistory);
+document.getElementById('exportHistoryBtn').addEventListener('click', exportPracticeHistory);
+document.getElementById('importHistoryBtn').addEventListener('click', () => document.getElementById('historyImportInput').click());
+document.getElementById('historyImportInput').addEventListener('change', async (event) => {
+  await importPracticeHistory(event.target.files?.[0]);
+  event.target.value = '';
+});
 document.getElementById('historyModal').addEventListener('click', (event) => {
   if (event.target.id === 'historyModal') closeHistory();
 });
@@ -4165,7 +4403,7 @@ document.getElementById('modelSelect').addEventListener('change', () => {
   const mode = getEvalMode();
   if (mode !== 'local' && state.apiHandshake[mode]?.ready) {
     state.apiHandshake[mode].model = document.getElementById('modelSelect').value;
-    if (mode === 'gemini') state.apiHandshake[mode].selectionSource = 'manual';
+    if (mode === 'gemini') state.apiHandshake[mode].selectionSource = document.getElementById('modelSelect').value === GEMINI_AUTO_MODEL ? 'auto' : 'manual';
     saveEvalConfig();
   }
   updateEvalStatus();
