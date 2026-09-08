@@ -2,7 +2,7 @@
 
 > **실전과 같은 훈련으로 영포자의 승리자가 된다**
 
-누적 다운로드: [![누적 다운로드](https://img.shields.io/github/downloads/SILVERBRINE/opic-mock-exam/total?label=downloads&cacheSeconds=300)](https://github.com/SILVERBRINE/opic-mock-exam/releases)
+누적 다운로드: [![누적 다운로드](https://img.shields.io/github/downloads/SILVERBRINE/opic-mock-exam/total?label=downloads&cacheSeconds=60)](https://github.com/SILVERBRINE/opic-mock-exam/releases)
 
 처음에는 Release를 한 번 발행해야 숫자가 표시돼요. 그 뒤 ZIP을 내려받을 때마다 GitHub가 누적해서 올려 줍니다.
 
