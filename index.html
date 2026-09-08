@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OPIc 모의고사 v1.0</title>
+  <script src="coi-serviceworker.js"></script>
   <style>
     :root {
       --bg: #edf2fc;
@@ -2132,7 +2133,10 @@ async function prepareLocalLlm() {
       return true;
     }
     const message = whisperError?.message || 'Whisper 모델을 준비하지 못했습니다.';
-    setLocalAiStatus(`오프라인 Whisper 준비 실패 · 브라우저 음성인식으로 계속합니다. (${message})`, 'warn');
+    const isolationHint = !window.crossOriginIsolated && location.protocol !== 'https:' && location.hostname !== 'localhost'
+      ? ' 파일을 직접 열었다면 GitHub Pages 또는 localhost에서 실행해 주세요.'
+      : '';
+    setLocalAiStatus(`오프라인 Whisper 준비 실패 · 브라우저 음성인식으로 계속합니다. (${message})${isolationHint}`, 'warn');
     button.textContent = '다시 준비';
     return false;
   } catch (error) {
