@@ -1393,6 +1393,13 @@ function setEvaluationControlsDisabled(disabled) {
   if (!disabled) applyEvalPresetByMode();
 }
 
+function setSessionStartButtonsDisabled(disabled) {
+  ['startBtn', 'practiceStartBtn'].forEach((id) => {
+    const button = document.getElementById(id);
+    if (button) button.disabled = Boolean(disabled);
+  });
+}
+
 function setEvalMode(mode, opts = {}) {
   const buttons = document.querySelectorAll('.mode-btn[data-mode]');
   buttons.forEach((btn) => {
@@ -2199,7 +2206,7 @@ function startExam(modeOverride = '') {
   renderExam();
   document.getElementById('examPanel').classList.remove('hide');
   document.getElementById('resultPanel').classList.add('hide');
-  document.getElementById('startBtn').disabled = true;
+  setSessionStartButtonsDisabled(true);
   setEvaluationControlsDisabled(true);
   state.examFinished = false;
   state.questionExpired = false;
@@ -3554,7 +3561,7 @@ function submitExam() {
 
   document.getElementById('examPanel').classList.add('hide');
   localStorage.removeItem(state.storageKey);
-  document.getElementById('startBtn').disabled = false;
+  setSessionStartButtonsDisabled(false);
   setEvaluationControlsDisabled(false);
   setSessionMode(state.sessionMode, { skipSave: true });
 }
