@@ -1301,6 +1301,8 @@ const state = {
   questionScores: {},
   questionCriteria: {},
   processingTasks: 0,
+  processingTitle: '처리 중입니다',
+  processingDetail: '잠시만 기다려 주세요.',
   ttsMode: 'browser',
   history: [],
   historyStorageKey: 'opic-practice-history-v1',
@@ -1320,11 +1322,13 @@ const DEFAULT_MODELS = {
   gemini: 'gemini-flash-latest',
 };
 
-function updateProcessingOverlay(title = '처리 중입니다', detail = '잠시만 기다려 주세요.') {
+function updateProcessingOverlay(title = '', detail = '') {
   const overlay = document.getElementById('processingOverlay');
   if (!overlay) return;
-  document.getElementById('processingTitle').textContent = title;
-  document.getElementById('processingDetail').textContent = detail;
+  if (title) state.processingTitle = title;
+  if (detail) state.processingDetail = detail;
+  document.getElementById('processingTitle').textContent = state.processingTitle;
+  document.getElementById('processingDetail').textContent = state.processingDetail;
   overlay.hidden = state.processingTasks <= 0;
 }
 
