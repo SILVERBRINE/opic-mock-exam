@@ -178,6 +178,25 @@
     .local-ai-panel small { display: block; margin-top: 3px; color: #687b9d; font-size: 11px; line-height: 1.45; }
     .local-ai-panel .small-note { grid-column: 1 / -1; margin-top: 0; }
 
+    .device-test-panel {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px 16px;
+      align-items: center;
+      margin-top: 18px;
+      padding: 14px 16px;
+      border: 1px solid #d8e4f6;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #f8fbff 0%, #f2f7ff 100%);
+    }
+    .device-test-copy strong { display: block; color: #243f70; font-size: 14px; }
+    .device-test-copy small { display: block; margin-top: 4px; color: #687b9d; font-size: 11px; line-height: 1.45; }
+    .device-test-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+    .device-test-actions button { padding: 9px 12px; font-size: 12px; white-space: nowrap; }
+    .device-test-status { grid-column: 1 / -1; min-height: 18px; color: #4d6792; font-size: 12px; }
+    .mic-meter { grid-column: 1 / -1; height: 7px; overflow: hidden; border-radius: 999px; background: #dce7f8; }
+    .mic-meter span { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #67a5ff, #2f6bdc); transition: width .08s linear; }
+
     h2 {
       margin-top: 0;
       color: #263c76;
@@ -916,6 +935,8 @@
       .exam-panel .q-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); }
       .exam-panel .question-box { padding: 18px; }
       .exam-panel .status-line > .controls { justify-content: flex-start; }
+      .device-test-panel { grid-template-columns: 1fr; }
+      .device-test-actions { justify-content: flex-start; }
     }
   </style>
 </head>
@@ -955,6 +976,18 @@
         <button id="clearBtn" class="ghost danger-action" type="button">진행 기록 삭제</button>
       </div>
       <div class="small-note" style="margin-top:10px;">모의고사는 15문항을 풀고, 연습모드는 랜덤 한 문제를 답한 뒤 바로 평가받아요. 피드백을 확인하면 새 문제로 이어서 연습할 수 있습니다.</div>
+      <div class="device-test-panel" aria-label="소리와 마이크 테스트">
+        <div class="device-test-copy">
+          <strong>시작 전에 소리·마이크 확인</strong>
+          <small>문항 음성이 잘 들리는지, 마이크 입력이 잡히는지 여기서 먼저 확인할 수 있습니다.</small>
+        </div>
+        <div class="device-test-actions">
+          <button id="soundTestBtn" type="button" class="ghost">🔊 소리 테스트</button>
+          <button id="micTestBtn" type="button" class="ghost">🎙 마이크 테스트</button>
+        </div>
+        <div id="deviceTestStatus" class="device-test-status" role="status">테스트 결과가 여기에 표시됩니다.</div>
+        <div class="mic-meter" aria-hidden="true"><span id="micMeterBar"></span></div>
+      </div>
       <div class="section-divider"><span>평가 방식</span><small>처음 사용한다면 ‘오프라인 기본 평가’를 추천합니다.</small></div>
       <div class="setup-row config-row">
         <div class="field">
@@ -1130,6 +1163,11 @@ const state = {
   audioStopPromise: null,
   recognitionRestartTimer: null,
   voiceFinalizing: false,
+  submitInProgress: false,
+  deviceTestStream: null,
+  deviceTestContext: null,
+  deviceTestAnalyser: null,
+  deviceTestAnimation: null,
   storageKey: 'opic-mock-progress-v2',
   configStorageKey: 'opic-mock-eval-config-v1',
   recognition: null,
@@ -2744,6 +2782,9 @@ function queueCapturedAudioTranscription(q, blob, fallbackTranscript = '') {
   const job = transcribeCapturedAudio(blob)
     .catch((error) => {
       console.warn('백그라운드 고품질 전사 실패:', error);
+      if (!state.examFinished && state.questions[state.idx]?.no === q.no) {
+        document.getElementById('voiceStatus').textContent = '고품질 전사를 완료하지 못했습니다. 인식된 답변으로 평가를 계속합니다.';
+      }
       return '';
     })
     .then((polishedTranscript) => {
@@ -2755,6 +2796,8 @@ function queueCapturedAudioTranscription(q, blob, fallbackTranscript = '') {
         return '';
       }
       state.answers[q.no] = transcript;
+      const answerField = document.getElementById('answerInput');
+      if (answerField && state.questions[state.idx]?.no === q.no) answerField.value = transcript;
       state.speechSignalsByQuestion[q.no] = state.speechSignalsByQuestion[q.no] || getSpeechSignalSummary(transcript);
       if (!state.examFinished) saveProgress();
       queueQuestionEvaluation(q, transcript);
@@ -2831,7 +2874,9 @@ function restartRecognitionSoon() {
 
 function initVoiceInput() {
   const mode = readEvalConfig().mode;
-  const needsBrowserRecognition = mode === 'local' && !whisperModelReady;
+  // API 모드도 브라우저 인식 결과를 실시간 미리보기로 표시하고,
+  // 녹음 종료 후에는 원본을 고품질 STT로 다시 전사합니다.
+  const needsBrowserRecognition = mode !== 'local' || !whisperModelReady;
   if (!needsBrowserRecognition) {
     state.recognition = null;
     return Boolean(window.MediaRecorder && navigator.mediaDevices?.getUserMedia);
@@ -2841,7 +2886,7 @@ function initVoiceInput() {
   if (!SpeechRecognition) {
     return Boolean(
       window.MediaRecorder && navigator.mediaDevices?.getUserMedia &&
-      mode === 'local' && whisperModelReady
+      (mode === 'local' || ['openai', 'gemini'].includes(mode))
     );
   }
 
@@ -2861,7 +2906,7 @@ function initVoiceInput() {
     status.textContent = mode === 'local' && whisperModelReady
       ? `음성 입력 시작됨 · 종료 후 로컬 Whisper ${WHISPER_MODEL_NAME}로 다시 전사합니다.`
       : ['openai', 'gemini'].includes(mode)
-        ? '음성 입력 시작됨 · 종료 후 고정밀 STT로 한 번 더 정리합니다.'
+        ? '음성 입력 시작됨 · 화면에 실시간 미리보기가 표시되며 종료 후 고정밀 STT로 정리합니다.'
         : '음성 입력 시작됨';
     updateVoiceButton();
   };
@@ -3314,7 +3359,7 @@ function updateVoiceButton() {
 async function toggleVoiceInput() {
   const canUse = initVoiceInput();
   if (!canUse) {
-    alert('이 브라우저는 음성 인식을 지원하지 않습니다. Chrome/Edge에서 HTTPS 또는 localhost로 실행해 주세요.');
+    alert('이 브라우저에서 마이크 녹음을 사용할 수 없습니다. Chrome/Edge에서 HTTPS 또는 localhost로 실행해 주세요.');
     return;
   }
 
@@ -3510,7 +3555,149 @@ function scoreToOpicGrade(score) {
   return ['NL', 'Novice Low', '#a53a3a', '단어와 기본 문장 구성부터 연습해야 함'];
 }
 
-function submitExam() {
+async function waitForPendingProcessing() {
+  const status = document.getElementById('voiceStatus');
+  for (let round = 0; round < 3; round += 1) {
+    const transcriptionJobs = Object.values(state.transcriptionJobs).filter(Boolean);
+    if (transcriptionJobs.length) {
+      if (status) status.textContent = '음성 전사를 마무리하는 중입니다. 잠시만 기다려 주세요.';
+      await Promise.allSettled(transcriptionJobs);
+    }
+    await Promise.resolve();
+    const evaluationJobs = Object.values(state.evaluationJobs).filter(Boolean);
+    if (evaluationJobs.length) {
+      if (status) status.textContent = '답변 평가를 마무리하는 중입니다. 잠시만 기다려 주세요.';
+      await Promise.allSettled(evaluationJobs);
+    }
+    if (!Object.keys(state.transcriptionJobs).length && !Object.keys(state.evaluationJobs).length) return;
+  }
+}
+
+async function waitForVoiceFinalization() {
+  const status = document.getElementById('voiceStatus');
+  if (state.isRecording || state.audioRecorder) {
+    if (status) status.textContent = '녹음 종료와 전사를 준비하는 중입니다. 잠시만 기다려 주세요.';
+    if (state.recognition && state.isRecording) {
+      state.manualStopRequested = true;
+      try {
+        state.recognition.stop();
+      } catch (error) {
+        state.isRecording = false;
+        await finalizeVoiceTurn();
+      }
+    } else {
+      state.isRecording = false;
+      await finalizeVoiceTurn();
+    }
+  }
+  const deadline = Date.now() + 120000;
+  while ((state.voiceFinalizing || state.isRecording || state.audioRecorder) && Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+}
+
+function runSoundTest() {
+  const status = document.getElementById('deviceTestStatus');
+  if (!('speechSynthesis' in window)) {
+    status.textContent = '이 브라우저에서는 소리 테스트를 지원하지 않습니다.';
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance('Sound check. You should hear this sentence clearly.');
+  utterance.lang = 'en-US';
+  utterance.rate = 0.82;
+  utterance.pitch = 0.98;
+  const voice = chooseNaturalEnglishVoice();
+  if (voice) utterance.voice = voice;
+  utterance.onstart = () => { status.textContent = '소리 테스트 재생 중입니다. 문장이 또렷하게 들리는지 확인해 주세요.'; };
+  utterance.onend = () => { status.textContent = '소리 테스트가 끝났습니다.'; };
+  utterance.onerror = () => { status.textContent = '소리 테스트를 재생하지 못했습니다.'; };
+  window.speechSynthesis.speak(utterance);
+}
+
+function stopMicTest() {
+  if (state.deviceTestAnimation) cancelAnimationFrame(state.deviceTestAnimation);
+  state.deviceTestAnimation = null;
+  state.deviceTestStream?.getTracks().forEach((track) => track.stop());
+  state.deviceTestStream = null;
+  if (state.deviceTestContext && state.deviceTestContext.state !== 'closed') state.deviceTestContext.close().catch(() => {});
+  state.deviceTestContext = null;
+  state.deviceTestAnalyser = null;
+  const button = document.getElementById('micTestBtn');
+  const meter = document.getElementById('micMeterBar');
+  if (button) button.textContent = '🎙 마이크 테스트';
+  if (meter) meter.style.width = '0%';
+}
+
+async function toggleMicTest() {
+  const status = document.getElementById('deviceTestStatus');
+  if (state.deviceTestStream) {
+    stopMicTest();
+    status.textContent = '마이크 테스트를 종료했습니다.';
+    return;
+  }
+  if (!navigator.mediaDevices?.getUserMedia) {
+    status.textContent = '이 브라우저에서는 마이크 테스트를 지원하지 않습니다.';
+    return;
+  }
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    state.deviceTestStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    if (!AudioContextClass) {
+      stopMicTest();
+      status.textContent = '마이크 권한은 확인했지만 입력 게이지를 지원하지 않는 브라우저입니다.';
+      return;
+    }
+    state.deviceTestContext = new AudioContextClass();
+    await state.deviceTestContext.resume();
+    const source = state.deviceTestContext.createMediaStreamSource(state.deviceTestStream);
+    state.deviceTestAnalyser = state.deviceTestContext.createAnalyser();
+    state.deviceTestAnalyser.fftSize = 512;
+    source.connect(state.deviceTestAnalyser);
+    const data = new Uint8Array(state.deviceTestAnalyser.fftSize);
+    const meter = document.getElementById('micMeterBar');
+    const draw = () => {
+      if (!state.deviceTestAnalyser || !state.deviceTestStream) return;
+      state.deviceTestAnalyser.getByteTimeDomainData(data);
+      let sum = 0;
+      for (const value of data) {
+        const sample = (value - 128) / 128;
+        sum += sample * sample;
+      }
+      const level = Math.min(100, Math.max(2, Math.sqrt(sum / data.length) * 240));
+      if (meter) meter.style.width = `${level}%`;
+      state.deviceTestAnimation = requestAnimationFrame(draw);
+    };
+    document.getElementById('micTestBtn').textContent = '🎙 테스트 중지';
+    status.textContent = '마이크 테스트 중입니다. 말하거나 손뼉을 쳐서 게이지가 움직이는지 확인해 주세요.';
+    draw();
+  } catch (error) {
+    stopMicTest();
+    status.textContent = error?.name === 'NotAllowedError'
+      ? '마이크 접근이 거부되었습니다. 브라우저 사이트 권한을 확인해 주세요.'
+      : '마이크를 열지 못했습니다. 다른 앱이 사용 중인지 확인해 주세요.';
+  }
+}
+
+async function submitExam() {
+  if (state.submitInProgress) return;
+  if (state.examFinished && document.getElementById('resultPanel')?.classList.contains('hide') === false) return;
+  state.submitInProgress = true;
+  const submitButton = document.getElementById('submitBtn');
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.textContent = '전사·평가 대기 중...';
+  }
+  try {
+    await waitForVoiceFinalization();
+    await waitForPendingProcessing();
+    finishExamNow();
+  } finally {
+    state.submitInProgress = false;
+  }
+}
+
+function finishExamNow() {
   if (state.examFinished && document.getElementById('resultPanel')?.classList.contains('hide') === false) return;
   state.examFinished = true;
   clearInterval(state.timerId);
@@ -3592,6 +3779,8 @@ document.getElementById('playQuestionBtn').addEventListener('click', speakQuesti
 document.getElementById('voiceBtn').addEventListener('click', toggleVoiceInput);
 document.getElementById('nextBtn').addEventListener('click', nextQuestion);
 document.getElementById('submitBtn').addEventListener('click', submitExam);
+document.getElementById('soundTestBtn').addEventListener('click', runSoundTest);
+document.getElementById('micTestBtn').addEventListener('click', toggleMicTest);
 document.getElementById('saveConfigBtn').addEventListener('click', saveEvalConfig);
 document.getElementById('clearConfigBtn').addEventListener('click', clearEvalConfig);
 document.querySelectorAll('.mode-btn[data-mode]').forEach((btn) => {
@@ -3666,6 +3855,7 @@ loadEvalConfig();
 window.addEventListener('beforeunload', (e) => {
   saveCurrent();
   releaseMicrophoneStream();
+  stopMicTest();
   const answered = Object.values(state.answers).filter(v => (v || '').trim().length > 0).length;
   if (answered > 0 && answered < state.questions.length) {
     e.preventDefault();
