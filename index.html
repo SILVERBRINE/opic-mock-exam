@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OPIc 모의고사 v1.3</title>
+  <title>OPIc 모의고사 v1.3.1</title>
   <script src="coi-serviceworker.js"></script>
   <style>
     :root {
@@ -1012,7 +1012,7 @@
           <div class="brand-mark" aria-hidden="true">O</div>
           <div>
             <div class="brand-kicker">SPEAKING PRACTICE</div>
-            <div class="brand-title">OPIc 모의고사 <span>v1.3</span></div>
+            <div class="brand-title">OPIc 모의고사 <span>v1.3.1</span></div>
           </div>
         </div>
         <div class="header-actions">
@@ -3458,6 +3458,37 @@ function geminiRequestError(status, detail, purpose = '요청') {
   return new Error(`${label}: ${detail || '응답을 받지 못했습니다.'}`);
 }
 
+function isGemini3Model(name) {
+  return /^gemini-3(?:\.\d+)?-/i.test(normalizeGeminiModelName(name));
+}
+
+function isGemini3ProModel(name) {
+  return /^gemini-3(?:\.\d+)?-pro(?:-|$)/i.test(normalizeGeminiModelName(name));
+}
+
+function isGemini25FlashModel(name) {
+  return /^gemini-2\.5-flash(?:-|$)/i.test(normalizeGeminiModelName(name));
+}
+
+function buildGeminiGenerationConfig(model, options = {}) {
+  const config = {
+    maxOutputTokens: Number(options.maxOutputTokens) || 512,
+  };
+  if (options.responseMimeType) config.responseMimeType = options.responseMimeType;
+
+  // Gemini 3 계열은 legacy temperature 설정과 함께 보낼 때 빈 응답이
+  // 반환될 수 있으므로 temperature를 보내지 않고 사고 수준만 낮춥니다.
+  if (isGemini3Model(model)) {
+    // Gemini 3.1 Pro는 minimal을 지원하지 않으므로 low를 사용합니다.
+    config.thinkingConfig = { thinkingLevel: isGemini3ProModel(model) ? 'low' : 'minimal' };
+  } else if (isGemini25FlashModel(model)) {
+    // Gemini 2.5 Flash 계열은 thinkingBudget=0으로 불필요한 추론 토큰을 끕니다.
+    // Gemini 2.5 Pro에는 0 예산을 보내지 않고 기본 설정을 사용합니다.
+    config.thinkingConfig = { thinkingBudget: 0 };
+  }
+  return config;
+}
+
 async function fetchGeminiGenerateContent(cfg, model, body, purpose = '요청') {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), GEMINI_REQUEST_TIMEOUT_MS);
@@ -4425,16 +4456,16 @@ async function transcribeCapturedAudioWithGemini(blob, cfg, questionNo = '') {
     binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
   }
   const base64 = btoa(binary);
-  const request = await runGeminiWithFallback(cfg, () => ({
+  const request = await runGeminiWithFallback(cfg, (model) => ({
       contents: [{
         parts: [
           { text: 'Transcribe the spoken English in this audio verbatim. Return only the transcript, with no explanation and no correction.' },
           { inline_data: { mime_type: blob.type.split(';')[0] || 'audio/webm', data: base64 } },
         ],
       }],
-      generationConfig: { temperature: 0 },
+      generationConfig: buildGeminiGenerationConfig(model, { maxOutputTokens: 2048 }),
     }), '고품질 STT', questionNo);
-  return normalizeTranscriptText(request.data?.candidates?.[0]?.content?.parts?.[0]?.text || '');
+  return normalizeTranscriptText(extractGeminiText(request.data));
 }
 
 function queueCapturedAudioTranscription(q, blob, fallbackTranscript = '') {
@@ -4855,13 +4886,49 @@ Question: ${prompt}
 Answer transcript: ${answer}
 Speech proxy: ${JSON.stringify(speechSignals)}
 
-JSON schema: {"content":1,"fluency":1,"grammar":1,"pronunciation":1,"total":0,"tip":"한 줄 개선점"}`;
+  JSON schema: {"content":1,"fluency":1,"grammar":1,"pronunciation":1,"total":0,"tip":"한 줄 개선점"}`;
+}
+
+function extractGeminiText(data) {
+  const parts = data?.candidates?.[0]?.content?.parts;
+  if (!Array.isArray(parts)) return '';
+  // Gemini 3가 thought part를 함께 보낼 수 있으므로 최종 답변 part만 사용합니다.
+  return parts
+    .filter((part) => part && part.thought !== true && typeof part.text === 'string')
+    .map((part) => part.text.trim())
+    .filter(Boolean)
+    .join('\n');
+}
+
+function describeGeminiResponse(data, rawText = '') {
+  const candidate = data?.candidates?.[0] || {};
+  const finishReason = candidate.finishReason || '';
+  const blockReason = data?.promptFeedback?.blockReason || '';
+  const detail = blockReason
+    ? `차단 사유 ${blockReason}`
+    : finishReason
+      ? `종료 사유 ${finishReason}`
+      : rawText
+        ? 'JSON 형식이 아님'
+        : '텍스트 응답 없음';
+  return `Gemini 응답을 파싱하지 못했습니다(${detail}).`;
 }
 
 function parseModelJson(raw) {
   if (!raw || typeof raw !== 'string') return null;
   const source = raw.replace(/```(?:json)?/gi, '').replace(/```/g, '');
   const candidates = [];
+  const direct = source.trim();
+  if (direct) {
+    for (const variant of [direct, direct.replace(/,\s*([}\]])/g, '$1')]) {
+      try {
+        const parsed = JSON.parse(variant);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed;
+      } catch {
+        // 앞뒤 설명이 있는 경우 아래의 균형 괄호 탐색으로 넘어갑니다.
+      }
+    }
+  }
   for (let start = 0; start < source.length; start += 1) {
     if (source[start] !== '{') continue;
     let depth = 0;
@@ -5014,14 +5081,29 @@ async function evaluateWithOpenAI(prompt, answer, type, speechSignals) {
 async function evaluateWithGemini(prompt, answer, type, speechSignals, questionNo = '') {
   const cfg = readEvalConfig();
   const promptText = buildEvalPrompt(prompt, answer, type, speechSignals);
-  const request = await runGeminiWithFallback(cfg, () => ({
-      contents: [{ parts: [{ text: promptText }] }],
-      generationConfig: { temperature: 0.1, maxOutputTokens: 160, responseMimeType: 'application/json' },
-    }), '평가', questionNo);
-  const parts = request.data?.candidates?.[0]?.content?.parts || [];
-  const text = parts.map((part) => part?.text || '').filter(Boolean).join('\n');
-  const parsed = normalizeEvalResult(text);
-  if (!parsed) throw new Error('Gemini 응답을 파싱하지 못했습니다.');
+  const makeBody = (model, retry = false) => ({
+    contents: [{ parts: [{ text: retry
+      ? `${promptText}\n\nReturn exactly one compact JSON object now. Do not include markdown, comments, or any text outside the object.`
+      : promptText }] }],
+    generationConfig: buildGeminiGenerationConfig(model, {
+      maxOutputTokens: retry ? 1536 : 1024,
+      responseMimeType: 'application/json',
+    }),
+  });
+
+  let request = await runGeminiWithFallback(cfg, (model) => makeBody(model), '평가', questionNo);
+  let text = extractGeminiText(request.data);
+  let parsed = normalizeEvalResult(text);
+  if (!parsed) {
+    const firstFailure = describeGeminiResponse(request.data, text);
+    if (request.data?.promptFeedback?.blockReason) throw new Error(firstFailure);
+    // 모델이 빈 응답·잘린 JSON·코드블록을 반환하는 경우 한 번만 같은 문항을
+    // 재요청합니다. 재시도도 실패하면 기존의 오프라인 대체 경로로 넘어갑니다.
+    request = await runGeminiWithFallback(cfg, (model) => makeBody(model, true), '평가 재시도', questionNo);
+    text = extractGeminiText(request.data);
+    parsed = normalizeEvalResult(text);
+    if (!parsed) throw new Error(`${firstFailure} 재시도 후에도 유효한 JSON을 받지 못했습니다.`);
+  }
   parsed.model = request.model;
   return parsed;
 }
