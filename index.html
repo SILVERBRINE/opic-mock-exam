@@ -1273,6 +1273,7 @@ let localTtsEngine = null;
 let localTtsReady = false;
 let localTtsLoading = false;
 let localTtsPreparePromise = null;
+let localTtsBulkPreparing = false;
 
 const state = {
   questions: [],
@@ -1550,16 +1551,22 @@ function updateTtsButtons() {
   const prepareButton = document.getElementById('prepareLocalTtsBtn');
   const allButton = document.getElementById('prepareAllTtsBtn');
   if (prepareButton) {
-    prepareButton.disabled = localTtsLoading;
+    prepareButton.disabled = localTtsLoading || localTtsBulkPreparing;
     prepareButton.textContent = localTtsLoading
       ? '로컬 TTS 준비 중...'
+      : localTtsBulkPreparing
+        ? '녹음본 생성 중...'
       : localTtsReady
         ? '로컬 TTS 준비 완료'
         : '로컬 TTS 준비';
   }
   if (allButton) {
-    allButton.disabled = localTtsLoading;
-    allButton.textContent = localTtsLoading ? '음성 모델 준비 중...' : '200문항 녹음본 미리 만들기';
+    allButton.disabled = localTtsLoading || localTtsBulkPreparing;
+    allButton.textContent = localTtsLoading
+      ? '음성 모델 준비 중...'
+      : localTtsBulkPreparing
+        ? '녹음본 생성 중...'
+        : '200문항 녹음본 미리 만들기';
   }
 }
 
@@ -1811,9 +1818,10 @@ async function getQuestionAudio(question) {
 
 async function prepareAllQuestionRecordings() {
   const button = document.getElementById('prepareAllTtsBtn');
-  if (button?.disabled) return false;
+  if (button?.disabled || localTtsBulkPreparing) return false;
+  localTtsBulkPreparing = true;
+  updateTtsButtons();
   beginProcessing('200문항 녹음본 준비 중', 'Kokoro가 질문을 WAV로 만들고 브라우저 저장소에 보관합니다.');
-  if (button) button.disabled = true;
   try {
     await prepareLocalTts();
     let created = 0;
@@ -1835,6 +1843,7 @@ async function prepareAllQuestionRecordings() {
     return false;
   } finally {
     endProcessing();
+    localTtsBulkPreparing = false;
     if (button) button.disabled = false;
     updateTtsButtons();
   }
