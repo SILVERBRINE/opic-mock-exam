@@ -2142,8 +2142,13 @@ function createKokoroWorkerSlot(index) {
       if (!task) return;
       slot.pending.delete(message.id);
       slot.busy = false;
-      if (message.type === 'error') settleKokoroWorkerTask(task, makeKokoroWorkerError(message.message));
-      else settleKokoroWorkerTask(task, null, new Blob([message.buffer], { type: 'audio/wav' }));
+      if (message.type === 'error') {
+        const failure = makeKokoroWorkerError(message.message);
+        settleKokoroWorkerTask(task, failure);
+        failKokoroWorkerSlot(slot, failure);
+      } else {
+        settleKokoroWorkerTask(task, null, new Blob([message.buffer], { type: 'audio/wav' }));
+      }
       pumpKokoroWorkerSlot(slot);
     }
   };
