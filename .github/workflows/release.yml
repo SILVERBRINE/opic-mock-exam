@@ -30,7 +30,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir release
-          cp index.html README.md LICENSE release/
+          cp index.html coi-serviceworker.js README.md LICENSE release/
           (cd release && zip -r "../opic-mock-exam-${RELEASE_TAG}.zip" .)
 
       - name: Publish GitHub Release
@@ -79,4 +79,3 @@ jobs:
                 'content-length': data.length
               }
             });
-
