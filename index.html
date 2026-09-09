@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OPIc 모의고사 v1.1</title>
+  <title>OPIc 모의고사 v1.1.1</title>
   <script src="coi-serviceworker.js"></script>
   <style>
     :root {
@@ -1011,7 +1011,7 @@
           <div class="brand-mark" aria-hidden="true">O</div>
           <div>
             <div class="brand-kicker">SPEAKING PRACTICE</div>
-            <div class="brand-title">OPIc 모의고사 <span>v1.1</span></div>
+            <div class="brand-title">OPIc 모의고사 <span>v1.1.1</span></div>
           </div>
         </div>
         <div class="header-actions">
@@ -1821,13 +1821,14 @@ async function getQuestionAudio(question) {
 async function prepareAllQuestionRecordings() {
   const button = document.getElementById('prepareAllTtsBtn');
   if (button?.disabled || localTtsBulkPreparing) return false;
+  const total = activeQuestionBank.length;
   localTtsBulkPreparing = true;
   updateTtsButtons();
-  beginProcessing('200문항 녹음본 준비 중', 'Kokoro가 질문을 WAV로 만들고 브라우저 저장소에 보관합니다.');
+  beginProcessing('200문항 녹음본 준비 중', `0/${total}문항 · Kokoro 음성 모델과 WAV를 준비합니다.`);
   try {
     await prepareLocalTts();
     let created = 0;
-    for (let index = 0; index < activeQuestionBank.length; index += 1) {
+    for (let index = 0; index < total; index += 1) {
       const question = activeQuestionBank[index];
       const key = makeTtsCacheKey(question);
       const cached = await readCachedQuestionAudio(key);
@@ -1836,9 +1837,13 @@ async function prepareAllQuestionRecordings() {
         await cacheQuestionAudio(key, blob);
         created += 1;
       }
-      setTtsStatus(`녹음본 준비 중 · ${index + 1}/${activeQuestionBank.length}문항${created ? ` · 새로 생성 ${created}개` : ''}`);
+      const progress = `${index + 1}/${total}문항`;
+      const detail = `${progress} · 녹음본을 브라우저에 저장하는 중입니다.${created ? ` 새로 생성 ${created}개` : ''}`;
+      updateProcessingOverlay('', detail);
+      setTtsStatus(`녹음본 준비 중 · ${progress}${created ? ` · 새로 생성 ${created}개` : ''}`);
     }
-    setTtsStatus(`녹음본 준비 완료 · ${activeQuestionBank.length}문항을 이 PC에 캐시했습니다.`, 'good');
+    updateProcessingOverlay('', `${total}/${total}문항 · 녹음본 준비를 마쳤습니다.`);
+    setTtsStatus(`녹음본 준비 완료 · ${total}문항을 이 PC에 캐시했습니다.`, 'good');
     return true;
   } catch (error) {
     setTtsStatus(`녹음본 준비 실패 · 필요한 문항은 재생할 때 다시 시도합니다. (${error.message})`, 'warn');
