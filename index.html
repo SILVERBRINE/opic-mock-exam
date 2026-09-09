@@ -205,6 +205,8 @@
     .tts-option small { color: #7384a2; font-size: 10px; font-weight: 600; }
     .tts-option.active { border-color: #397cff; background: #eaf2ff; box-shadow: inset 0 0 0 1px rgba(57,124,255,.25); color: #1b55b5; }
     .tts-option:disabled { opacity: .52; cursor: not-allowed; }
+    .tts-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .tts-actions button { padding: 8px 11px; font-size: 11px; }
     .tts-status { color: #61769a; font-size: 11px; }
     .header-actions { display: flex; align-items: center; gap: 8px; }
     .header-actions button { padding: 9px 12px; font-size: 12px; }
@@ -1057,12 +1059,17 @@
             <button type="button" class="tts-option active" data-tts-mode="browser">
               <span>브라우저 TTS</span><small>지금 바로 사용 가능</small>
             </button>
-            <button type="button" class="tts-option" data-tts-mode="local" disabled>
-              <span>로컬 TTS</span><small>음성 모델 준비 후 제공</small>
+            <button type="button" class="tts-option" data-tts-mode="local">
+              <span>로컬 TTS</span><small>Kokoro 음성 모델 · PC에서 실행</small>
             </button>
-            <button type="button" class="tts-option" data-tts-mode="recording" disabled>
-              <span>녹음본</span><small>문항 음원 제작 후 제공</small>
+            <button type="button" class="tts-option" data-tts-mode="recording">
+              <span>녹음본</span><small>생성된 WAV를 PC에 캐시해 재생</small>
             </button>
+          </div>
+          <div class="tts-actions">
+            <button id="prepareLocalTtsBtn" type="button" class="ghost">로컬 TTS 준비</button>
+            <button id="prepareAllTtsBtn" type="button" class="ghost">200문항 녹음본 미리 만들기</button>
+            <button id="clearTtsCacheBtn" type="button" class="ghost">녹음본 캐시 삭제</button>
           </div>
           <div id="ttsStatus" class="tts-status">현재 브라우저 기본 음성으로 문항을 읽습니다.</div>
         </div>
@@ -1243,6 +1250,14 @@ const WHISPER_MODEL_SIZE_MB = 57;
 const WHISPER_CACHE_DB = 'opic-whisper-cache-v1';
 const WHISPER_CACHE_STORE = 'models';
 const WHISPER_CACHE_KEY = 'ggml-base.en-q5_1.bin';
+const KOKORO_TTS_MODULE_URL = 'https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/+esm';
+const KOKORO_TTS_FALLBACK_MODULE_URL = 'https://esm.run/kokoro-js@1.2.1';
+const KOKORO_TTS_MODEL_ID = 'onnx-community/Kokoro-82M-v1.0-ONNX';
+const KOKORO_TTS_VOICE = 'af_heart';
+const KOKORO_TTS_SIZE_MB = 86;
+const KOKORO_TTS_CACHE_DB = 'opic-tts-cache-v1';
+const KOKORO_TTS_CACHE_STORE = 'question-audio';
+const KOKORO_TTS_CACHE_VERSION = 1;
 const TOTAL_EXAM_SECONDS = 40 * 60;
 const QUESTION_SECONDS = 2 * 60;
 let localLlmModulePromise = null;
@@ -1253,6 +1268,11 @@ let whisperModule = null;
 let whisperInstance = null;
 let whisperModelReady = false;
 let whisperModelLoading = false;
+let localTtsModulePromise = null;
+let localTtsEngine = null;
+let localTtsReady = false;
+let localTtsLoading = false;
+let localTtsPreparePromise = null;
 
 const state = {
   questions: [],
@@ -1275,6 +1295,10 @@ const state = {
   audioStream: null,
   audioMimeType: '',
   audioStopPromise: null,
+  promptAudio: null,
+  promptPlaybackToken: 0,
+  promptPlaybackPending: false,
+  questionAudioCache: new Map(),
   recognitionRestartTimer: null,
   voiceStopPending: false,
   voiceStopFallbackTimer: null,
@@ -1515,6 +1539,30 @@ function closeHistory() {
   document.getElementById('historyModal')?.classList.add('hide');
 }
 
+function setTtsStatus(message, kind = '') {
+  const status = document.getElementById('ttsStatus');
+  if (!status) return;
+  status.textContent = message;
+  status.className = `tts-status ${kind}`.trim();
+}
+
+function updateTtsButtons() {
+  const prepareButton = document.getElementById('prepareLocalTtsBtn');
+  const allButton = document.getElementById('prepareAllTtsBtn');
+  if (prepareButton) {
+    prepareButton.disabled = localTtsLoading;
+    prepareButton.textContent = localTtsLoading
+      ? '로컬 TTS 준비 중...'
+      : localTtsReady
+        ? '로컬 TTS 준비 완료'
+        : '로컬 TTS 준비';
+  }
+  if (allButton) {
+    allButton.disabled = localTtsLoading;
+    allButton.textContent = localTtsLoading ? '음성 모델 준비 중...' : '200문항 녹음본 미리 만들기';
+  }
+}
+
 function setTtsMode(mode, options = {}) {
   const selected = ['browser', 'local', 'recording'].includes(mode) ? mode : 'browser';
   state.ttsMode = selected;
@@ -1523,19 +1571,279 @@ function setTtsMode(mode, options = {}) {
     button.classList.toggle('active', active);
     button.setAttribute('aria-pressed', String(active));
   });
-  const status = document.getElementById('ttsStatus');
-  if (status) {
-    status.textContent = selected === 'browser'
-      ? '현재 브라우저 기본 음성으로 문항을 읽습니다.'
-      : selected === 'local'
-        ? '로컬 TTS 음성 모델이 아직 준비되지 않아 브라우저 TTS를 사용합니다.'
-        : '문항 녹음본이 아직 준비되지 않아 브라우저 TTS를 사용합니다.';
+  if (selected === 'browser') {
+    setTtsStatus('현재 브라우저 기본 음성으로 문항을 읽습니다.');
+  } else if (selected === 'local') {
+    setTtsStatus(localTtsReady
+      ? 'Kokoro 로컬 TTS가 이 PC에서 문항을 생성합니다.'
+      : `Kokoro 로컬 TTS(${KOKORO_TTS_SIZE_MB}MB)는 준비 버튼을 누르거나 첫 문항에서 자동으로 준비됩니다.`);
+  } else {
+    setTtsStatus('녹음본은 Kokoro 음성으로 만든 WAV를 브라우저 저장소에 캐시해 다음 재생부터 바로 틀어줍니다.');
   }
+  updateTtsButtons();
   if (!options.skipSave) localStorage.setItem('opic-tts-mode-v1', selected);
 }
 
 function loadTtsPreference() {
   setTtsMode(localStorage.getItem('opic-tts-mode-v1') || 'browser', { skipSave: true });
+}
+
+function makeTtsCacheKey(question) {
+  const source = `${question?.id || ''}:${question?.prompt || ''}`;
+  let hash = 2166136261;
+  for (let index = 0; index < source.length; index += 1) {
+    hash ^= source.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `q-${question?.id || 0}-${(hash >>> 0).toString(16)}`;
+}
+
+function openKokoroTtsCacheDb() {
+  if (!window.indexedDB) return Promise.resolve(null);
+  return new Promise((resolve, reject) => {
+    const request = window.indexedDB.open(KOKORO_TTS_CACHE_DB, KOKORO_TTS_CACHE_VERSION);
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains(KOKORO_TTS_CACHE_STORE)) {
+        request.result.createObjectStore(KOKORO_TTS_CACHE_STORE);
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error('녹음본 저장소를 열지 못했습니다.'));
+  });
+}
+
+async function readCachedQuestionAudio(key) {
+  if (state.questionAudioCache.has(key)) return state.questionAudioCache.get(key);
+  let db = null;
+  try {
+    db = await openKokoroTtsCacheDb();
+    if (!db) return null;
+    return await new Promise((resolve, reject) => {
+      const transaction = db.transaction(KOKORO_TTS_CACHE_STORE, 'readonly');
+      const request = transaction.objectStore(KOKORO_TTS_CACHE_STORE).get(key);
+      request.onsuccess = () => {
+        const blob = request.result instanceof Blob ? request.result : null;
+        if (blob) state.questionAudioCache.set(key, blob);
+        resolve(blob);
+      };
+      request.onerror = () => reject(request.error || new Error('저장된 녹음본을 읽지 못했습니다.'));
+      transaction.oncomplete = () => db.close();
+      transaction.onerror = () => db.close();
+    });
+  } catch (error) {
+    if (db) db.close();
+    console.warn('녹음본 캐시를 읽지 못했습니다.', error);
+    return null;
+  }
+}
+
+async function cacheQuestionAudio(key, blob) {
+  if (!(blob instanceof Blob)) return false;
+  let db = null;
+  try {
+    db = await openKokoroTtsCacheDb();
+    if (!db) {
+      state.questionAudioCache.set(key, blob);
+      while (state.questionAudioCache.size > 8) state.questionAudioCache.delete(state.questionAudioCache.keys().next().value);
+      return false;
+    }
+    return await new Promise((resolve, reject) => {
+      const transaction = db.transaction(KOKORO_TTS_CACHE_STORE, 'readwrite');
+      transaction.objectStore(KOKORO_TTS_CACHE_STORE).put(blob, key);
+      transaction.oncomplete = () => { db.close(); resolve(true); };
+      transaction.onerror = () => { db.close(); reject(transaction.error || new Error('녹음본을 저장하지 못했습니다.')); };
+    });
+  } catch (error) {
+    if (db) db.close();
+    state.questionAudioCache.set(key, blob);
+    while (state.questionAudioCache.size > 8) state.questionAudioCache.delete(state.questionAudioCache.keys().next().value);
+    console.warn('녹음본 캐시 저장 실패:', error);
+    return false;
+  }
+}
+
+async function clearQuestionAudioCache() {
+  state.questionAudioCache.clear();
+  let db = null;
+  try {
+    db = await openKokoroTtsCacheDb();
+    if (!db) return false;
+    return await new Promise((resolve, reject) => {
+      const transaction = db.transaction(KOKORO_TTS_CACHE_STORE, 'readwrite');
+      transaction.objectStore(KOKORO_TTS_CACHE_STORE).clear();
+      transaction.oncomplete = () => { db.close(); resolve(true); };
+      transaction.onerror = () => { db.close(); reject(transaction.error || new Error('녹음본 캐시를 삭제하지 못했습니다.')); };
+    });
+  } catch (error) {
+    if (db) db.close();
+    console.warn('녹음본 캐시 삭제 실패:', error);
+    return false;
+  }
+}
+
+async function importKokoroTtsModule() {
+  const errors = [];
+  for (const url of [KOKORO_TTS_MODULE_URL, KOKORO_TTS_FALLBACK_MODULE_URL]) {
+    try {
+      const module = await import(url);
+      const KokoroTTS = module.KokoroTTS || module.default?.KokoroTTS;
+      if (KokoroTTS) return KokoroTTS;
+      errors.push(`${url}: KokoroTTS export 없음`);
+    } catch (error) {
+      errors.push(`${url}: ${error.message}`);
+    }
+  }
+  throw new Error(`로컬 TTS 모듈을 불러오지 못했습니다. ${errors.join(' / ')}`);
+}
+
+function updateKokoroProgress(progress) {
+  const value = Number(progress?.progress);
+  if (Number.isFinite(value) && value >= 0 && value <= 100) {
+    setTtsStatus(`Kokoro 로컬 TTS 모델 다운로드 중 · ${Math.round(value)}%`);
+  } else if (progress?.status) {
+    setTtsStatus(`Kokoro 로컬 TTS 준비 중 · ${progress.status}`);
+  }
+}
+
+async function prepareLocalTts() {
+  if (localTtsReady && localTtsEngine) {
+    updateTtsButtons();
+    return true;
+  }
+  if (localTtsPreparePromise) return localTtsPreparePromise;
+  localTtsLoading = true;
+  updateTtsButtons();
+  localTtsPreparePromise = (async () => {
+    try {
+      setTtsStatus(`Kokoro 로컬 TTS를 준비합니다. 처음 한 번 ${KOKORO_TTS_SIZE_MB}MB 정도를 내려받습니다...`);
+      if (!localTtsModulePromise) localTtsModulePromise = importKokoroTtsModule();
+      const KokoroTTS = await localTtsModulePromise;
+      const webgpu = Boolean(navigator.gpu);
+      const attempts = webgpu
+        ? [{ device: 'webgpu', dtype: 'q8f16' }, { device: 'wasm', dtype: 'q8' }]
+        : [{ device: 'wasm', dtype: 'q8' }];
+      let lastError = null;
+      for (const options of attempts) {
+        try {
+          setTtsStatus(`Kokoro 로컬 TTS 엔진 초기화 중 · ${options.device === 'webgpu' ? 'WebGPU' : 'WASM'}`);
+          localTtsEngine = await KokoroTTS.from_pretrained(KOKORO_TTS_MODEL_ID, {
+            ...options,
+            progress_callback: updateKokoroProgress,
+          });
+          break;
+        } catch (error) {
+          lastError = error;
+          localTtsEngine = null;
+          console.warn(`Kokoro ${options.device} 초기화 실패:`, error);
+        }
+      }
+      if (!localTtsEngine) throw lastError || new Error('Kokoro TTS 엔진을 만들지 못했습니다.');
+      localTtsReady = true;
+      setTtsStatus('준비 완료 · Kokoro 음성이 이 PC에서 생성됩니다.', 'good');
+      updateTtsButtons();
+      return true;
+    } catch (error) {
+      localTtsModulePromise = null;
+      localTtsEngine = null;
+      localTtsReady = false;
+      setTtsStatus(`로컬 TTS 준비 실패 · 브라우저 TTS로 대체할 수 있습니다. (${error.message})`, 'warn');
+      throw error;
+    } finally {
+      localTtsLoading = false;
+      localTtsPreparePromise = null;
+      updateTtsButtons();
+    }
+  })();
+  return localTtsPreparePromise;
+}
+
+function rawKokoroAudioToWavBlob(rawAudio) {
+  if (rawAudio instanceof Blob) return rawAudio;
+  const samples = rawAudio?.audio || rawAudio?.data;
+  if (!samples) throw new Error('Kokoro가 오디오 데이터를 반환하지 않았습니다.');
+  const source = samples instanceof Float32Array
+    ? samples
+    : ArrayBuffer.isView(samples)
+      ? Float32Array.from(samples)
+      : Float32Array.from(samples);
+  const sampleRate = Math.max(8000, Number(rawAudio?.sampling_rate || rawAudio?.samplingRate || rawAudio?.sampleRate) || 24000);
+  const buffer = new ArrayBuffer(44 + source.length * 2);
+  const view = new DataView(buffer);
+  const writeText = (offset, text) => { for (let i = 0; i < text.length; i += 1) view.setUint8(offset + i, text.charCodeAt(i)); };
+  writeText(0, 'RIFF');
+  view.setUint32(4, 36 + source.length * 2, true);
+  writeText(8, 'WAVE');
+  writeText(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeText(36, 'data');
+  view.setUint32(40, source.length * 2, true);
+  for (let index = 0; index < source.length; index += 1) {
+    const sample = Math.max(-1, Math.min(1, Number(source[index]) || 0));
+    view.setInt16(44 + index * 2, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+  }
+  return new Blob([buffer], { type: 'audio/wav' });
+}
+
+async function generateQuestionAudio(question) {
+  await prepareLocalTts();
+  setTtsStatus('문항 음성을 생성하는 중입니다. 잠시만 기다려 주세요.');
+  const output = await localTtsEngine.generate(question.prompt, {
+    voice: KOKORO_TTS_VOICE,
+    speed: 0.9,
+  });
+  return rawKokoroAudioToWavBlob(output);
+}
+
+async function getQuestionAudio(question) {
+  const key = makeTtsCacheKey(question);
+  const cached = await readCachedQuestionAudio(key);
+  if (cached) return cached;
+  const blob = await generateQuestionAudio(question);
+  await cacheQuestionAudio(key, blob);
+  return blob;
+}
+
+async function prepareAllQuestionRecordings() {
+  const button = document.getElementById('prepareAllTtsBtn');
+  if (button?.disabled) return false;
+  beginProcessing('200문항 녹음본 준비 중', 'Kokoro가 질문을 WAV로 만들고 브라우저 저장소에 보관합니다.');
+  if (button) button.disabled = true;
+  try {
+    await prepareLocalTts();
+    let created = 0;
+    for (let index = 0; index < activeQuestionBank.length; index += 1) {
+      const question = activeQuestionBank[index];
+      const key = makeTtsCacheKey(question);
+      const cached = await readCachedQuestionAudio(key);
+      if (!cached) {
+        const blob = await generateQuestionAudio(question);
+        await cacheQuestionAudio(key, blob);
+        created += 1;
+      }
+      setTtsStatus(`녹음본 준비 중 · ${index + 1}/${activeQuestionBank.length}문항${created ? ` · 새로 생성 ${created}개` : ''}`);
+    }
+    setTtsStatus(`녹음본 준비 완료 · ${activeQuestionBank.length}문항을 이 PC에 캐시했습니다.`, 'good');
+    return true;
+  } catch (error) {
+    setTtsStatus(`녹음본 준비 실패 · 필요한 문항은 재생할 때 다시 시도합니다. (${error.message})`, 'warn');
+    return false;
+  } finally {
+    endProcessing();
+    if (button) button.disabled = false;
+    updateTtsButtons();
+  }
+}
+
+async function clearTtsCache() {
+  if (!confirm('이 PC에 저장된 문항 녹음본을 모두 삭제할까요?')) return;
+  const cleared = await clearQuestionAudioCache();
+  setTtsStatus(cleared ? '녹음본 캐시를 삭제했습니다.' : '녹음본 캐시를 삭제했지만 브라우저 저장소를 사용할 수 없습니다.', cleared ? 'good' : 'warn');
 }
 
 function isValidSavedState(data) {
@@ -1744,12 +2052,15 @@ function setEvaluationControlsDisabled(disabled) {
   document.querySelectorAll('.mode-btn[data-mode]').forEach((button) => {
     button.disabled = Boolean(disabled);
   });
-  ['apiKeyInput', 'handshakeBtn', 'modelPickerButton', 'saveConfigBtn', 'clearConfigBtn', 'prepareLocalAiBtn'].forEach((id) => {
+  ['apiKeyInput', 'handshakeBtn', 'modelPickerButton', 'saveConfigBtn', 'clearConfigBtn', 'prepareLocalAiBtn', 'prepareLocalTtsBtn', 'prepareAllTtsBtn', 'clearTtsCacheBtn'].forEach((id) => {
     const element = document.getElementById(id);
     if (element) {
       if (disabled) element.disabled = true;
       else if (id !== 'prepareLocalAiBtn' || !whisperModelLoading) element.disabled = false;
     }
+  });
+  document.querySelectorAll('.tts-option[data-tts-mode]').forEach((button) => {
+    button.disabled = Boolean(disabled);
   });
   if (!disabled) applyEvalPresetByMode();
 }
@@ -2976,6 +3287,7 @@ function handleQuestionTimeout() {
 }
 
 function renderExam() {
+  stopPromptPlayback({ silent: true });
   const q = state.questions[state.idx];
   document.getElementById('examInfo').textContent = isPracticeMode()
     ? `연습모드 · 원문 ID: Q${String(q.id).padStart(3, '0')}`
@@ -3050,6 +3362,11 @@ function updatePromptButton() {
   const button = document.getElementById('playQuestionBtn');
   const q = state.questions[state.idx];
   if (!button || !q) return;
+  if (state.promptPlaybackPending) {
+    button.textContent = '문항 음성 준비 중...';
+    button.disabled = true;
+    return;
+  }
   const played = (state.promptPlayCount[q.no] || 0);
   const remaining = Math.max(0, 2 - played);
   if (remaining <= 0) {
@@ -3070,31 +3387,38 @@ function chooseNaturalEnglishVoice() {
     || null;
 }
 
-function speakQuestion() {
-  const q = state.questions[state.idx];
-  if (!q) return;
+function stopPromptPlayback(options = {}) {
+  state.promptPlaybackToken += 1;
+  state.promptPlaybackPending = false;
+  if (state.promptAudio) {
+    const audio = state.promptAudio;
+    state.promptAudio = null;
+    try { audio.pause(); } catch (error) { console.warn('문항 오디오 중지 실패:', error); }
+    const source = audio.src;
+    audio.removeAttribute('src');
+    try { audio.load(); } catch (error) { /* 일부 브라우저는 이미 해제된 오디오에서 load를 거부합니다. */ }
+    if (source && source.startsWith('blob:')) URL.revokeObjectURL(source);
+  }
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  if (!options.silent) updatePromptButton();
+}
 
-  const canUseTTS = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
-  const button = document.getElementById('playQuestionBtn');
+function completePromptPlayback(q, token, message, isError = false) {
+  if (token !== state.promptPlaybackToken) return;
+  state.promptPlaybackPending = false;
+  state.promptPlayCount[q.no] = Math.min(2, (state.promptPlayCount[q.no] || 0) + 1);
+  updatePromptButton();
   const status = document.getElementById('voiceStatus');
+  if (status) status.textContent = message;
+  if (isError) console.warn('문항 음성 재생 실패:', message);
+  saveProgress();
+}
 
-  const playCount = state.promptPlayCount[q.no] || 0;
-  if (playCount >= 2) {
-    status.textContent = '문항은 2회까지만 들을 수 있습니다.';
-    return;
+function speakQuestionWithBrowser(q, token, prefix = '') {
+  if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
+    throw new Error('이 브라우저는 브라우저 TTS를 지원하지 않습니다.');
   }
-  if (!canUseTTS) {
-    status.textContent = '이 브라우저는 음성 재생을 지원하지 않습니다.';
-    button.disabled = true;
-    return;
-  }
-  if (state.ttsMode !== 'browser') {
-    status.textContent = state.ttsMode === 'local'
-      ? '로컬 TTS 모델이 아직 준비되지 않아 브라우저 TTS로 재생합니다.'
-      : '녹음본이 아직 준비되지 않아 브라우저 TTS로 재생합니다.';
-  }
-
-  beginQuestionTimer();
+  const status = document.getElementById('voiceStatus');
   const utterance = new SpeechSynthesisUtterance(q.prompt);
   utterance.lang = 'en-US';
   utterance.rate = 0.86;
@@ -3103,24 +3427,96 @@ function speakQuestion() {
   const voice = chooseNaturalEnglishVoice();
   if (voice) utterance.voice = voice;
   utterance.onstart = () => {
-    status.textContent = '질문을 읽어드리는 중...';
+    if (token !== state.promptPlaybackToken) return;
+    beginQuestionTimer();
+    if (status) status.textContent = `${prefix}질문을 읽어드리는 중...`;
   };
-  utterance.onend = () => {
-    state.promptPlayCount[q.no] = Math.min(2, (state.promptPlayCount[q.no] || 0) + 1);
-    updatePromptButton();
-    status.textContent = '문항을 듣기 완료. 답변을 마이크로 진행하세요.';
-    saveProgress();
-  };
-  utterance.onerror = () => {
-    state.promptPlayCount[q.no] = Math.min(2, (state.promptPlayCount[q.no] || 0) + 1);
-    updatePromptButton();
-    status.textContent = '재생 오류가 발생해 문항 듣기로 간주됩니다.';
-    saveProgress();
-  };
-
-  updatePromptButton();
+  utterance.onend = () => completePromptPlayback(q, token, '문항을 듣기 완료. 답변을 마이크로 진행하세요.');
+  utterance.onerror = () => completePromptPlayback(q, token, '재생 오류가 발생해 문항 듣기로 간주됩니다.', true);
   speechSynthesis.cancel();
   speechSynthesis.speak(utterance);
+}
+
+async function speakQuestionWithLocalAudio(q, token, sourceMode) {
+  const status = document.getElementById('voiceStatus');
+  if (status) status.textContent = sourceMode === 'recording'
+    ? '녹음본을 불러오는 중입니다...'
+    : '로컬 TTS 음성을 생성하는 중입니다...';
+  const blob = await getQuestionAudio(q);
+  if (token !== state.promptPlaybackToken) return;
+  const url = URL.createObjectURL(blob);
+  const audio = new Audio(url);
+  audio.preload = 'auto';
+  audio.volume = 0.96;
+  state.promptAudio = audio;
+  audio.onplay = () => {
+    if (token !== state.promptPlaybackToken) return;
+    beginQuestionTimer();
+    if (status) status.textContent = sourceMode === 'recording' ? '녹음본 재생 중...' : '로컬 TTS로 질문을 읽는 중...';
+  };
+  audio.onended = () => {
+    if (state.promptAudio === audio) state.promptAudio = null;
+    URL.revokeObjectURL(url);
+    completePromptPlayback(q, token, '문항을 듣기 완료. 답변을 마이크로 진행하세요.');
+  };
+  audio.onerror = () => {
+    if (state.promptAudio === audio) state.promptAudio = null;
+    URL.revokeObjectURL(url);
+    completePromptPlayback(q, token, '녹음본 재생 오류가 발생해 문항 듣기로 간주됩니다.', true);
+  };
+  await audio.play();
+}
+
+async function speakQuestion() {
+  const q = state.questions[state.idx];
+  if (!q) return;
+  const button = document.getElementById('playQuestionBtn');
+  const status = document.getElementById('voiceStatus');
+  const playCount = state.promptPlayCount[q.no] || 0;
+  if (playCount >= 2) {
+    status.textContent = '문항은 2회까지만 들을 수 있습니다.';
+    return;
+  }
+  if (state.promptPlaybackPending) {
+    status.textContent = '문항 음성을 준비하는 중입니다. 잠시만 기다려 주세요.';
+    return;
+  }
+
+  stopPromptPlayback({ silent: true });
+  const token = state.promptPlaybackToken;
+  state.promptPlaybackPending = true;
+  if (button) button.disabled = true;
+  updatePromptButton();
+  try {
+    if (state.ttsMode === 'browser') {
+      speakQuestionWithBrowser(q, token);
+    } else {
+      await speakQuestionWithLocalAudio(q, token, state.ttsMode);
+    }
+  } catch (error) {
+    if (token !== state.promptPlaybackToken) return;
+    if (state.promptAudio) {
+      const failedAudio = state.promptAudio;
+      state.promptAudio = null;
+      try { failedAudio.pause(); } catch (pauseError) { console.warn('실패한 문항 오디오 중지 실패:', pauseError); }
+      const failedUrl = failedAudio.src;
+      failedAudio.removeAttribute('src');
+      try { failedAudio.load(); } catch (loadError) { /* 이미 실패한 오디오일 수 있습니다. */ }
+      if (failedUrl && failedUrl.startsWith('blob:')) URL.revokeObjectURL(failedUrl);
+    }
+    if (state.ttsMode !== 'browser' && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window) {
+      if (status) status.textContent = `${state.ttsMode === 'local' ? '로컬 TTS' : '녹음본'}을 사용할 수 없어 브라우저 TTS로 대체합니다.`;
+      try {
+        speakQuestionWithBrowser(q, token, '대체 음성 · ');
+        return;
+      } catch (fallbackError) {
+        error = fallbackError;
+      }
+    }
+    state.promptPlaybackPending = false;
+    updatePromptButton();
+    if (status) status.textContent = `문항 음성을 재생하지 못했습니다. ${error.message || ''}`;
+  }
 }
 
 function normalizeTranscriptText(text) {
@@ -4565,6 +4961,15 @@ document.querySelectorAll('.tts-option[data-tts-mode]').forEach((button) => {
     setTtsMode(button.dataset.ttsMode);
   });
 });
+document.getElementById('prepareLocalTtsBtn').addEventListener('click', async () => {
+  try {
+    await prepareLocalTts();
+  } catch (error) {
+    console.warn('로컬 TTS 준비 실패:', error);
+  }
+});
+document.getElementById('prepareAllTtsBtn').addEventListener('click', prepareAllQuestionRecordings);
+document.getElementById('clearTtsCacheBtn').addEventListener('click', clearTtsCache);
 document.getElementById('saveConfigBtn').addEventListener('click', saveEvalConfig);
 document.getElementById('clearConfigBtn').addEventListener('click', clearEvalConfig);
 document.querySelectorAll('.mode-btn[data-mode]').forEach((btn) => {
