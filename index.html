@@ -4476,6 +4476,12 @@ async function speakQuestionWithLocalAudio(q, token, sourceMode) {
     URL.revokeObjectURL(url);
     completePromptPlayback(q, token, '녹음본 재생에 실패했습니다. 듣기 횟수는 차감되지 않으니 다시 눌러 주세요.', true);
   };
+  clearTimeout(state.promptWatchdog);
+  state.promptWatchdog = setTimeout(() => {
+    if (token !== state.promptPlaybackToken || !state.promptPlaybackPending) return;
+    completePromptPlayback(q, token, '녹음본 재생 응답이 없어 중단했습니다. 다시 재생해 주세요.', true);
+    stopPromptPlayback({ silent: true });
+  }, 120000);
   await audio.play();
 }
 
@@ -4651,6 +4657,13 @@ async function startAudioCapture() {
         if (state.isRecording && !state.voiceFinalizing) requestVoiceCaptureStop();
       };
     });
+    for (const track of stream.getAudioTracks()) {
+      track.addEventListener('ended', () => {
+        if (state.audioRecorder !== recorder || !state.isRecording || state.voiceFinalizing) return;
+        state.audioCaptureError = '마이크 연결이 끊겼습니다. 녹음을 저장하고 마이크를 다시 연결해 주세요.';
+        requestVoiceCaptureStop();
+      }, { once: true });
+    }
     recorder.start(250);
     return true;
   } catch (error) {
@@ -5500,6 +5513,7 @@ function combineOfflineEvaluation(ruleResult, localResult) {
   const blendedScore = Math.round((ruleScore * 0.7) + (localScore * 0.3));
   return {
     ...localResult,
+    provisional: true,
     score: blendedScore,
     criteria,
     words: ruleResult.words,
@@ -5543,7 +5557,7 @@ function buildEvaluationHtml(result, question = null, answer = '') {
   const modelNote = result.model ? ` · ${escapeHtml(modelDisplayName(result.model))}` : '';
   const fallbackNotice = result.fallbackReason
     ? `<p class="evaluation-tip" role="status">온라인 평가 실패 · 임시 규칙 평가입니다. API 설정은 유지됩니다. ${escapeHtml(result.fallbackReason)}</p>`
-    : result.provisional ? '<p class="evaluation-tip">규칙 기반 임시 참고 점수입니다. 질문 충족 여부·문법·발음을 정확히 채점한 결과는 아닙니다.</p>' : '';
+    : result.provisional ? '<p class="evaluation-tip">오프라인 임시 참고 점수입니다. 규칙 평가와 소형 AI는 질문 충족 여부·문법·발음을 잘못 판단할 수 있습니다.</p>' : '';
   return `<div class="evaluation-head"><div><strong>평가 결과${result.provisional ? ' (임시)' : ''}</strong><span class="small"> · ${escapeHtml(result.words || 0)}단어${modelNote}</span></div><strong class="evaluation-total">${Math.round(result.score)}/100</strong></div>` +
     fallbackNotice +
     questionHtml +

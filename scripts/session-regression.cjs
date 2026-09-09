@@ -38,6 +38,29 @@ async function main() {
  });
  assert.equal(capture.started,true);
  assert.ok(capture.size>0);
+ const disconnected=await page.evaluate(async()=>{
+   const originalStop=requestVoiceCaptureStop;let stops=0;
+   requestVoiceCaptureStop=()=>{stops++;};
+   try {
+     await startAudioCapture();state.isRecording=true;
+     state.audioStream.getAudioTracks()[0].dispatchEvent(new Event('ended'));
+     const message=state.audioCaptureError;
+     state.isRecording=false;await stopAudioCapture();releaseMicrophoneStream();
+     return {stops,message};
+   }finally{requestVoiceCaptureStop=originalStop;state.isRecording=false;state.audioCaptureError='';}
+ });
+ assert.equal(disconnected.stops,1);assert.match(disconnected.message,/연결이 끊겼/);
+ const stalledAudio=await page.evaluate(async()=>{
+   const originalAudio=window.Audio,originalGet=getQuestionAudio,originalTimeout=window.setTimeout;
+   let watchdog;window.Audio=class{constructor(src){this.src=src;}play(){return Promise.resolve();}pause(){}removeAttribute(){}load(){}};
+   getQuestionAudio=async()=>new Blob(['test']);window.setTimeout=(fn,ms)=>ms===120000?(watchdog=fn,0):originalTimeout(fn,ms);
+   try{
+     const q=state.questions[0];state.promptPlaybackPending=true;const count=state.promptPlayCount[q.no]||0;
+     await speakQuestionWithLocalAudio(q,state.promptPlaybackToken,'recording');watchdog();
+     return {pending:state.promptPlaybackPending,released:state.promptAudio===null,count:state.promptPlayCount[q.no]||0,previous:count};
+   }finally{window.Audio=originalAudio;getQuestionAudio=originalGet;window.setTimeout=originalTimeout;}
+ });
+ assert.equal(stalledAudio.pending,false);assert.equal(stalledAudio.released,true);assert.equal(stalledAudio.count,stalledAudio.previous);
  // Exercise the real HTTP wrapper, parser, STT queue, evaluation queue and UI.
  let transcriptions=0;
  await page.route('https://generativelanguage.googleapis.com/**',async route=>{
