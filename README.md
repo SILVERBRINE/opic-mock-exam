@@ -71,10 +71,6 @@ API 키는 이 정적 페이지에서 Google API로 직접 전송됨. 키는 브
 
 로컬 Whisper WASM은 `coi-serviceworker.js`가 있는 HTTPS Pages 또는 `localhost`에서 준비하는 것이 안정적입니다. 파일을 직접 열거나 비공개 모드에서 실행하면 서비스 워커·IndexedDB가 제한될 수 있어 브라우저 음성인식과 규칙 평가로 자동 대체됩니다.
 
-## GitHub Pages
-
-`main` 브랜치에 push하면 `.github/workflows/pages.yml`이 정적 파일을 GitHub Pages에 자동 배포함. 저장소 설정에서 **Settings → Pages → Source: GitHub Actions**만 한 번 골라두면 됨. Pages 주소는 **Actions** 실행 결과나 **Settings → Pages**에서 확인 가능.
-
 ## 구조
 
 ```text
