@@ -134,6 +134,16 @@ async function main() {
  const safeMarkup=await page.evaluate(()=>sanitizeFeedbackHtml('<style>@import "https://example.invalid/style.css";</style><div style="background:u\\72l(https://example.invalid)">text</div><div style="width:50%"></div>'));
  assert.doesNotMatch(safeMarkup,/<style|background|example\.invalid/);assert.match(safeMarkup,/width:50%/);
  assert.equal(await page.evaluate(()=>normalizeEvalResult('{"content":4,"fluency":4,"grammar":4,"pronunciation":5,"tip":"  "}')),null);
+ const pronunciationExcluded=await page.evaluate(()=>{
+   const parsed=normalizeEvalResult(JSON.stringify({content:8,fluency:7,grammar:6,pronunciation:null,tip:'Add details.'}));
+   const answer='I live in a small apartment with my family. I like the sunny kitchen because we cook together every weekend and talk about our plans.';
+   const guarded=applyEvaluationGuard(parsed,'',answer,'묘사',{recognitionConfidence:1});
+   const html=buildEvaluationHtml(guarded);
+   const history=sanitizeImportedHistoryEntry({id:'pronunciation-test',prompt:'Home',answer,score:70,criteria:guarded.criteria},0);
+   const group=parseExamGroup(JSON.stringify({results:[{questionNo:1,content:8,fluency:7,grammar:6,pronunciation:null,tip:'Add details.'}]}),[{no:1}]);
+   return {score:guarded.score,pronunciation:guarded.criteria.pronunciation,html,historyPronunciation:history.criteria.pronunciation,groupScore:group.get('1').score};
+ });
+ assert.equal(pronunciationExcluded.score,70);assert.equal(pronunciationExcluded.pronunciation,null);assert.equal(pronunciationExcluded.historyPronunciation,null);assert.equal(pronunciationExcluded.groupScore,70);assert.match(pronunciationExcluded.html,/평가 불가/);assert.match(pronunciationExcluded.html,/총점 제외/);
  await page.unroute('https://generativelanguage.googleapis.com/**');
  let quotaRequests=0;
  await page.route('https://generativelanguage.googleapis.com/**',async route=>{
@@ -159,7 +169,7 @@ async function main() {
  await page.evaluate(()=>{state.apiHandshake.gemini.model='gemini-2.5-flash';renderModelSelect('gemini');});
  const retried=await page.evaluate(()=>evaluateWithGemini('Describe home','My home is small.','묘사',{},99));
  assert.equal(evaluationRequests,2);assert.equal(retried.criteria.grammar,3);
- assert.equal(requestBodies[0].generationConfig.responseSchema.required.length,5);
+ assert.equal(requestBodies[0].generationConfig.responseSchema.required.length,8);
  assert.equal(requestBodies[0].generationConfig.maxOutputTokens,4096);
  assert.equal(requestBodies[1].generationConfig.maxOutputTokens,8192);
  // Permanent malformed response: bounded retries, truthful visible fallback, unchanged API mode.
@@ -367,7 +377,7 @@ async function main() {
      return {score:normal.score,error,readyAfterTimeout,readyAfterLateResult:localLlmReady,rejected};
    }finally{localLlmEngine=oldEngine;localLlmReady=oldReady;localLlmFault=oldFault;}
  });
- assert.equal(localDeadline.score,43);assert.match(localDeadline.error,/시간이 초과/);
+ assert.equal(localDeadline.score,40);assert.match(localDeadline.error,/시간이 초과/);
  assert.equal(localDeadline.readyAfterTimeout,false);assert.equal(localDeadline.readyAfterLateResult,false);assert.equal(localDeadline.rejected,true);
  const microphoneFailures=await page.evaluate(async()=>{
    releaseMicrophoneStream();
