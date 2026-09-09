@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OPIc 모의고사 v1.2</title>
+  <title>OPIc 모의고사 v1.3</title>
   <script src="coi-serviceworker.js"></script>
   <style>
     :root {
@@ -869,16 +869,17 @@
     }
     .brand-title { color: #152b53; font-size: 16px; font-weight: 800; }
     .brand-title span { color: #7183a5; font-size: 11px; font-weight: 700; margin-left: 4px; }
-    .top-settings {
-      padding: 9px 12px;
-      border: 1px solid #d6e0f2;
-      border-radius: 9px;
-      background: #fff;
-      color: #29446f;
+     .top-settings {
+       padding: 9px 12px;
+       border: 1px solid #d6e0f2;
+       border-radius: 9px;
+       background: #fff;
+       color: #29446f;
       font-size: 13px;
-      font-weight: 700;
-      white-space: nowrap;
-    }
+       font-weight: 700;
+       white-space: nowrap;
+     }
+     .top-link { display: inline-flex; align-items: center; text-decoration: none; }
     .hero-heading {
       display: flex;
       align-items: flex-end;
@@ -1006,15 +1007,16 @@
 <body>
   <div class="wrap">
     <section class="panel hero">
-      <header class="app-header">
+  <header class="app-header">
         <div class="brand-lockup">
           <div class="brand-mark" aria-hidden="true">O</div>
           <div>
             <div class="brand-kicker">SPEAKING PRACTICE</div>
-            <div class="brand-title">OPIc 모의고사 <span>v1.2</span></div>
+            <div class="brand-title">OPIc 모의고사 <span>v1.3</span></div>
           </div>
         </div>
         <div class="header-actions">
+          <a class="top-settings top-link" href="https://github.com/SILVERBRINE/opic-mock-exam" target="_blank" rel="noopener noreferrer">↗ 개발자 페이지</a>
           <button id="historyBtn" type="button" class="top-settings" aria-haspopup="dialog">🗂 히스토리</button>
           <button id="settingsBtn" type="button" class="top-settings" aria-haspopup="dialog">⚙ 환경 설정</button>
         </div>
@@ -1057,13 +1059,13 @@
         <div class="tts-choice">
           <strong>문항 음성 방식</strong>
           <div class="tts-options" role="group" aria-label="문항 음성 방식">
-            <button type="button" class="tts-option active" data-tts-mode="browser">
+             <button type="button" class="tts-option" data-tts-mode="browser">
               <span>브라우저 TTS</span><small>지금 바로 사용 가능</small>
             </button>
             <button type="button" class="tts-option" data-tts-mode="local">
               <span>로컬 TTS</span><small>Kokoro 음성 모델 · PC에서 실행</small>
             </button>
-            <button type="button" class="tts-option" data-tts-mode="recording">
+             <button type="button" class="tts-option active" data-tts-mode="recording">
               <span>녹음본</span><small>생성된 WAV를 PC에 캐시해 재생</small>
             </button>
           </div>
@@ -1072,16 +1074,16 @@
             <button id="prepareAllTtsBtn" type="button" class="ghost">200문항 녹음본 미리 만들기</button>
             <button id="clearTtsCacheBtn" type="button" class="ghost">녹음본 캐시 삭제</button>
           </div>
-          <div id="ttsStatus" class="tts-status">현재 브라우저 기본 음성으로 문항을 읽습니다.</div>
+           <div id="ttsStatus" class="tts-status">녹음본을 우선 사용합니다. 캐시에 없으면 로컬 TTS로 생성합니다.</div>
           <div class="tts-status">200문항 녹음본은 생성 후 WAV 구조와 신호를 확인합니다. PC 사양에 따라 30분 이상 걸릴 수 있으며, 가능한 환경에서는 여러 문항을 동시에 생성합니다.</div>
         </div>
       </div>
-      <div class="section-divider"><span>평가 방식</span><small>처음 사용한다면 ‘오프라인 기본 평가’를 추천합니다.</small></div>
+      <div class="section-divider"><span>평가 방식</span><small>추천 설정: 녹음본 + Gemini API · API 키를 연결하면 더 정밀하게 평가합니다.</small></div>
       <div class="setup-row config-row">
         <div class="field">
           <label>어떻게 평가할까요?</label>
           <div class="mode-grid" id="modeSelect" role="group" aria-label="평가 방식">
-            <button type="button" class="mode-btn active" data-mode="local">
+             <button type="button" class="mode-btn" data-mode="local">
               <span>오프라인 기본 평가</span>
               <small>인터넷 불필요 · 바로 시작</small>
             </button>
@@ -1089,7 +1091,7 @@
               <span>OpenAI API</span>
               <small>정밀한 AI 피드백 · 키 필요</small>
             </button>
-            <button type="button" class="mode-btn" data-mode="gemini">
+             <button type="button" class="mode-btn active" data-mode="gemini">
               <span>Gemini API</span>
               <small>정밀한 AI 피드백 · 키 필요</small>
             </button>
@@ -1325,6 +1327,7 @@ const state = {
   voiceStopPending: false,
   voiceStopFallbackTimer: null,
   voiceFinalizing: false,
+  voiceQuestion: null,
   submitInProgress: false,
   deviceTestStream: null,
   deviceTestContext: null,
@@ -1359,7 +1362,7 @@ const state = {
   processingTasks: 0,
   processingTitle: '처리 중입니다',
   processingDetail: '잠시만 기다려 주세요.',
-  ttsMode: 'browser',
+  ttsMode: 'recording',
   history: [],
   historyStorageKey: 'opic-practice-history-v1',
   modelCatalog: {
@@ -1377,6 +1380,8 @@ const DEFAULT_MODELS = {
   // Google의 latest 별칭은 현재 제공되는 Flash 릴리스를 가리킵니다.
   gemini: 'gemini-flash-latest',
 };
+const DEFAULT_EVAL_MODE = 'gemini';
+const DEFAULT_TTS_MODE = 'recording';
 const GEMINI_AUTO_MODEL = 'auto';
 // 브라우저에서 확인할 수 있는 것은 이 탭이 보낸 요청뿐이므로, 실제 계정 한도의 보장이 아닌 보수적 완충값으로 사용합니다.
 const GEMINI_CLIENT_RPM_CAP = 4;
@@ -1592,7 +1597,7 @@ function updateTtsButtons() {
 }
 
 function setTtsMode(mode, options = {}) {
-  const selected = ['browser', 'local', 'recording'].includes(mode) ? mode : 'browser';
+  const selected = ['browser', 'local', 'recording'].includes(mode) ? mode : DEFAULT_TTS_MODE;
   state.ttsMode = selected;
   document.querySelectorAll('.tts-option[data-tts-mode]').forEach((button) => {
     const active = button.dataset.ttsMode === selected;
@@ -1613,7 +1618,7 @@ function setTtsMode(mode, options = {}) {
 }
 
 function loadTtsPreference() {
-  setTtsMode(localStorage.getItem('opic-tts-mode-v1') || 'browser', { skipSave: true });
+  setTtsMode(localStorage.getItem('opic-tts-mode-v1') || DEFAULT_TTS_MODE, { skipSave: true });
 }
 
 function makeTtsCacheKey(question) {
@@ -2661,12 +2666,12 @@ function loadEvalConfig() {
   const raw = localStorage.getItem(state.configStorageKey);
   if (!raw) {
     localStorage.removeItem('opic-mock-api-key-plain');
-    setEvalMode('local', { skipSave: true });
+    setEvalMode(DEFAULT_EVAL_MODE, { skipSave: true });
     document.getElementById('apiKeyInput').value = '';
     state.apiHandshake.openai = { ready: false, fingerprint: '', model: '', selectionSource: '', verifiedAt: '' };
     state.apiHandshake.gemini = { ready: false, fingerprint: '', model: '', selectionSource: '', verifiedAt: '' };
-    renderModelSelect('local');
-    document.getElementById('evalStatus').textContent = '평가 방식: 오프라인 기본 평가';
+    renderModelSelect(DEFAULT_EVAL_MODE);
+    document.getElementById('evalStatus').textContent = 'Gemini API 추천 · 연결 키를 입력해 주세요';
     return;
   }
   try {
@@ -2724,11 +2729,11 @@ function clearEvalConfig() {
   localStorage.removeItem(state.configStorageKey);
   localStorage.removeItem('opic-mock-api-key-plain');
   document.getElementById('apiKeyInput').value = '';
-  setEvalMode('local', { skipSave: true });
+  setEvalMode(DEFAULT_EVAL_MODE, { skipSave: true });
   applyEvalPresetByMode();
   state.apiHandshake.openai = { ready: false, fingerprint: '', model: '', selectionSource: '', verifiedAt: '' };
   state.apiHandshake.gemini = { ready: false, fingerprint: '', model: '', selectionSource: '', verifiedAt: '' };
-  renderModelSelect('local');
+  renderModelSelect(DEFAULT_EVAL_MODE);
   updateEvalStatus();
 }
 
@@ -3715,6 +3720,8 @@ function startExam(modeOverride = '') {
     return;
   }
 
+  // 시작 전에 진단용 스트림을 닫아 시험 녹음과 마이크 권한이 충돌하지 않게 합니다.
+  if (state.deviceTestStream) stopMicTest();
   state.sessionMode = getSessionMode();
   const restored = restoreProgress();
   const restoredMode = restored?.sessionMode || (restored?.questions?.length === 1 ? 'practice' : 'exam');
@@ -3903,8 +3910,11 @@ function armVoiceStopFallback() {
 
 async function requestVoiceCaptureStop() {
   if (state.voiceFinalizing || state.voiceStopPending) return;
+  state.voiceQuestion = state.voiceQuestion || state.questions[state.idx] || null;
   state.voiceStopPending = true;
   state.manualStopRequested = true;
+  const nextButton = document.getElementById('nextBtn');
+  if (nextButton) nextButton.disabled = true;
   updateVoiceButton();
   if (state.recognitionRestartTimer) {
     clearTimeout(state.recognitionRestartTimer);
@@ -4311,6 +4321,7 @@ function chooseSpeechAlternative(result) {
 async function startAudioCapture() {
   if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) return false;
   try {
+    if (state.audioRecorder && state.audioRecorder.state !== 'inactive') return true;
     const streamIsUsable = state.audioStream?.active && state.audioStream.getAudioTracks?.().some((track) => track.readyState === 'live');
     const stream = streamIsUsable
       ? state.audioStream
@@ -4330,12 +4341,19 @@ async function startAudioCapture() {
     state.audioChunks = [];
     state.audioMimeType = recorder.mimeType || mimeType || 'audio/webm';
     state.audioStopPromise = new Promise((resolve) => {
+      let settled = false;
+      const settle = (blob) => {
+        if (settled) return;
+        settled = true;
+        resolve(blob);
+      };
       recorder.ondataavailable = (event) => {
         if (event.data && event.data.size > 0) state.audioChunks.push(event.data);
       };
       recorder.onstop = () => {
-        resolve(new Blob(state.audioChunks, { type: state.audioMimeType }));
+        settle(new Blob(state.audioChunks, { type: state.audioMimeType }));
       };
+      recorder.onerror = () => settle(new Blob(state.audioChunks, { type: state.audioMimeType }));
     });
     recorder.start(250);
     return true;
@@ -4352,8 +4370,15 @@ async function stopAudioCapture() {
   if (!recorder || !stopPromise) {
     return null;
   }
-  if (recorder.state !== 'inactive') recorder.stop();
-  const blob = await stopPromise;
+  if (recorder.state !== 'inactive') {
+    try { recorder.requestData?.(); } catch (error) { /* 일부 브라우저는 종료 중 requestData를 거부합니다. */ }
+    try { recorder.stop(); } catch (error) { console.warn('녹음기를 종료하지 못했습니다.', error); }
+  }
+  const timeout = new Promise((resolve) => window.setTimeout(() => resolve(null), 1500));
+  let blob = await Promise.race([stopPromise, timeout]).catch(() => null);
+  if (!blob || blob.size === 0) {
+    blob = new Blob(state.audioChunks, { type: state.audioMimeType || recorder.mimeType || 'audio/webm' });
+  }
   state.audioRecorder = null;
   state.audioChunks = [];
   state.audioStopPromise = null;
@@ -4415,7 +4440,6 @@ async function transcribeCapturedAudioWithGemini(blob, cfg, questionNo = '') {
 function queueCapturedAudioTranscription(q, blob, fallbackTranscript = '') {
   if (!q || !blob) return null;
   if (state.transcriptionJobs[q.no]) return state.transcriptionJobs[q.no];
-  beginProcessing('음성 전사 중', '녹음된 답변을 문장으로 정리하고 있습니다.');
   const job = transcribeCapturedAudio(blob, q.no)
     .catch((error) => {
       console.warn('백그라운드 고품질 전사 실패:', error);
@@ -4445,7 +4469,6 @@ function queueCapturedAudioTranscription(q, blob, fallbackTranscript = '') {
     })
     .finally(() => {
       delete state.transcriptionJobs[q.no];
-      endProcessing();
     });
   state.transcriptionJobs[q.no] = job;
   return job;
@@ -4454,7 +4477,8 @@ function queueCapturedAudioTranscription(q, blob, fallbackTranscript = '') {
 async function finalizeVoiceTurn() {
   if (state.voiceFinalizing) return;
   state.voiceFinalizing = true;
-  const q = state.questions[state.idx];
+  // 다음 문제 버튼을 빠르게 눌러도 녹음을 시작했던 문항에 결과를 귀속합니다.
+  const q = state.voiceQuestion || state.questions[state.idx];
   const status = document.getElementById('voiceStatus');
   const answerField = document.getElementById('answerInput');
   const nextButton = document.getElementById('nextBtn');
@@ -4493,6 +4517,7 @@ async function finalizeVoiceTurn() {
     clearVoiceStopFallback();
     state.voiceStopPending = false;
     state.voiceFinalizing = false;
+    state.voiceQuestion = null;
     updateVoiceButton();
     if (nextButton && q && state.questions[state.idx]?.no === q.no && !isPracticeMode()) {
       nextButton.disabled = false;
@@ -4513,13 +4538,20 @@ function restartRecognitionSoon() {
   }, 180);
 }
 
+function shouldUseBrowserRecognition() {
+  const mode = readEvalConfig().mode;
+  // API와 로컬 Whisper 경로는 녹음 원본을 종료 후 전사하므로 브라우저
+  // SpeechRecognition을 함께 시작하지 않습니다. 이렇게 하면 문항마다
+  // 브라우저 음성 인식 권한을 다시 묻는 문제를 피하고, 마이크 스트림 하나를
+  // 모의고사 전체에서 재사용할 수 있습니다.
+  return mode === 'local' && !whisperModelReady;
+}
+
 function initVoiceInput() {
   const mode = readEvalConfig().mode;
-  // API 모드도 브라우저 인식 결과를 실시간 미리보기로 표시하고,
-  // 녹음 종료 후에는 원본을 고품질 STT로 다시 전사합니다. 로컬 Whisper가
-  // 준비된 경우에도 브라우저 미리보기를 켜 두어, WASM 초기화·호환성 문제가
-  // 생기면 인식된 답변으로 안전하게 평가를 이어갈 수 있게 합니다.
-  const needsBrowserRecognition = true;
+  const needsBrowserRecognition = shouldUseBrowserRecognition()
+    || !window.MediaRecorder
+    || !navigator.mediaDevices?.getUserMedia;
   if (!needsBrowserRecognition) {
     state.recognition = null;
     return Boolean(window.MediaRecorder && navigator.mediaDevices?.getUserMedia);
@@ -5164,7 +5196,6 @@ function queueQuestionEvaluation(q, answerOverride = '') {
   if (existing) return existing;
   const speechSignals = state.speechSignalsByQuestion[q.no] || getSpeechSignalSummary(answer);
   state.speechSignalsByQuestion[q.no] = speechSignals;
-  beginProcessing('답변 평가 중', '네 가지 기준으로 답변을 차분하게 채점하고 있습니다.');
   const job = evaluateQuestionByNo(q.no, answer, speechSignals)
     .then((result) => {
       if (!result) return null;
@@ -5184,7 +5215,6 @@ function queueQuestionEvaluation(q, answerOverride = '') {
   state.evaluationJobs[q.no] = job;
   job.finally(() => {
     delete state.evaluationJobs[q.no];
-    endProcessing();
     renderEvaluationForQuestion(q);
   }).catch(() => {});
   renderEvaluationForQuestion(q);
@@ -5254,6 +5284,7 @@ async function toggleVoiceInput() {
   if (state.voiceStarting) return;
   state.voiceStarting = true;
   try {
+    state.voiceQuestion = state.questions[state.idx] || null;
     const answerField = document.getElementById('answerInput');
     state.recognitionText = answerField.value || '';
     resetSpeechMetrics();
@@ -5268,10 +5299,16 @@ async function toggleVoiceInput() {
     if (state.recognition) {
       state.recognition.start();
     } else {
-      status.textContent = '음성 입력 중... 답변을 마치면 다시 눌러 중지하세요.';
+      const mode = readEvalConfig().mode;
+      status.textContent = mode === 'gemini'
+        ? '녹음 중... 답변을 마치면 다시 눌러 중지하세요. 종료 후 Gemini가 전사합니다.'
+        : mode === 'openai'
+          ? '녹음 중... 답변을 마치면 다시 눌러 중지하세요. 종료 후 고정밀 전사를 진행합니다.'
+          : '녹음 중... 답변을 마치면 다시 눌러 중지하세요.';
     }
   } catch (err) {
     state.isRecording = false;
+    state.voiceQuestion = null;
     updateVoiceButton();
     await stopAudioCapture();
     status.textContent = `음성 입력 시작 실패: ${err.message || ''}`;
@@ -5775,4 +5812,3 @@ window.addEventListener('beforeunload', (e) => {
 </script>
 </body>
 </html>
-
