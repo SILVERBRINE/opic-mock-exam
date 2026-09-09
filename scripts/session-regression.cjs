@@ -142,7 +142,7 @@ async function main() {
    await route.fulfill({status:200,json:{candidates:[{finishReason:'STOP',content:{parts:[{text:'{"content":4,"fluency":4,"grammar":3,"pronunciation":5,"tip":"내용을 보완하세요."}'}]}}]}});
  });
  const failover=await page.evaluate(async()=>{
-   state.modelCatalog.gemini=['gemini-2.5-flash','gemini-3-flash'];
+   state.modelCatalog.gemini=['gemini-2.5-flash','gemini-3.5-flash-lite','gemini-3.1-flash-lite'];
    state.apiHandshake.gemini.model='auto';renderModelSelect('gemini');
    state.geminiRuntime={cursor:0,usage:{},lastModel:''};state.geminiModelByQuestion={};
    return evaluateWithGemini('Describe home','My home is small.','묘사',{},99);

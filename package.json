@@ -2,7 +2,7 @@
   "name": "opic-mock-exam-checks",
   "private": true,
   "scripts": {
-    "test": "node scripts/worker-lifecycle-regression.cjs && node scripts/session-regression.cjs && node scripts/file-ui-regression.cjs && node scripts/background-exam-regression.cjs && node scripts/skip-quota-regression.cjs"
+    "test": "node scripts/worker-lifecycle-regression.cjs && node scripts/session-regression.cjs && node scripts/file-ui-regression.cjs && node scripts/background-exam-regression.cjs && node scripts/skip-quota-regression.cjs && node scripts/grouped-exam-regression.cjs"
   },
   "devDependencies": {
     "playwright": "1.62.1"
