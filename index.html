@@ -1222,6 +1222,7 @@
           <button id="playQuestionBtn">문항 듣기</button>
           <button id="voiceBtn">음성 입력</button>
           <button id="nextBtn" class="secondary">다음 문제</button>
+          <button id="skipBtn" class="secondary" title="최대 2문항을 채점에서 제외합니다. 건너뛰지 않은 미응답은 0점입니다.">건너뛰기 (2회 남음)</button>
           <button id="submitBtn" class="secondary">전체 제출</button>
         </div>
       </div>
@@ -1416,6 +1417,7 @@ const state = {
   speechSignalsByQuestion: {},
   questionScores: {},
   questionResults: {},
+  skippedQuestions: {},
   questionCriteria: {},
   geminiModelByQuestion: {},
   geminiRuntime: {
@@ -2682,10 +2684,11 @@ function sanitizeSavedProgress(data) {
     questionTimerStarted: data.questionTimerStarted === true,
     questionTimerPaused: data.questionTimerPaused === true,
     startedAt: typeof data.startedAt === 'string' && Number.isFinite(Date.parse(data.startedAt)) ? data.startedAt : new Date().toISOString(),
-    answers: {}, questionFeedback: {}, questionScores: {}, questionResults: {}, questionCriteria: {}, promptPlayCount: {},
+    answers: {}, questionFeedback: {}, questionScores: {}, questionResults: {}, questionCriteria: {}, promptPlayCount: {}, skippedQuestions: {},
   };
   for (const q of result.questions) {
     const n = q.no;
+    if (result.sessionMode !== 'practice' && data.skippedQuestions?.[n] === true && Object.keys(result.skippedQuestions).length < 2) result.skippedQuestions[n] = true;
     if (typeof data.answers?.[n] === 'string') result.answers[n] = data.answers[n].slice(0, 20000);
     if (typeof data.questionFeedback?.[n] === 'string') result.questionFeedback[n] = sanitizeFeedbackHtml(data.questionFeedback[n].slice(0, 50000));
     if (typeof data.questionScores?.[n] === 'number' && Number.isFinite(data.questionScores[n])) result.questionScores[n] = clamp(data.questionScores[n], 100, 0);
@@ -3747,12 +3750,14 @@ async function runGeminiWithFallback(cfg, bodyFactory, purpose = '요청', quest
   const candidates = getGeminiRequestCandidates(cfg, questionNo);
   let lastError = null;
   let attempts = 0;
+  const attemptedModels = [];
   const deadline = performance.now() + 90000;
   for (const model of candidates) {
     if (attempts >= 3 || performance.now() >= deadline) break;
     if (cfg.model === GEMINI_AUTO_MODEL && !isGeminiModelLocallyAvailable(model)) continue;
     try {
       attempts += 1;
+      attemptedModels.push(model);
       noteGeminiRequest(model);
       const data = await fetchGeminiGenerateContent(cfg, model, bodyFactory(model), purpose,
         Math.min(GEMINI_REQUEST_TIMEOUT_MS, Math.max(1, deadline - performance.now())));
@@ -3764,9 +3769,13 @@ async function runGeminiWithFallback(cfg, bodyFactory, purpose = '요청', quest
       const status = statusMatch ? Number(statusMatch[1]) : 0;
       if (cfg.model !== GEMINI_AUTO_MODEL || ![408, 429, 403, 404, 500, 502, 503, 504].includes(status)) throw error;
       noteGeminiFailure(model, status);
+      const waitMs = Math.min(4000, 1000 * (2 ** (attempts - 1))) + Math.floor(Math.random() * 250);
+      if (attempts < 3 && performance.now() + waitMs < deadline) await new Promise(resolve => setTimeout(resolve, waitMs));
     }
   }
-  throw lastError || new Error('사용 가능한 Gemini Flash 모델이 없습니다. 오프라인 평가로 전환합니다.');
+  const error = lastError || new Error('현재 탭에서 사용 가능한 Gemini 모델이 없습니다. 한도 또는 대기 시간을 확인해 주세요.');
+  error.message += ` [${cfg.model === GEMINI_AUTO_MODEL ? 'Auto' : '수동'} 시도: ${attemptedModels.join(' → ') || '없음'}]`;
+  throw error;
 }
 
 function geminiModelVersionScore(name) {
@@ -3976,6 +3985,7 @@ function saveProgress() {
     questionFeedback: state.questionFeedback,
     questionScores: state.questionScores,
     questionResults: state.questionResults,
+    skippedQuestions: state.skippedQuestions,
     questionCriteria: state.questionCriteria,
     promptPlayCount: state.promptPlayCount,
     sessionMode: state.sessionMode,
@@ -4023,6 +4033,7 @@ function startExam(modeOverride = '') {
       state.questionFeedback = restored.questionFeedback || {};
       state.questionScores = restored.questionScores || {};
       state.questionResults = restored.questionResults || {};
+      state.skippedQuestions = restored.skippedQuestions || {};
       state.questionCriteria = restored.questionCriteria || {};
       if (restored.promptPlayCount) {
         state.promptPlayCount = restored.promptPlayCount;
@@ -4074,6 +4085,7 @@ function buildNewExam() {
   state.questionFeedback = {};
   state.questionScores = {};
   state.questionResults = {};
+  state.skippedQuestions = {};
   state.questionCriteria = {};
   state.promptPlayCount = {};
   state.evaluationJobs = {};
@@ -4396,6 +4408,13 @@ function renderExam() {
 function updateQuestionMapStates() {
   document.querySelectorAll('#qMap .q-dot').forEach(button => {
     const no = Number(button.dataset.questionNo);
+    if (state.skippedQuestions[no]) {
+      button.classList.remove('done', 'pending', 'failed');
+      button.textContent = `${no} −`;
+      button.title = `${no}번 · 건너뛰기 · 채점 제외`;
+      button.setAttribute('aria-label', button.title);
+      return;
+    }
     const failed = Boolean(state.transcriptionErrors[no]);
     const transcribing = Boolean(state.transcriptionJobs[no]);
     const evaluating = Boolean(state.evaluationJobs[no]);
@@ -5634,7 +5653,7 @@ function buildEvaluationHtml(result, question = null, answer = '') {
   const fallbackNotice = result.fallbackReason
     ? `<p class="evaluation-tip" role="status">온라인 평가 실패 · 임시 규칙 평가입니다. API 설정은 유지됩니다. ${escapeHtml(result.fallbackReason)}</p>`
     : result.provisional ? '<p class="evaluation-tip">오프라인 임시 참고 점수입니다. 규칙 평가와 소형 AI는 질문 충족 여부·문법·발음을 잘못 판단할 수 있습니다.</p>' : '';
-  return `<div class="evaluation-head"><div><strong>평가 결과${result.provisional ? ' (임시)' : ''}</strong><span class="small"> · ${escapeHtml(result.words || 0)}단어${modelNote}</span></div><strong class="evaluation-total">${Math.round(result.score)}/100</strong></div>` +
+  return `<div class="evaluation-head"><div><strong>평가 결과${result.provisional ? ' (임시)' : ''}</strong><span class="small"> · ${escapeHtml(result.words || 0)}단어${modelNote}</span></div><strong class="evaluation-total">${result.fallbackReason ? '미채점' : `${Math.round(result.score)}/100`}</strong></div>` +
     fallbackNotice +
     questionHtml +
     `<div class="metric-grid">${metricsHtml}</div>` +
@@ -5791,6 +5810,14 @@ function updateSubmitButton() {
 function updateVoiceButton() {
   updateSubmitButton();
   const active = state.questions[state.idx];
+  const skip = document.getElementById('skipBtn');
+  if (skip) {
+    const remaining = Math.max(0, 2 - Object.keys(state.skippedQuestions).length);
+    skip.hidden = isPracticeMode();
+    skip.textContent = `건너뛰기 (${remaining}회 남음)`;
+    skip.disabled = !remaining || state.examFinished || state.submitInProgress || state.voiceStarting || state.isRecording || state.voiceFinalizing || state.voiceStopPending
+      || Boolean(active && (state.answers[active.no]?.trim() || state.transcriptionJobs[active.no] || state.evaluationJobs[active.no] || state.failedRecordings[active.no]));
+  }
   const next = document.getElementById('nextBtn');
   if (next) next.disabled = Boolean(state.voiceStarting || state.isRecording || state.voiceStopPending
     || state.voiceFinalizing || state.submitInProgress || (isPracticeMode() && (state.transcriptionJobs[active?.no]
@@ -5898,6 +5925,16 @@ function saveCurrent() {
   const v = document.getElementById('answerInput').value;
   state.answers[q.no] = v;
   saveProgress();
+}
+
+async function skipCurrentQuestion() {
+  if (isPracticeMode() || state.examFinished || state.submitInProgress || state.isRecording || state.voiceStarting || state.voiceFinalizing || state.voiceStopPending) return;
+  const q = state.questions[state.idx];
+  if (!q || Object.keys(state.skippedQuestions).length >= 2 || state.answers[q.no]?.trim() || state.transcriptionJobs[q.no] || state.evaluationJobs[q.no] || state.failedRecordings[q.no]) return;
+  state.skippedQuestions[q.no] = true;
+  stopPromptPlayback({ silent: true });
+  saveProgress();
+  await nextQuestion();
 }
 
 async function nextQuestion() {
@@ -6207,14 +6244,15 @@ function finishExamNow() {
 
   let total = 0;
   const list = [];
-  const attemptedQuestions = state.questions.filter((q) => (state.answers[q.no] || '').trim().length > 0);
+  const eligibleQuestions = state.questions.filter(q => !state.skippedQuestions[q.no]);
+  const attemptedQuestions = eligibleQuestions.filter((q) => (state.answers[q.no] || '').trim().length > 0);
   for (const q of attemptedQuestions) {
     const ans = state.answers[q.no] || '';
     const result = state.questionResults[q.no] || buildFeedbackFromRules(q.prompt, ans, q.type);
     if (!result.details) result.details = calcScoreForAnswer(ans, q.type).details;
     const score = Number(state.questionScores[q.no]);
     list.push({ q, ans, ...result, score: Number.isFinite(score) ? score : result.score, criteria: state.questionCriteria[q.no] || result.criteria });
-    total += Number.isFinite(score) ? score : result.score;
+    if (!result.provisional) total += Number.isFinite(score) ? score : result.score;
     recordHistoryEntry(q, ans, {
       ...result,
       score: Number.isFinite(score) ? score : result.score,
@@ -6223,11 +6261,12 @@ function finishExamNow() {
       weaknesses: [],
     });
   }
-  const avg = attemptedQuestions.length ? Math.round(total / attemptedQuestions.length) : 0;
+  const avg = eligibleQuestions.length ? Math.round(total / eligibleQuestions.length) : 0;
   const [level, color] = scoreToLevel(avg);
   const [opicCode, opicName, opicColor, opicComment] = scoreToOpicGrade(avg);
   const usedMode = readEvalConfig().mode;
   const provisionalCount = list.filter(x => x.provisional).length;
+  const scoreUnavailable = provisionalCount > 0 || attemptedQuestions.length === 0;
   const modeLabel = provisionalCount ? `임시 규칙 평가 포함 (${provisionalCount}문항)` : usedMode === 'local'
     ? `${whisperModelReady ? `오프라인 Whisper ${WHISPER_MODEL_NAME} 전사` : '오프라인 기본 평가'}${localLlmReady ? ' + 로컬 AI' : ''}`
     : '온라인 AI 평가';
@@ -6237,16 +6276,17 @@ function finishExamNow() {
   const noConnector = list.filter(x => x.details['문장 구성'] < 10).length;
   if (shortCount >= 3) tips.push('많은 문항에서 단어 수가 부족합니다. 문항당 2-4문장 정도로 늘려보세요.');
   if (noConnector >= 4) tips.push('접속어(because, then, for example 등)가 부족합니다. 구조가 단순해집니다. 연결어를 넣어 답변하세요.');
-  if (avg < 55) tips.push('주제별 핵심 키워드(장소/사람/시간/이유/경험)를 한 번씩 언급해 보세요.');
+  if (scoreUnavailable) tips.push('AI 채점이 완료되지 않아 총점과 등급을 산정하지 않았습니다. 임시 점수를 실력 점수로 해석하지 마세요.');
+  else if (avg < 55) tips.push('주제별 핵심 키워드(장소/사람/시간/이유/경험)를 한 번씩 언급해 보세요.');
   if (tips.length === 0) tips.push('전반적으로 좋은 밀도로 답변했습니다. 다음엔 구체 사례를 더 추가해보면 점수가 더 올라갑니다.');
 
   const resultPanel = document.getElementById('resultPanel');
   resultPanel.classList.remove('hide');
   resultPanel.innerHTML = `<h2>${isPracticeMode() ? '연습 결과' : '모의고사 완료'}</h2>` +
     `<div class="summary">` +
-    `<div class="summary-card"><div class="small">총점</div><h1>${avg}/100</h1><span class="level" style="background:${color}20;color:${color}">텍스트 규칙 등급 ${escapeHtml(level)}</span></div>` +
-    `<div class="summary-card"><div class="small">OPIc 예상 등급</div><h1>${provisionalCount ? '판정 보류' : `${escapeHtml(opicCode)} · ${escapeHtml(opicName)}`}</h1><span class="level" style="background:${opicColor}20;color:${opicColor}">${provisionalCount ? '임시 규칙 평가가 포함되어 등급을 산정하지 않습니다.' : escapeHtml(opicComment)}</span></div>` +
-    `<div class="summary-card"><div class="small">채점 문항</div><p>${escapeHtml(attemptedQuestions.length)} / ${escapeHtml(state.questions.length)}문항</p></div>` +
+    `<div class="summary-card"><div class="small">총점</div><h1>${scoreUnavailable ? '산정 보류' : `${avg}/100`}</h1><span class="level">${scoreUnavailable ? '임시 점수는 총점에 포함하지 않음' : '채점 제외 문항을 뺀 연습 점수'}</span></div>` +
+    `<div class="summary-card"><div class="small">OPIc 예상 등급</div><h1>${scoreUnavailable ? '판정 보류' : `${escapeHtml(opicCode)} · ${escapeHtml(opicName)}`}</h1><span class="level" style="background:${opicColor}20;color:${opicColor}">${scoreUnavailable ? '유효한 채점 결과가 부족해 등급을 산정하지 않습니다.' : escapeHtml(opicComment)}</span></div>` +
+    `<div class="summary-card"><div class="small">답변 문항</div><p>${escapeHtml(attemptedQuestions.length)} / ${escapeHtml(eligibleQuestions.length)}문항</p><small>건너뛰기 ${Object.keys(state.skippedQuestions).length}문항 제외 · 미응답 ${eligibleQuestions.length-attemptedQuestions.length}문항 0점</small></div>` +
     `<div class="summary-card"><div class="small">완료 시간</div><p>${isPracticeMode() ? '연습모드' : `${Math.round((TOTAL_EXAM_SECONDS - state.totalSeconds) / 60)}분 ${((TOTAL_EXAM_SECONDS - state.totalSeconds) % 60)}초`}</p></div>` +
     `<div class="summary-card"><div class="small">채점 방식</div><p>${escapeHtml(modeLabel)}</p></div>` +
     `<div class="summary-card"><div class="small">권장 학습</div><ul style="padding-left:16px;margin:8px 0;color:#3a4d72;line-height:1.4;">${tips.map(t=>`<li>${escapeHtml(t)}</li>`).join('')}</ul></div>` +
@@ -6264,8 +6304,8 @@ function finishExamNow() {
     item.innerHTML = `
       <div style="font-weight:700">Q${escapeHtml(String(x.q.id).padStart(3, '0'))} · ${escapeHtml(x.q.type)}</div>
       <div class="small" style="margin-top:5px;">문항: ${escapeHtml(x.q.prompt)}</div>
-      <div class="score-line"><span>문항 점수</span><strong class="${rank}">${escapeHtml(safeScore)} / 100</strong></div>
-      <div class="bar-wrap"><div class="bar" style="width:${safeScore}%;"></div></div>
+      <div class="score-line"><span>문항 점수</span><strong class="${rank}">${x.provisional ? '미채점 · 참고 피드백만 제공' : `${escapeHtml(safeScore)} / 100`}</strong></div>
+      <div class="bar-wrap"><div class="bar" style="width:${x.provisional ? 0 : safeScore}%;"></div></div>
       <div class="small" style="margin-top:6px;">단어 수: ${escapeHtml(x.words)} · 문항 유형: ${escapeHtml(x.q.type)}</div>
       <div class="small" style="margin-top:2px;">샘플 답안: ${escapeHtml(answerSample)}${(x.ans && String(x.ans).length > 120) ? '...' : ''}</div>
       <div class="small" style="margin-top:4px;">1~10 평가: 내용 ${escapeHtml(x.criteria?.content || 0)} · 유창성 ${escapeHtml(x.criteria?.fluency || 0)} · 문법 ${escapeHtml(x.criteria?.grammar || 0)} · 발음 ${escapeHtml(x.criteria?.pronunciation || 0)}</div>`;
@@ -6285,6 +6325,7 @@ document.getElementById('clearBtn').addEventListener('click', clearProgress);
 document.getElementById('playQuestionBtn').addEventListener('click', speakQuestion);
 document.getElementById('voiceBtn').addEventListener('click', toggleVoiceInput);
 document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+document.getElementById('skipBtn').addEventListener('click', skipCurrentQuestion);
 document.getElementById('submitBtn').addEventListener('click', submitExam);
 document.getElementById('soundTestBtn').addEventListener('click', runSoundTest);
 document.getElementById('micTestBtn').addEventListener('click', toggleMicTest);
