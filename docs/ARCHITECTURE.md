@@ -9,7 +9,7 @@
 ### 음성·입력 계층
 
 - `SpeechSynthesisUtterance`: 기본 브라우저 질문 음성을 재생합니다.
-- `kokoro-js` + `onnx-community/Kokoro-82M-v1.0-ONNX`: 선택 시 Kokoro TTS를 브라우저의 WebGPU 또는 WASM에서 실행합니다. 가능한 환경에서는 Blob URL Web Worker를 2~3개 만들어 추론과 WAV 변환을 병렬 처리하고, 메모리 부족·Worker 오류·미지원 브라우저에서는 메인 스레드 호환 모드로 전환합니다. 모델은 처음 준비할 때만 내려받고 이후 브라우저 캐시를 재사용합니다.
+- `kokoro-js` + `onnx-community/Kokoro-82M-v1.0-ONNX`: 선택 시 Kokoro TTS를 브라우저의 WebGPU 또는 WASM에서 실행합니다. 가능한 환경에서는 Blob URL Web Worker를 최대 8개까지 준비해 추론과 WAV 변환을 병렬 처리하고, 메모리 부족·Worker 오류·미지원 브라우저에서는 건강한 슬롯만 유지하거나 메인 스레드 호환 모드로 전환합니다. 모델은 처음 준비할 때만 내려받고 이후 브라우저 캐시를 재사용합니다.
 - 문항 음성 방식의 `녹음본`은 Kokoro가 만든 WAV를 문항별로 IndexedDB에 저장해 다음 재생부터 파일처럼 재생합니다. 버튼으로 200문항을 한 번에 미리 만들거나, 필요한 문항만 첫 재생 때 생성할 수 있습니다. 200문항 일괄 생성은 PC 사양과 브라우저에 따라 30분 이상 걸릴 수 있으며, 처리 오버레이에 `0/200`부터 현재 진행 상황을 표시합니다. Worker 결과는 메인 스레드에 도착한 뒤 WAV 구조·신호를 빠르게 검증하고 저장합니다.
 - `MediaRecorder`: 답변 원본을 녹음합니다.
 - `getUserMedia`: 세션에서 하나의 마이크 스트림을 재사용합니다.
