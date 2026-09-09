@@ -33,6 +33,27 @@ if (typeof window === 'undefined') {
   });
 } else {
   (() => {
+    // Without session storage, reload markers cannot stop a reload loop.
+    try {
+      window.sessionStorage.setItem('coiStorageProbe', '1');
+      window.sessionStorage.removeItem('coiStorageProbe');
+    } catch { return; }
+    let userStarted = false;
+    window.addEventListener('pointerdown', () => { userStarted = true; }, { once: true, capture: true });
+    window.addEventListener('keydown', () => { userStarted = true; }, { once: true, capture: true });
+    const reloadWhenSafe = () => {
+      if (!userStarted) { window.location.reload(); return; }
+      const showNotice = () => {
+        if (document.getElementById('coiUpdateNotice')) return;
+        const notice = document.createElement('p');
+        notice.id = 'coiUpdateNotice';
+        notice.setAttribute('role', 'status');
+        notice.textContent = '로컬 AI 실행 환경이 준비되었습니다. 현재 연습을 마치고 기록을 저장한 뒤 새로고침해 주세요.';
+        document.body.prepend(notice);
+      };
+      if (document.body) showNotice();
+      else window.addEventListener('DOMContentLoaded', showNotice, { once: true });
+    };
     const reloadedBySelf = window.sessionStorage.getItem('coiReloadedBySelf');
     window.sessionStorage.removeItem('coiReloadedBySelf');
     const coepDegrading = reloadedBySelf === 'coepdegrade';
@@ -41,7 +62,7 @@ if (typeof window === 'undefined') {
       shouldDeregister: () => false,
       coepCredentialless: () => true,
       coepDegrade: () => true,
-      doReload: () => window.location.reload(),
+      doReload: reloadWhenSafe,
       quiet: false,
       ...window.coi,
     };
@@ -82,4 +103,3 @@ if (typeof window === 'undefined') {
     });
   })();
 }
-

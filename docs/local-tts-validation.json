@@ -1,0 +1,3608 @@
+{
+  "records": [
+    {
+      "id": 1,
+      "bytes": 370844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 370800,
+        "duration": 7.725,
+        "peak": 0.48187255859375,
+        "rms": 0.07003327600669629,
+        "decodedDuration": 7.725
+      },
+      "persisted": true,
+      "rereadBytes": 370844
+    },
+    {
+      "id": 2,
+      "bytes": 362444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 362400,
+        "duration": 7.55,
+        "peak": 0.410888671875,
+        "rms": 0.0681675348255408,
+        "decodedDuration": 7.55
+      },
+      "persisted": true,
+      "rereadBytes": 362444
+    },
+    {
+      "id": 3,
+      "bytes": 304844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 304800,
+        "duration": 6.35,
+        "peak": 0.534454345703125,
+        "rms": 0.07108623845273312,
+        "decodedDuration": 6.35
+      },
+      "persisted": true,
+      "rereadBytes": 304844
+    },
+    {
+      "id": 4,
+      "bytes": 342044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 342000,
+        "duration": 7.125,
+        "peak": 0.529815673828125,
+        "rms": 0.07034196005702309,
+        "decodedDuration": 7.125
+      },
+      "persisted": true,
+      "rereadBytes": 342044
+    },
+    {
+      "id": 5,
+      "bytes": 337244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 337200,
+        "duration": 7.025,
+        "peak": 0.476593017578125,
+        "rms": 0.07007360781690286,
+        "decodedDuration": 7.025
+      },
+      "persisted": true,
+      "rereadBytes": 337244
+    },
+    {
+      "id": 6,
+      "bytes": 314444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 314400,
+        "duration": 6.55,
+        "peak": 0.545928955078125,
+        "rms": 0.06926036991779232,
+        "decodedDuration": 6.55
+      },
+      "persisted": true,
+      "rereadBytes": 314444
+    },
+    {
+      "id": 7,
+      "bytes": 331244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 331200,
+        "duration": 6.9,
+        "peak": 0.45367431640625,
+        "rms": 0.0702943471597328,
+        "decodedDuration": 6.9
+      },
+      "persisted": true,
+      "rereadBytes": 331244
+    },
+    {
+      "id": 8,
+      "bytes": 310844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 310800,
+        "duration": 6.475,
+        "peak": 0.550506591796875,
+        "rms": 0.06938649700739982,
+        "decodedDuration": 6.475
+      },
+      "persisted": true,
+      "rereadBytes": 310844
+    },
+    {
+      "id": 9,
+      "bytes": 379244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 379200,
+        "duration": 7.9,
+        "peak": 0.44287109375,
+        "rms": 0.0706475841059553,
+        "decodedDuration": 7.9
+      },
+      "persisted": true,
+      "rereadBytes": 379244
+    },
+    {
+      "id": 10,
+      "bytes": 355244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 355200,
+        "duration": 7.4,
+        "peak": 0.615936279296875,
+        "rms": 0.07268207039809116,
+        "decodedDuration": 7.4
+      },
+      "persisted": true,
+      "rereadBytes": 355244
+    },
+    {
+      "id": 11,
+      "bytes": 376844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 376800,
+        "duration": 7.85,
+        "peak": 0.493560791015625,
+        "rms": 0.06977250424229947,
+        "decodedDuration": 7.85
+      },
+      "persisted": true,
+      "rereadBytes": 376844
+    },
+    {
+      "id": 12,
+      "bytes": 333644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 333600,
+        "duration": 6.95,
+        "peak": 0.497650146484375,
+        "rms": 0.07014872827073956,
+        "decodedDuration": 6.95
+      },
+      "persisted": true,
+      "rereadBytes": 333644
+    },
+    {
+      "id": 13,
+      "bytes": 346844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 346800,
+        "duration": 7.225,
+        "peak": 0.477996826171875,
+        "rms": 0.0697200446213081,
+        "decodedDuration": 7.225
+      },
+      "persisted": true,
+      "rereadBytes": 346844
+    },
+    {
+      "id": 14,
+      "bytes": 320444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 320400,
+        "duration": 6.675,
+        "peak": 0.522064208984375,
+        "rms": 0.0694238758822246,
+        "decodedDuration": 6.675
+      },
+      "persisted": true,
+      "rereadBytes": 320444
+    },
+    {
+      "id": 15,
+      "bytes": 338444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 338400,
+        "duration": 7.05,
+        "peak": 0.726654052734375,
+        "rms": 0.073073013835114,
+        "decodedDuration": 7.05
+      },
+      "persisted": true,
+      "rereadBytes": 338444
+    },
+    {
+      "id": 16,
+      "bytes": 334844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 334800,
+        "duration": 6.975,
+        "peak": 0.5396728515625,
+        "rms": 0.06935396334345674,
+        "decodedDuration": 6.975
+      },
+      "persisted": true,
+      "rereadBytes": 334844
+    },
+    {
+      "id": 17,
+      "bytes": 392444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 392400,
+        "duration": 8.175,
+        "peak": 0.459381103515625,
+        "rms": 0.0693152043325961,
+        "decodedDuration": 8.175
+      },
+      "persisted": true,
+      "rereadBytes": 392444
+    },
+    {
+      "id": 18,
+      "bytes": 338444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 338400,
+        "duration": 7.05,
+        "peak": 0.594329833984375,
+        "rms": 0.07046711520304247,
+        "decodedDuration": 7.05
+      },
+      "persisted": true,
+      "rereadBytes": 338444
+    },
+    {
+      "id": 19,
+      "bytes": 370844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 370800,
+        "duration": 7.725,
+        "peak": 0.4600830078125,
+        "rms": 0.06850513858175443,
+        "decodedDuration": 7.725
+      },
+      "persisted": true,
+      "rereadBytes": 370844
+    },
+    {
+      "id": 20,
+      "bytes": 326444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 326400,
+        "duration": 6.8,
+        "peak": 0.613800048828125,
+        "rms": 0.07275123756751799,
+        "decodedDuration": 6.8
+      },
+      "persisted": true,
+      "rereadBytes": 326444
+    },
+    {
+      "id": 21,
+      "bytes": 265244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 265200,
+        "duration": 5.525,
+        "peak": 0.47637939453125,
+        "rms": 0.0670727750386185,
+        "decodedDuration": 5.525
+      },
+      "persisted": true,
+      "rereadBytes": 265244
+    },
+    {
+      "id": 22,
+      "bytes": 345644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 345600,
+        "duration": 7.2,
+        "peak": 0.444122314453125,
+        "rms": 0.0703908860715842,
+        "decodedDuration": 7.2
+      },
+      "persisted": true,
+      "rereadBytes": 345644
+    },
+    {
+      "id": 23,
+      "bytes": 294044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 294000,
+        "duration": 6.125,
+        "peak": 0.43609619140625,
+        "rms": 0.07133888416885895,
+        "decodedDuration": 6.125
+      },
+      "persisted": true,
+      "rereadBytes": 294044
+    },
+    {
+      "id": 24,
+      "bytes": 364844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 364800,
+        "duration": 7.6,
+        "peak": 0.446197509765625,
+        "rms": 0.06897127445730382,
+        "decodedDuration": 7.6
+      },
+      "persisted": true,
+      "rereadBytes": 364844
+    },
+    {
+      "id": 25,
+      "bytes": 367244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 367200,
+        "duration": 7.65,
+        "peak": 0.47344970703125,
+        "rms": 0.06944414514862028,
+        "decodedDuration": 7.65
+      },
+      "persisted": true,
+      "rereadBytes": 367244
+    },
+    {
+      "id": 26,
+      "bytes": 364844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 364800,
+        "duration": 7.6,
+        "peak": 0.561431884765625,
+        "rms": 0.07112289597763637,
+        "decodedDuration": 7.6
+      },
+      "persisted": true,
+      "rereadBytes": 364844
+    },
+    {
+      "id": 27,
+      "bytes": 296444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 296400,
+        "duration": 6.175,
+        "peak": 0.51251220703125,
+        "rms": 0.07009114283977348,
+        "decodedDuration": 6.175
+      },
+      "persisted": true,
+      "rereadBytes": 296444
+    },
+    {
+      "id": 28,
+      "bytes": 434444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 434400,
+        "duration": 9.05,
+        "peak": 0.463470458984375,
+        "rms": 0.07090752949679649,
+        "decodedDuration": 9.05
+      },
+      "persisted": true,
+      "rereadBytes": 434444
+    },
+    {
+      "id": 29,
+      "bytes": 356444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 356400,
+        "duration": 7.425,
+        "peak": 0.820526123046875,
+        "rms": 0.06790542726703731,
+        "decodedDuration": 7.425
+      },
+      "persisted": true,
+      "rereadBytes": 356444
+    },
+    {
+      "id": 30,
+      "bytes": 342044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 342000,
+        "duration": 7.125,
+        "peak": 0.51141357421875,
+        "rms": 0.0724336295089946,
+        "decodedDuration": 7.125
+      },
+      "persisted": true,
+      "rereadBytes": 342044
+    },
+    {
+      "id": 31,
+      "bytes": 358844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 358800,
+        "duration": 7.475,
+        "peak": 0.5001220703125,
+        "rms": 0.06950117955393861,
+        "decodedDuration": 7.475
+      },
+      "persisted": true,
+      "rereadBytes": 358844
+    },
+    {
+      "id": 32,
+      "bytes": 310844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 310800,
+        "duration": 6.475,
+        "peak": 0.502716064453125,
+        "rms": 0.07088636338266392,
+        "decodedDuration": 6.475
+      },
+      "persisted": true,
+      "rereadBytes": 310844
+    },
+    {
+      "id": 33,
+      "bytes": 306044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 306000,
+        "duration": 6.375,
+        "peak": 0.5260009765625,
+        "rms": 0.06999921873305577,
+        "decodedDuration": 6.375
+      },
+      "persisted": true,
+      "rereadBytes": 306044
+    },
+    {
+      "id": 34,
+      "bytes": 322844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 322800,
+        "duration": 6.725,
+        "peak": 0.6907958984375,
+        "rms": 0.06913337980615869,
+        "decodedDuration": 6.725
+      },
+      "persisted": true,
+      "rereadBytes": 322844
+    },
+    {
+      "id": 35,
+      "bytes": 379244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 379200,
+        "duration": 7.9,
+        "peak": 0.814208984375,
+        "rms": 0.07163343793799372,
+        "decodedDuration": 7.9
+      },
+      "persisted": true,
+      "rereadBytes": 379244
+    },
+    {
+      "id": 36,
+      "bytes": 348044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 348000,
+        "duration": 7.25,
+        "peak": 0.515228271484375,
+        "rms": 0.07137914133139639,
+        "decodedDuration": 7.25
+      },
+      "persisted": true,
+      "rereadBytes": 348044
+    },
+    {
+      "id": 37,
+      "bytes": 336044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 336000,
+        "duration": 7,
+        "peak": 0.582000732421875,
+        "rms": 0.06760908696978286,
+        "decodedDuration": 7
+      },
+      "persisted": true,
+      "rereadBytes": 336044
+    },
+    {
+      "id": 38,
+      "bytes": 405644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 405600,
+        "duration": 8.45,
+        "peak": 0.4873046875,
+        "rms": 0.06867252719449668,
+        "decodedDuration": 8.45
+      },
+      "persisted": true,
+      "rereadBytes": 405644
+    },
+    {
+      "id": 39,
+      "bytes": 348044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 348000,
+        "duration": 7.25,
+        "peak": 0.4693603515625,
+        "rms": 0.07144659900713439,
+        "decodedDuration": 7.25
+      },
+      "persisted": true,
+      "rereadBytes": 348044
+    },
+    {
+      "id": 40,
+      "bytes": 354044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 354000,
+        "duration": 7.375,
+        "peak": 0.682342529296875,
+        "rms": 0.07150133944608787,
+        "decodedDuration": 7.375
+      },
+      "persisted": true,
+      "rereadBytes": 354044
+    },
+    {
+      "id": 41,
+      "bytes": 337244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 337200,
+        "duration": 7.025,
+        "peak": 0.538848876953125,
+        "rms": 0.07318191572471625,
+        "decodedDuration": 7.025
+      },
+      "persisted": true,
+      "rereadBytes": 337244
+    },
+    {
+      "id": 42,
+      "bytes": 336044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 336000,
+        "duration": 7,
+        "peak": 0.45343017578125,
+        "rms": 0.07031584999925519,
+        "decodedDuration": 7
+      },
+      "persisted": true,
+      "rereadBytes": 336044
+    },
+    {
+      "id": 43,
+      "bytes": 355244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 355200,
+        "duration": 7.4,
+        "peak": 0.39959716796875,
+        "rms": 0.06798131287070079,
+        "decodedDuration": 7.4
+      },
+      "persisted": true,
+      "rereadBytes": 355244
+    },
+    {
+      "id": 44,
+      "bytes": 363644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 363600,
+        "duration": 7.575,
+        "peak": 0.409393310546875,
+        "rms": 0.06730840649412982,
+        "decodedDuration": 7.575
+      },
+      "persisted": true,
+      "rereadBytes": 363644
+    },
+    {
+      "id": 45,
+      "bytes": 345644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 345600,
+        "duration": 7.2,
+        "peak": 0.561309814453125,
+        "rms": 0.0715356152119009,
+        "decodedDuration": 7.2
+      },
+      "persisted": true,
+      "rereadBytes": 345644
+    },
+    {
+      "id": 46,
+      "bytes": 360044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 360000,
+        "duration": 7.5,
+        "peak": 0.475128173828125,
+        "rms": 0.06942099253120332,
+        "decodedDuration": 7.5
+      },
+      "persisted": true,
+      "rereadBytes": 360044
+    },
+    {
+      "id": 47,
+      "bytes": 361244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 361200,
+        "duration": 7.525,
+        "peak": 0.4395751953125,
+        "rms": 0.06907186534141503,
+        "decodedDuration": 7.525
+      },
+      "persisted": true,
+      "rereadBytes": 361244
+    },
+    {
+      "id": 48,
+      "bytes": 408044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 408000,
+        "duration": 8.5,
+        "peak": 0.503265380859375,
+        "rms": 0.07059764673656059,
+        "decodedDuration": 8.5
+      },
+      "persisted": true,
+      "rereadBytes": 408044
+    },
+    {
+      "id": 49,
+      "bytes": 343244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 343200,
+        "duration": 7.15,
+        "peak": 0.541259765625,
+        "rms": 0.06896533095884948,
+        "decodedDuration": 7.15
+      },
+      "persisted": true,
+      "rereadBytes": 343244
+    },
+    {
+      "id": 50,
+      "bytes": 420044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 420000,
+        "duration": 8.75,
+        "peak": 0.453704833984375,
+        "rms": 0.0707578798714198,
+        "decodedDuration": 8.75
+      },
+      "persisted": true,
+      "rereadBytes": 420044
+    },
+    {
+      "id": 51,
+      "bytes": 376844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 376800,
+        "duration": 7.85,
+        "peak": 0.566162109375,
+        "rms": 0.07256480746595846,
+        "decodedDuration": 7.85
+      },
+      "persisted": true,
+      "rereadBytes": 376844
+    },
+    {
+      "id": 52,
+      "bytes": 348044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 348000,
+        "duration": 7.25,
+        "peak": 0.4884033203125,
+        "rms": 0.06910110782525933,
+        "decodedDuration": 7.25
+      },
+      "persisted": true,
+      "rereadBytes": 348044
+    },
+    {
+      "id": 53,
+      "bytes": 300044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 300000,
+        "duration": 6.25,
+        "peak": 0.442535400390625,
+        "rms": 0.06965568429456041,
+        "decodedDuration": 6.25
+      },
+      "persisted": true,
+      "rereadBytes": 300044
+    },
+    {
+      "id": 54,
+      "bytes": 331244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 331200,
+        "duration": 6.9,
+        "peak": 0.493316650390625,
+        "rms": 0.06983329171472083,
+        "decodedDuration": 6.9
+      },
+      "persisted": true,
+      "rereadBytes": 331244
+    },
+    {
+      "id": 55,
+      "bytes": 307244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 307200,
+        "duration": 6.4,
+        "peak": 0.49407958984375,
+        "rms": 0.07079520701042646,
+        "decodedDuration": 6.4
+      },
+      "persisted": true,
+      "rereadBytes": 307244
+    },
+    {
+      "id": 56,
+      "bytes": 360044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 360000,
+        "duration": 7.5,
+        "peak": 0.413238525390625,
+        "rms": 0.07089757390338479,
+        "decodedDuration": 7.5
+      },
+      "persisted": true,
+      "rereadBytes": 360044
+    },
+    {
+      "id": 57,
+      "bytes": 310844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 310800,
+        "duration": 6.475,
+        "peak": 0.55841064453125,
+        "rms": 0.06944113299707567,
+        "decodedDuration": 6.475
+      },
+      "persisted": true,
+      "rereadBytes": 310844
+    },
+    {
+      "id": 58,
+      "bytes": 381644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 381600,
+        "duration": 7.95,
+        "peak": 0.452117919921875,
+        "rms": 0.06962444029722782,
+        "decodedDuration": 7.95
+      },
+      "persisted": true,
+      "rereadBytes": 381644
+    },
+    {
+      "id": 59,
+      "bytes": 346844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 346800,
+        "duration": 7.225,
+        "peak": 0.471832275390625,
+        "rms": 0.06840412766658822,
+        "decodedDuration": 7.225
+      },
+      "persisted": true,
+      "rereadBytes": 346844
+    },
+    {
+      "id": 60,
+      "bytes": 332444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 332400,
+        "duration": 6.925,
+        "peak": 0.477783203125,
+        "rms": 0.0687079664012485,
+        "decodedDuration": 6.925
+      },
+      "persisted": true,
+      "rereadBytes": 332444
+    },
+    {
+      "id": 61,
+      "bytes": 391244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 391200,
+        "duration": 8.15,
+        "peak": 0.47735595703125,
+        "rms": 0.06987867671641243,
+        "decodedDuration": 8.15
+      },
+      "persisted": true,
+      "rereadBytes": 391244
+    },
+    {
+      "id": 62,
+      "bytes": 392444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 392400,
+        "duration": 8.175,
+        "peak": 0.635498046875,
+        "rms": 0.06915397173683856,
+        "decodedDuration": 8.175
+      },
+      "persisted": true,
+      "rereadBytes": 392444
+    },
+    {
+      "id": 63,
+      "bytes": 289244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 289200,
+        "duration": 6.025,
+        "peak": 0.52435302734375,
+        "rms": 0.07201716956111959,
+        "decodedDuration": 6.025
+      },
+      "persisted": true,
+      "rereadBytes": 289244
+    },
+    {
+      "id": 64,
+      "bytes": 358844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 358800,
+        "duration": 7.475,
+        "peak": 0.6322021484375,
+        "rms": 0.07040188138369997,
+        "decodedDuration": 7.475
+      },
+      "persisted": true,
+      "rereadBytes": 358844
+    },
+    {
+      "id": 65,
+      "bytes": 420044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 420000,
+        "duration": 8.75,
+        "peak": 0.6160888671875,
+        "rms": 0.0715897955236531,
+        "decodedDuration": 8.75
+      },
+      "persisted": true,
+      "rereadBytes": 420044
+    },
+    {
+      "id": 66,
+      "bytes": 368444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 368400,
+        "duration": 7.675,
+        "peak": 0.51593017578125,
+        "rms": 0.07054903674363198,
+        "decodedDuration": 7.675
+      },
+      "persisted": true,
+      "rereadBytes": 368444
+    },
+    {
+      "id": 67,
+      "bytes": 345644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 345600,
+        "duration": 7.2,
+        "peak": 0.5147705078125,
+        "rms": 0.06974207568984793,
+        "decodedDuration": 7.2
+      },
+      "persisted": true,
+      "rereadBytes": 345644
+    },
+    {
+      "id": 68,
+      "bytes": 338444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 338400,
+        "duration": 7.05,
+        "peak": 0.52496337890625,
+        "rms": 0.07126028062223021,
+        "decodedDuration": 7.05
+      },
+      "persisted": true,
+      "rereadBytes": 338444
+    },
+    {
+      "id": 69,
+      "bytes": 367244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 367200,
+        "duration": 7.65,
+        "peak": 0.6688232421875,
+        "rms": 0.07103963024423662,
+        "decodedDuration": 7.65
+      },
+      "persisted": true,
+      "rereadBytes": 367244
+    },
+    {
+      "id": 70,
+      "bytes": 442844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 442800,
+        "duration": 9.225,
+        "peak": 0.43853759765625,
+        "rms": 0.07141239731988805,
+        "decodedDuration": 9.225
+      },
+      "persisted": true,
+      "rereadBytes": 442844
+    },
+    {
+      "id": 71,
+      "bytes": 390044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 390000,
+        "duration": 8.125,
+        "peak": 0.54443359375,
+        "rms": 0.07026781398733929,
+        "decodedDuration": 8.125
+      },
+      "persisted": true,
+      "rereadBytes": 390044
+    },
+    {
+      "id": 72,
+      "bytes": 327644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 327600,
+        "duration": 6.825,
+        "peak": 0.52276611328125,
+        "rms": 0.07019796115156651,
+        "decodedDuration": 6.825
+      },
+      "persisted": true,
+      "rereadBytes": 327644
+    },
+    {
+      "id": 73,
+      "bytes": 310844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 310800,
+        "duration": 6.475,
+        "peak": 0.52117919921875,
+        "rms": 0.07006447177816572,
+        "decodedDuration": 6.475
+      },
+      "persisted": true,
+      "rereadBytes": 310844
+    },
+    {
+      "id": 74,
+      "bytes": 333644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 333600,
+        "duration": 6.95,
+        "peak": 0.532684326171875,
+        "rms": 0.07101036041330921,
+        "decodedDuration": 6.95
+      },
+      "persisted": true,
+      "rereadBytes": 333644
+    },
+    {
+      "id": 75,
+      "bytes": 382844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 382800,
+        "duration": 7.975,
+        "peak": 0.486968994140625,
+        "rms": 0.0699888143047383,
+        "decodedDuration": 7.975
+      },
+      "persisted": true,
+      "rereadBytes": 382844
+    },
+    {
+      "id": 76,
+      "bytes": 308444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 308400,
+        "duration": 6.425,
+        "peak": 0.473358154296875,
+        "rms": 0.06962201426617234,
+        "decodedDuration": 6.425
+      },
+      "persisted": true,
+      "rereadBytes": 308444
+    },
+    {
+      "id": 77,
+      "bytes": 361244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 361200,
+        "duration": 7.525,
+        "peak": 0.4942626953125,
+        "rms": 0.07009917674227624,
+        "decodedDuration": 7.525
+      },
+      "persisted": true,
+      "rereadBytes": 361244
+    },
+    {
+      "id": 78,
+      "bytes": 393644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 393600,
+        "duration": 8.2,
+        "peak": 0.770050048828125,
+        "rms": 0.07293331098853015,
+        "decodedDuration": 8.2
+      },
+      "persisted": true,
+      "rereadBytes": 393644
+    },
+    {
+      "id": 79,
+      "bytes": 331244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 331200,
+        "duration": 6.9,
+        "peak": 0.493408203125,
+        "rms": 0.0704329421287004,
+        "decodedDuration": 6.9
+      },
+      "persisted": true,
+      "rereadBytes": 331244
+    },
+    {
+      "id": 80,
+      "bytes": 415244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 415200,
+        "duration": 8.65,
+        "peak": 0.451751708984375,
+        "rms": 0.07000034871528914,
+        "decodedDuration": 8.65
+      },
+      "persisted": true,
+      "rereadBytes": 415244
+    },
+    {
+      "id": 81,
+      "bytes": 424844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 424800,
+        "duration": 8.85,
+        "peak": 0.6453857421875,
+        "rms": 0.07255081202078191,
+        "decodedDuration": 8.85
+      },
+      "persisted": true,
+      "rereadBytes": 424844
+    },
+    {
+      "id": 82,
+      "bytes": 416444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 416400,
+        "duration": 8.675,
+        "peak": 0.539276123046875,
+        "rms": 0.07471230247556492,
+        "decodedDuration": 8.675
+      },
+      "persisted": true,
+      "rereadBytes": 416444
+    },
+    {
+      "id": 83,
+      "bytes": 348044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 348000,
+        "duration": 7.25,
+        "peak": 0.454681396484375,
+        "rms": 0.07146055766865496,
+        "decodedDuration": 7.25
+      },
+      "persisted": true,
+      "rereadBytes": 348044
+    },
+    {
+      "id": 84,
+      "bytes": 349244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 349200,
+        "duration": 7.275,
+        "peak": 0.566925048828125,
+        "rms": 0.07295978066224806,
+        "decodedDuration": 7.275
+      },
+      "persisted": true,
+      "rereadBytes": 349244
+    },
+    {
+      "id": 85,
+      "bytes": 321644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 321600,
+        "duration": 6.7,
+        "peak": 0.474273681640625,
+        "rms": 0.0700190920419902,
+        "decodedDuration": 6.7
+      },
+      "persisted": true,
+      "rereadBytes": 321644
+    },
+    {
+      "id": 86,
+      "bytes": 376844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 376800,
+        "duration": 7.85,
+        "peak": 0.460601806640625,
+        "rms": 0.070613061168338,
+        "decodedDuration": 7.85
+      },
+      "persisted": true,
+      "rereadBytes": 376844
+    },
+    {
+      "id": 87,
+      "bytes": 374444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 374400,
+        "duration": 7.8,
+        "peak": 0.5203857421875,
+        "rms": 0.07052099472767465,
+        "decodedDuration": 7.8
+      },
+      "persisted": true,
+      "rereadBytes": 374444
+    },
+    {
+      "id": 88,
+      "bytes": 398444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 398400,
+        "duration": 8.3,
+        "peak": 0.507659912109375,
+        "rms": 0.06949549821718261,
+        "decodedDuration": 8.3
+      },
+      "persisted": true,
+      "rereadBytes": 398444
+    },
+    {
+      "id": 89,
+      "bytes": 354044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 354000,
+        "duration": 7.375,
+        "peak": 0.442840576171875,
+        "rms": 0.07036750852251983,
+        "decodedDuration": 7.375
+      },
+      "persisted": true,
+      "rereadBytes": 354044
+    },
+    {
+      "id": 90,
+      "bytes": 403244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 403200,
+        "duration": 8.4,
+        "peak": 0.522613525390625,
+        "rms": 0.07128045626160973,
+        "decodedDuration": 8.4
+      },
+      "persisted": true,
+      "rereadBytes": 403244
+    },
+    {
+      "id": 91,
+      "bytes": 360044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 360000,
+        "duration": 7.5,
+        "peak": 0.421051025390625,
+        "rms": 0.07004611914770047,
+        "decodedDuration": 7.5
+      },
+      "persisted": true,
+      "rereadBytes": 360044
+    },
+    {
+      "id": 92,
+      "bytes": 367244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 367200,
+        "duration": 7.65,
+        "peak": 0.48065185546875,
+        "rms": 0.0673106617543617,
+        "decodedDuration": 7.65
+      },
+      "persisted": true,
+      "rereadBytes": 367244
+    },
+    {
+      "id": 93,
+      "bytes": 336044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 336000,
+        "duration": 7,
+        "peak": 0.50592041015625,
+        "rms": 0.07089742559063553,
+        "decodedDuration": 7
+      },
+      "persisted": true,
+      "rereadBytes": 336044
+    },
+    {
+      "id": 94,
+      "bytes": 387644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 387600,
+        "duration": 8.075,
+        "peak": 0.4766845703125,
+        "rms": 0.0700677934816792,
+        "decodedDuration": 8.075
+      },
+      "persisted": true,
+      "rereadBytes": 387644
+    },
+    {
+      "id": 95,
+      "bytes": 403244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 403200,
+        "duration": 8.4,
+        "peak": 0.478973388671875,
+        "rms": 0.07074491902031099,
+        "decodedDuration": 8.4
+      },
+      "persisted": true,
+      "rereadBytes": 403244
+    },
+    {
+      "id": 96,
+      "bytes": 399644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 399600,
+        "duration": 8.325,
+        "peak": 0.49456787109375,
+        "rms": 0.07235185209107342,
+        "decodedDuration": 8.325
+      },
+      "persisted": true,
+      "rereadBytes": 399644
+    },
+    {
+      "id": 97,
+      "bytes": 337244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 337200,
+        "duration": 7.025,
+        "peak": 0.496185302734375,
+        "rms": 0.06937226728368188,
+        "decodedDuration": 7.025
+      },
+      "persisted": true,
+      "rereadBytes": 337244
+    },
+    {
+      "id": 98,
+      "bytes": 423644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 423600,
+        "duration": 8.825,
+        "peak": 0.5029296875,
+        "rms": 0.0712432714827121,
+        "decodedDuration": 8.825
+      },
+      "persisted": true,
+      "rereadBytes": 423644
+    },
+    {
+      "id": 99,
+      "bytes": 393644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 393600,
+        "duration": 8.2,
+        "peak": 0.457183837890625,
+        "rms": 0.06972808218243134,
+        "decodedDuration": 8.2
+      },
+      "persisted": true,
+      "rereadBytes": 393644
+    },
+    {
+      "id": 100,
+      "bytes": 411644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 411600,
+        "duration": 8.575,
+        "peak": 0.46502685546875,
+        "rms": 0.0705547830321277,
+        "decodedDuration": 8.575
+      },
+      "persisted": true,
+      "rereadBytes": 411644
+    },
+    {
+      "id": 101,
+      "bytes": 334844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 334800,
+        "duration": 6.975,
+        "peak": 0.50396728515625,
+        "rms": 0.0677361897609363,
+        "decodedDuration": 6.975
+      },
+      "persisted": true,
+      "rereadBytes": 334844
+    },
+    {
+      "id": 102,
+      "bytes": 273644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 273600,
+        "duration": 5.7,
+        "peak": 0.420806884765625,
+        "rms": 0.0706753314886641,
+        "decodedDuration": 5.7
+      },
+      "persisted": true,
+      "rereadBytes": 273644
+    },
+    {
+      "id": 103,
+      "bytes": 345644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 345600,
+        "duration": 7.2,
+        "peak": 0.4012451171875,
+        "rms": 0.06934229503575451,
+        "decodedDuration": 7.2
+      },
+      "persisted": true,
+      "rereadBytes": 345644
+    },
+    {
+      "id": 104,
+      "bytes": 385244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 385200,
+        "duration": 8.025,
+        "peak": 0.48223876953125,
+        "rms": 0.07186814473204048,
+        "decodedDuration": 8.025
+      },
+      "persisted": true,
+      "rereadBytes": 385244
+    },
+    {
+      "id": 105,
+      "bytes": 332444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 332400,
+        "duration": 6.925,
+        "peak": 0.5526123046875,
+        "rms": 0.06878442602303042,
+        "decodedDuration": 6.925
+      },
+      "persisted": true,
+      "rereadBytes": 332444
+    },
+    {
+      "id": 106,
+      "bytes": 346844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 346800,
+        "duration": 7.225,
+        "peak": 0.580718994140625,
+        "rms": 0.06969823472749524,
+        "decodedDuration": 7.225
+      },
+      "persisted": true,
+      "rereadBytes": 346844
+    },
+    {
+      "id": 107,
+      "bytes": 330044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 330000,
+        "duration": 6.875,
+        "peak": 0.45574951171875,
+        "rms": 0.0722228148293338,
+        "decodedDuration": 6.875
+      },
+      "persisted": true,
+      "rereadBytes": 330044
+    },
+    {
+      "id": 108,
+      "bytes": 372044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 372000,
+        "duration": 7.75,
+        "peak": 0.43463134765625,
+        "rms": 0.0684725328779343,
+        "decodedDuration": 7.75
+      },
+      "persisted": true,
+      "rereadBytes": 372044
+    },
+    {
+      "id": 109,
+      "bytes": 399644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 399600,
+        "duration": 8.325,
+        "peak": 0.48590087890625,
+        "rms": 0.07108834453392637,
+        "decodedDuration": 8.325
+      },
+      "persisted": true,
+      "rereadBytes": 399644
+    },
+    {
+      "id": 110,
+      "bytes": 411644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 411600,
+        "duration": 8.575,
+        "peak": 0.431610107421875,
+        "rms": 0.07137497088676459,
+        "decodedDuration": 8.575
+      },
+      "persisted": true,
+      "rereadBytes": 411644
+    },
+    {
+      "id": 111,
+      "bytes": 364844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 364800,
+        "duration": 7.6,
+        "peak": 0.489410400390625,
+        "rms": 0.06932185161211174,
+        "decodedDuration": 7.6
+      },
+      "persisted": true,
+      "rereadBytes": 364844
+    },
+    {
+      "id": 112,
+      "bytes": 364844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 364800,
+        "duration": 7.6,
+        "peak": 0.54229736328125,
+        "rms": 0.06654872177746397,
+        "decodedDuration": 7.6
+      },
+      "persisted": true,
+      "rereadBytes": 364844
+    },
+    {
+      "id": 113,
+      "bytes": 357644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 357600,
+        "duration": 7.45,
+        "peak": 0.43096923828125,
+        "rms": 0.07063464650053555,
+        "decodedDuration": 7.45
+      },
+      "persisted": true,
+      "rereadBytes": 357644
+    },
+    {
+      "id": 114,
+      "bytes": 344444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 344400,
+        "duration": 7.175,
+        "peak": 0.54400634765625,
+        "rms": 0.07035238398769816,
+        "decodedDuration": 7.175
+      },
+      "persisted": true,
+      "rereadBytes": 344444
+    },
+    {
+      "id": 115,
+      "bytes": 302444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 302400,
+        "duration": 6.3,
+        "peak": 0.454986572265625,
+        "rms": 0.06939870582048356,
+        "decodedDuration": 6.3
+      },
+      "persisted": true,
+      "rereadBytes": 302444
+    },
+    {
+      "id": 116,
+      "bytes": 346844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 346800,
+        "duration": 7.225,
+        "peak": 0.465911865234375,
+        "rms": 0.06965687909589185,
+        "decodedDuration": 7.225
+      },
+      "persisted": true,
+      "rereadBytes": 346844
+    },
+    {
+      "id": 117,
+      "bytes": 328844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 328800,
+        "duration": 6.85,
+        "peak": 0.438262939453125,
+        "rms": 0.0690806933304177,
+        "decodedDuration": 6.85
+      },
+      "persisted": true,
+      "rereadBytes": 328844
+    },
+    {
+      "id": 118,
+      "bytes": 387644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 387600,
+        "duration": 8.075,
+        "peak": 0.431304931640625,
+        "rms": 0.07076182244720829,
+        "decodedDuration": 8.075
+      },
+      "persisted": true,
+      "rereadBytes": 387644
+    },
+    {
+      "id": 119,
+      "bytes": 345644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 345600,
+        "duration": 7.2,
+        "peak": 0.48291015625,
+        "rms": 0.06828371652678028,
+        "decodedDuration": 7.2
+      },
+      "persisted": true,
+      "rereadBytes": 345644
+    },
+    {
+      "id": 120,
+      "bytes": 410444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 410400,
+        "duration": 8.55,
+        "peak": 0.429656982421875,
+        "rms": 0.07112685363633707,
+        "decodedDuration": 8.55
+      },
+      "persisted": true,
+      "rereadBytes": 410444
+    },
+    {
+      "id": 121,
+      "bytes": 350444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 350400,
+        "duration": 7.3,
+        "peak": 0.418701171875,
+        "rms": 0.06759684851858906,
+        "decodedDuration": 7.3
+      },
+      "persisted": true,
+      "rereadBytes": 350444
+    },
+    {
+      "id": 122,
+      "bytes": 382844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 382800,
+        "duration": 7.975,
+        "peak": 0.4700927734375,
+        "rms": 0.06931014120529914,
+        "decodedDuration": 7.975
+      },
+      "persisted": true,
+      "rereadBytes": 382844
+    },
+    {
+      "id": 123,
+      "bytes": 332444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 332400,
+        "duration": 6.925,
+        "peak": 0.440887451171875,
+        "rms": 0.06951151796221172,
+        "decodedDuration": 6.925
+      },
+      "persisted": true,
+      "rereadBytes": 332444
+    },
+    {
+      "id": 124,
+      "bytes": 342044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 342000,
+        "duration": 7.125,
+        "peak": 0.507232666015625,
+        "rms": 0.07011382015512552,
+        "decodedDuration": 7.125
+      },
+      "persisted": true,
+      "rereadBytes": 342044
+    },
+    {
+      "id": 125,
+      "bytes": 312044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 312000,
+        "duration": 6.5,
+        "peak": 0.469085693359375,
+        "rms": 0.06730655834546129,
+        "decodedDuration": 6.5
+      },
+      "persisted": true,
+      "rereadBytes": 312044
+    },
+    {
+      "id": 126,
+      "bytes": 396044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 396000,
+        "duration": 8.25,
+        "peak": 0.490997314453125,
+        "rms": 0.07014447391351353,
+        "decodedDuration": 8.25
+      },
+      "persisted": true,
+      "rereadBytes": 396044
+    },
+    {
+      "id": 127,
+      "bytes": 333644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 333600,
+        "duration": 6.95,
+        "peak": 0.50054931640625,
+        "rms": 0.06876231651510792,
+        "decodedDuration": 6.95
+      },
+      "persisted": true,
+      "rereadBytes": 333644
+    },
+    {
+      "id": 128,
+      "bytes": 390044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 390000,
+        "duration": 8.125,
+        "peak": 0.46026611328125,
+        "rms": 0.06819246567333315,
+        "decodedDuration": 8.125
+      },
+      "persisted": true,
+      "rereadBytes": 390044
+    },
+    {
+      "id": 129,
+      "bytes": 376844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 376800,
+        "duration": 7.85,
+        "peak": 0.47198486328125,
+        "rms": 0.06738345062127192,
+        "decodedDuration": 7.85
+      },
+      "persisted": true,
+      "rereadBytes": 376844
+    },
+    {
+      "id": 130,
+      "bytes": 381644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 381600,
+        "duration": 7.95,
+        "peak": 0.501678466796875,
+        "rms": 0.07007818835229393,
+        "decodedDuration": 7.95
+      },
+      "persisted": true,
+      "rereadBytes": 381644
+    },
+    {
+      "id": 131,
+      "bytes": 405644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 405600,
+        "duration": 8.45,
+        "peak": 0.4375,
+        "rms": 0.07306257476348081,
+        "decodedDuration": 8.45
+      },
+      "persisted": true,
+      "rereadBytes": 405644
+    },
+    {
+      "id": 132,
+      "bytes": 339644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 339600,
+        "duration": 7.075,
+        "peak": 0.437042236328125,
+        "rms": 0.06783279116507275,
+        "decodedDuration": 7.075
+      },
+      "persisted": true,
+      "rereadBytes": 339644
+    },
+    {
+      "id": 133,
+      "bytes": 352844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 352800,
+        "duration": 7.35,
+        "peak": 0.48858642578125,
+        "rms": 0.06926545208460365,
+        "decodedDuration": 7.35
+      },
+      "persisted": true,
+      "rereadBytes": 352844
+    },
+    {
+      "id": 134,
+      "bytes": 403244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 403200,
+        "duration": 8.4,
+        "peak": 0.521240234375,
+        "rms": 0.0708472530046471,
+        "decodedDuration": 8.4
+      },
+      "persisted": true,
+      "rereadBytes": 403244
+    },
+    {
+      "id": 135,
+      "bytes": 358844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 358800,
+        "duration": 7.475,
+        "peak": 0.53955078125,
+        "rms": 0.07109097499565922,
+        "decodedDuration": 7.475
+      },
+      "persisted": true,
+      "rereadBytes": 358844
+    },
+    {
+      "id": 136,
+      "bytes": 358844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 358800,
+        "duration": 7.475,
+        "peak": 0.480926513671875,
+        "rms": 0.07162922721669066,
+        "decodedDuration": 7.475
+      },
+      "persisted": true,
+      "rereadBytes": 358844
+    },
+    {
+      "id": 137,
+      "bytes": 415244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 415200,
+        "duration": 8.65,
+        "peak": 0.58660888671875,
+        "rms": 0.06951139897327384,
+        "decodedDuration": 8.65
+      },
+      "persisted": true,
+      "rereadBytes": 415244
+    },
+    {
+      "id": 138,
+      "bytes": 397244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 397200,
+        "duration": 8.275,
+        "peak": 0.50665283203125,
+        "rms": 0.07185460398010843,
+        "decodedDuration": 8.275
+      },
+      "persisted": true,
+      "rereadBytes": 397244
+    },
+    {
+      "id": 139,
+      "bytes": 397244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 397200,
+        "duration": 8.275,
+        "peak": 0.50164794921875,
+        "rms": 0.06950563768668158,
+        "decodedDuration": 8.275
+      },
+      "persisted": true,
+      "rereadBytes": 397244
+    },
+    {
+      "id": 140,
+      "bytes": 312044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 312000,
+        "duration": 6.5,
+        "peak": 0.433319091796875,
+        "rms": 0.06996742981402432,
+        "decodedDuration": 6.5
+      },
+      "persisted": true,
+      "rereadBytes": 312044
+    },
+    {
+      "id": 141,
+      "bytes": 366044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 366000,
+        "duration": 7.625,
+        "peak": 0.37969970703125,
+        "rms": 0.06873507311978165,
+        "decodedDuration": 7.625
+      },
+      "persisted": true,
+      "rereadBytes": 366044
+    },
+    {
+      "id": 142,
+      "bytes": 354044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 354000,
+        "duration": 7.375,
+        "peak": 0.480133056640625,
+        "rms": 0.06825935396333291,
+        "decodedDuration": 7.375
+      },
+      "persisted": true,
+      "rereadBytes": 354044
+    },
+    {
+      "id": 143,
+      "bytes": 320444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 320400,
+        "duration": 6.675,
+        "peak": 0.44647216796875,
+        "rms": 0.07314864454005861,
+        "decodedDuration": 6.675
+      },
+      "persisted": true,
+      "rereadBytes": 320444
+    },
+    {
+      "id": 144,
+      "bytes": 424844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 424800,
+        "duration": 8.85,
+        "peak": 0.51641845703125,
+        "rms": 0.07190270204730129,
+        "decodedDuration": 8.85
+      },
+      "persisted": true,
+      "rereadBytes": 424844
+    },
+    {
+      "id": 145,
+      "bytes": 388844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 388800,
+        "duration": 8.1,
+        "peak": 0.57293701171875,
+        "rms": 0.06997737875106856,
+        "decodedDuration": 8.1
+      },
+      "persisted": true,
+      "rereadBytes": 388844
+    },
+    {
+      "id": 146,
+      "bytes": 362444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 362400,
+        "duration": 7.55,
+        "peak": 0.505950927734375,
+        "rms": 0.06797805863017546,
+        "decodedDuration": 7.55
+      },
+      "persisted": true,
+      "rereadBytes": 362444
+    },
+    {
+      "id": 147,
+      "bytes": 348044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 348000,
+        "duration": 7.25,
+        "peak": 0.455078125,
+        "rms": 0.07134216522675396,
+        "decodedDuration": 7.25
+      },
+      "persisted": true,
+      "rereadBytes": 348044
+    },
+    {
+      "id": 148,
+      "bytes": 366044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 366000,
+        "duration": 7.625,
+        "peak": 0.509735107421875,
+        "rms": 0.0704975661102242,
+        "decodedDuration": 7.625
+      },
+      "persisted": true,
+      "rereadBytes": 366044
+    },
+    {
+      "id": 149,
+      "bytes": 352844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 352800,
+        "duration": 7.35,
+        "peak": 0.3963623046875,
+        "rms": 0.06829086153680433,
+        "decodedDuration": 7.35
+      },
+      "persisted": true,
+      "rereadBytes": 352844
+    },
+    {
+      "id": 150,
+      "bytes": 426044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 426000,
+        "duration": 8.875,
+        "peak": 0.459014892578125,
+        "rms": 0.07111843089954907,
+        "decodedDuration": 8.875
+      },
+      "persisted": true,
+      "rereadBytes": 426044
+    },
+    {
+      "id": 151,
+      "bytes": 331244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 331200,
+        "duration": 6.9,
+        "peak": 0.481842041015625,
+        "rms": 0.06851183558561597,
+        "decodedDuration": 6.9
+      },
+      "persisted": true,
+      "rereadBytes": 331244
+    },
+    {
+      "id": 152,
+      "bytes": 436844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 436800,
+        "duration": 9.1,
+        "peak": 0.4530029296875,
+        "rms": 0.07081236330633577,
+        "decodedDuration": 9.1
+      },
+      "persisted": true,
+      "rereadBytes": 436844
+    },
+    {
+      "id": 153,
+      "bytes": 309644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 309600,
+        "duration": 6.45,
+        "peak": 0.54083251953125,
+        "rms": 0.07091735537854736,
+        "decodedDuration": 6.45
+      },
+      "persisted": true,
+      "rereadBytes": 309644
+    },
+    {
+      "id": 154,
+      "bytes": 366044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 366000,
+        "duration": 7.625,
+        "peak": 0.439117431640625,
+        "rms": 0.06970378637952558,
+        "decodedDuration": 7.625
+      },
+      "persisted": true,
+      "rereadBytes": 366044
+    },
+    {
+      "id": 155,
+      "bytes": 361244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 361200,
+        "duration": 7.525,
+        "peak": 0.440521240234375,
+        "rms": 0.06788575418779189,
+        "decodedDuration": 7.525
+      },
+      "persisted": true,
+      "rereadBytes": 361244
+    },
+    {
+      "id": 156,
+      "bytes": 337244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 337200,
+        "duration": 7.025,
+        "peak": 0.749908447265625,
+        "rms": 0.06876532702105846,
+        "decodedDuration": 7.025
+      },
+      "persisted": true,
+      "rereadBytes": 337244
+    },
+    {
+      "id": 157,
+      "bytes": 328844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 328800,
+        "duration": 6.85,
+        "peak": 0.452392578125,
+        "rms": 0.06744945470858317,
+        "decodedDuration": 6.85
+      },
+      "persisted": true,
+      "rereadBytes": 328844
+    },
+    {
+      "id": 158,
+      "bytes": 406844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 406800,
+        "duration": 8.475,
+        "peak": 0.487762451171875,
+        "rms": 0.06947619330852041,
+        "decodedDuration": 8.475
+      },
+      "persisted": true,
+      "rereadBytes": 406844
+    },
+    {
+      "id": 159,
+      "bytes": 420044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 420000,
+        "duration": 8.75,
+        "peak": 0.4505615234375,
+        "rms": 0.06815056996375558,
+        "decodedDuration": 8.75
+      },
+      "persisted": true,
+      "rereadBytes": 420044
+    },
+    {
+      "id": 160,
+      "bytes": 393644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 393600,
+        "duration": 8.2,
+        "peak": 0.48193359375,
+        "rms": 0.07068842995274369,
+        "decodedDuration": 8.2
+      },
+      "persisted": true,
+      "rereadBytes": 393644
+    },
+    {
+      "id": 161,
+      "bytes": 513644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 513600,
+        "duration": 10.7,
+        "peak": 0.802276611328125,
+        "rms": 0.07314248400259558,
+        "decodedDuration": 10.7
+      },
+      "persisted": true,
+      "rereadBytes": 513644
+    },
+    {
+      "id": 162,
+      "bytes": 565244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 565200,
+        "duration": 11.775,
+        "peak": 0.5050048828125,
+        "rms": 0.0720592927346192,
+        "decodedDuration": 11.775
+      },
+      "persisted": true,
+      "rereadBytes": 565244
+    },
+    {
+      "id": 163,
+      "bytes": 561644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 561600,
+        "duration": 11.7,
+        "peak": 0.558502197265625,
+        "rms": 0.07270904100776605,
+        "decodedDuration": 11.7
+      },
+      "persisted": true,
+      "rereadBytes": 561644
+    },
+    {
+      "id": 164,
+      "bytes": 502844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 502800,
+        "duration": 10.475,
+        "peak": 0.6982421875,
+        "rms": 0.07139185685990501,
+        "decodedDuration": 10.475
+      },
+      "persisted": true,
+      "rereadBytes": 502844
+    },
+    {
+      "id": 165,
+      "bytes": 559244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 559200,
+        "duration": 11.65,
+        "peak": 0.633148193359375,
+        "rms": 0.07167737444557755,
+        "decodedDuration": 11.65
+      },
+      "persisted": true,
+      "rereadBytes": 559244
+    },
+    {
+      "id": 166,
+      "bytes": 536444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 536400,
+        "duration": 11.175,
+        "peak": 0.4534912109375,
+        "rms": 0.07164188840466978,
+        "decodedDuration": 11.175
+      },
+      "persisted": true,
+      "rereadBytes": 536444
+    },
+    {
+      "id": 167,
+      "bytes": 508844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 508800,
+        "duration": 10.6,
+        "peak": 0.79620361328125,
+        "rms": 0.07169910387595392,
+        "decodedDuration": 10.6
+      },
+      "persisted": true,
+      "rereadBytes": 508844
+    },
+    {
+      "id": 168,
+      "bytes": 546044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 546000,
+        "duration": 11.375,
+        "peak": 0.528472900390625,
+        "rms": 0.07380986694676944,
+        "decodedDuration": 11.375
+      },
+      "persisted": true,
+      "rereadBytes": 546044
+    },
+    {
+      "id": 169,
+      "bytes": 463244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 463200,
+        "duration": 9.65,
+        "peak": 0.700531005859375,
+        "rms": 0.07077198570149272,
+        "decodedDuration": 9.65
+      },
+      "persisted": true,
+      "rereadBytes": 463244
+    },
+    {
+      "id": 170,
+      "bytes": 555644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 555600,
+        "duration": 11.575,
+        "peak": 0.59600830078125,
+        "rms": 0.07150128352845642,
+        "decodedDuration": 11.575
+      },
+      "persisted": true,
+      "rereadBytes": 555644
+    },
+    {
+      "id": 171,
+      "bytes": 592844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 592800,
+        "duration": 12.35,
+        "peak": 0.475311279296875,
+        "rms": 0.07249361809915215,
+        "decodedDuration": 12.35
+      },
+      "persisted": true,
+      "rereadBytes": 592844
+    },
+    {
+      "id": 172,
+      "bytes": 486044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 486000,
+        "duration": 10.125,
+        "peak": 0.464385986328125,
+        "rms": 0.07057061321475103,
+        "decodedDuration": 10.125
+      },
+      "persisted": true,
+      "rereadBytes": 486044
+    },
+    {
+      "id": 173,
+      "bytes": 457244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 457200,
+        "duration": 9.525,
+        "peak": 0.93218994140625,
+        "rms": 0.07347064345369635,
+        "decodedDuration": 9.525
+      },
+      "persisted": true,
+      "rereadBytes": 457244
+    },
+    {
+      "id": 174,
+      "bytes": 570044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 570000,
+        "duration": 11.875,
+        "peak": 0.456329345703125,
+        "rms": 0.07466017705760672,
+        "decodedDuration": 11.875
+      },
+      "persisted": true,
+      "rereadBytes": 570044
+    },
+    {
+      "id": 175,
+      "bytes": 472844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 472800,
+        "duration": 9.85,
+        "peak": 0.562347412109375,
+        "rms": 0.07189781729102784,
+        "decodedDuration": 9.85
+      },
+      "persisted": true,
+      "rereadBytes": 472844
+    },
+    {
+      "id": 176,
+      "bytes": 510044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 510000,
+        "duration": 10.625,
+        "peak": 0.570526123046875,
+        "rms": 0.07274272981311773,
+        "decodedDuration": 10.625
+      },
+      "persisted": true,
+      "rereadBytes": 510044
+    },
+    {
+      "id": 177,
+      "bytes": 529244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 529200,
+        "duration": 11.025,
+        "peak": 0.470184326171875,
+        "rms": 0.0730336840856601,
+        "decodedDuration": 11.025
+      },
+      "persisted": true,
+      "rereadBytes": 529244
+    },
+    {
+      "id": 178,
+      "bytes": 457244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 457200,
+        "duration": 9.525,
+        "peak": 0.6036376953125,
+        "rms": 0.07066299545591272,
+        "decodedDuration": 9.525
+      },
+      "persisted": true,
+      "rereadBytes": 457244
+    },
+    {
+      "id": 179,
+      "bytes": 492044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 492000,
+        "duration": 10.25,
+        "peak": 0.486053466796875,
+        "rms": 0.0721547278780664,
+        "decodedDuration": 10.25
+      },
+      "persisted": true,
+      "rereadBytes": 492044
+    },
+    {
+      "id": 180,
+      "bytes": 526844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 526800,
+        "duration": 10.975,
+        "peak": 0.496612548828125,
+        "rms": 0.07435602771479112,
+        "decodedDuration": 10.975
+      },
+      "persisted": true,
+      "rereadBytes": 526844
+    },
+    {
+      "id": 181,
+      "bytes": 453644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 453600,
+        "duration": 9.45,
+        "peak": 0.5809326171875,
+        "rms": 0.07215602420365216,
+        "decodedDuration": 9.45
+      },
+      "persisted": true,
+      "rereadBytes": 453644
+    },
+    {
+      "id": 182,
+      "bytes": 520844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 520800,
+        "duration": 10.85,
+        "peak": 0.610504150390625,
+        "rms": 0.07326543549780719,
+        "decodedDuration": 10.85
+      },
+      "persisted": true,
+      "rereadBytes": 520844
+    },
+    {
+      "id": 183,
+      "bytes": 542444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 542400,
+        "duration": 11.3,
+        "peak": 0.462310791015625,
+        "rms": 0.07334585943787346,
+        "decodedDuration": 11.3
+      },
+      "persisted": true,
+      "rereadBytes": 542444
+    },
+    {
+      "id": 184,
+      "bytes": 458444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 458400,
+        "duration": 9.55,
+        "peak": 0.52191162109375,
+        "rms": 0.07152259056452223,
+        "decodedDuration": 9.55
+      },
+      "persisted": true,
+      "rereadBytes": 458444
+    },
+    {
+      "id": 185,
+      "bytes": 500444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 500400,
+        "duration": 10.425,
+        "peak": 0.75927734375,
+        "rms": 0.073918630671082,
+        "decodedDuration": 10.425
+      },
+      "persisted": true,
+      "rereadBytes": 500444
+    },
+    {
+      "id": 186,
+      "bytes": 568844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 568800,
+        "duration": 11.85,
+        "peak": 0.498748779296875,
+        "rms": 0.07607461254751886,
+        "decodedDuration": 11.85
+      },
+      "persisted": true,
+      "rereadBytes": 568844
+    },
+    {
+      "id": 187,
+      "bytes": 476444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 476400,
+        "duration": 9.925,
+        "peak": 0.519866943359375,
+        "rms": 0.06965489582864458,
+        "decodedDuration": 9.925
+      },
+      "persisted": true,
+      "rereadBytes": 476444
+    },
+    {
+      "id": 188,
+      "bytes": 506444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 506400,
+        "duration": 10.55,
+        "peak": 0.612335205078125,
+        "rms": 0.07192345037816636,
+        "decodedDuration": 10.55
+      },
+      "persisted": true,
+      "rereadBytes": 506444
+    },
+    {
+      "id": 189,
+      "bytes": 592844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 592800,
+        "duration": 12.35,
+        "peak": 0.517608642578125,
+        "rms": 0.07300644745350264,
+        "decodedDuration": 12.35
+      },
+      "persisted": true,
+      "rereadBytes": 592844
+    },
+    {
+      "id": 190,
+      "bytes": 474044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 474000,
+        "duration": 9.875,
+        "peak": 0.4886474609375,
+        "rms": 0.07194707442888616,
+        "decodedDuration": 9.875
+      },
+      "persisted": true,
+      "rereadBytes": 474044
+    },
+    {
+      "id": 191,
+      "bytes": 574844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 574800,
+        "duration": 11.975,
+        "peak": 0.5338134765625,
+        "rms": 0.07263513727378665,
+        "decodedDuration": 11.975
+      },
+      "persisted": true,
+      "rereadBytes": 574844
+    },
+    {
+      "id": 192,
+      "bytes": 496844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 496800,
+        "duration": 10.35,
+        "peak": 0.400482177734375,
+        "rms": 0.07198267901438164,
+        "decodedDuration": 10.35
+      },
+      "persisted": true,
+      "rereadBytes": 496844
+    },
+    {
+      "id": 193,
+      "bytes": 547244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 547200,
+        "duration": 11.4,
+        "peak": 0.48779296875,
+        "rms": 0.07354311426138983,
+        "decodedDuration": 11.4
+      },
+      "persisted": true,
+      "rereadBytes": 547244
+    },
+    {
+      "id": 194,
+      "bytes": 542444,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 542400,
+        "duration": 11.3,
+        "peak": 0.53045654296875,
+        "rms": 0.07328236578505723,
+        "decodedDuration": 11.3
+      },
+      "persisted": true,
+      "rereadBytes": 542444
+    },
+    {
+      "id": 195,
+      "bytes": 477644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 477600,
+        "duration": 9.95,
+        "peak": 0.613037109375,
+        "rms": 0.0718305439736896,
+        "decodedDuration": 9.95
+      },
+      "persisted": true,
+      "rereadBytes": 477644
+    },
+    {
+      "id": 196,
+      "bytes": 510044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 510000,
+        "duration": 10.625,
+        "peak": 0.493621826171875,
+        "rms": 0.07244896710185106,
+        "decodedDuration": 10.625
+      },
+      "persisted": true,
+      "rereadBytes": 510044
+    },
+    {
+      "id": 197,
+      "bytes": 508844,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 508800,
+        "duration": 10.6,
+        "peak": 0.427520751953125,
+        "rms": 0.07381942394515013,
+        "decodedDuration": 10.6
+      },
+      "persisted": true,
+      "rereadBytes": 508844
+    },
+    {
+      "id": 198,
+      "bytes": 517244,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 517200,
+        "duration": 10.775,
+        "peak": 0.4993896484375,
+        "rms": 0.0714183643336321,
+        "decodedDuration": 10.775
+      },
+      "persisted": true,
+      "rereadBytes": 517244
+    },
+    {
+      "id": 199,
+      "bytes": 534044,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 534000,
+        "duration": 11.125,
+        "peak": 0.539794921875,
+        "rms": 0.07231312449583759,
+        "decodedDuration": 11.125
+      },
+      "persisted": true,
+      "rereadBytes": 534044
+    },
+    {
+      "id": 200,
+      "bytes": 615644,
+      "validation": {
+        "valid": true,
+        "audioFormat": 1,
+        "channels": 1,
+        "sampleRate": 24000,
+        "bitsPerSample": 16,
+        "dataBytes": 615600,
+        "duration": 12.825,
+        "peak": 0.619293212890625,
+        "rms": 0.07523060748116409,
+        "decodedDuration": 12.825
+      },
+      "persisted": true,
+      "rereadBytes": 615644
+    }
+  ],
+  "elapsedMs": 1597212,
+  "sourceSha256": "79761ec0d51aa3d47a4429f4b878b5fdacd120a56b6450e17b8b16a173a5a22e",
+  "workers": 4,
+  "completedAt": "2026-09-09T07:24:44.661Z"
+}
