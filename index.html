@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OPIc 모의고사 v1.1.2</title>
+  <title>OPIc 모의고사 v1.1.3</title>
   <script src="coi-serviceworker.js"></script>
   <style>
     :root {
@@ -1011,7 +1011,7 @@
           <div class="brand-mark" aria-hidden="true">O</div>
           <div>
             <div class="brand-kicker">SPEAKING PRACTICE</div>
-            <div class="brand-title">OPIc 모의고사 <span>v1.1.2</span></div>
+            <div class="brand-title">OPIc 모의고사 <span>v1.1.3</span></div>
           </div>
         </div>
         <div class="header-actions">
@@ -1073,7 +1073,7 @@
             <button id="clearTtsCacheBtn" type="button" class="ghost">녹음본 캐시 삭제</button>
           </div>
           <div id="ttsStatus" class="tts-status">현재 브라우저 기본 음성으로 문항을 읽습니다.</div>
-          <div class="tts-status">200문항 녹음본은 생성 후 WAV 구조·재생 가능 여부를 확인합니다. PC 사양에 따라 30분 이상 걸릴 수 있으며, 환경에 맞춰 동시 생성 수를 자동 조정합니다.</div>
+          <div class="tts-status">200문항 녹음본은 생성 후 WAV 구조와 신호를 확인합니다. PC 사양에 따라 30분 이상 걸릴 수 있으며, 가능한 환경에서는 여러 문항을 동시에 생성합니다.</div>
         </div>
       </div>
       <div class="section-divider"><span>평가 방식</span><small>처음 사용한다면 ‘오프라인 기본 평가’를 추천합니다.</small></div>
@@ -1287,6 +1287,10 @@ let localTtsLastBatchDuration = 0;
 let ttsValidationAudioContext = null;
 let ttsLongTaskObserver = null;
 let ttsLongTaskCount = 0;
+let kokoroWorkerScriptUrl = '';
+let kokoroWorkerPool = [];
+let kokoroWorkerSequence = 0;
+let kokoroWorkersDisabled = false;
 
 const state = {
   questions: [],
@@ -1892,6 +1896,327 @@ async function importKokoroTtsModule() {
   throw new Error(`로컬 TTS 모듈을 불러오지 못했습니다. ${errors.join(' / ')}`);
 }
 
+// Kokoro의 추론과 WAV 변환은 메인 스레드에서 실행하면 문항이 끝날 때마다
+// 화면이 멈출 수 있습니다. 단일 HTML을 유지하면서도 Blob URL Worker를
+// 만들어 모델 인스턴스를 분리합니다.
+function getKokoroWorkerSource() {
+  const moduleUrls = JSON.stringify([KOKORO_TTS_MODULE_URL, KOKORO_TTS_FALLBACK_MODULE_URL]);
+  const modelId = JSON.stringify(KOKORO_TTS_MODEL_ID);
+  const defaultVoice = JSON.stringify(KOKORO_TTS_VOICE);
+  return `
+    let engine = null;
+    let device = '';
+    let initPromise = null;
+    const moduleUrls = ${moduleUrls};
+    const modelId = ${modelId};
+    const defaultVoice = ${defaultVoice};
+
+    function report(message) {
+      try { self.postMessage(message); } catch (error) { /* 워커 종료 중이면 무시합니다. */ }
+    }
+
+    async function importKokoro() {
+      const errors = [];
+      for (const url of moduleUrls) {
+        try {
+          const module = await import(url);
+          const KokoroTTS = module.KokoroTTS || module.default?.KokoroTTS;
+          if (KokoroTTS) return KokoroTTS;
+          errors.push(url + ': KokoroTTS export 없음');
+        } catch (error) {
+          errors.push(url + ': ' + (error?.message || error));
+        }
+      }
+      throw new Error('워커에서 로컬 TTS 모듈을 불러오지 못했습니다. ' + errors.join(' / '));
+    }
+
+    async function initialize(preferWebGpu) {
+      if (engine) return { device };
+      if (initPromise) return initPromise;
+      initPromise = (async () => {
+        const KokoroTTS = await importKokoro();
+        const attempts = preferWebGpu && self.navigator?.gpu
+          ? [{ device: 'webgpu', dtype: 'q8f16' }, { device: 'wasm', dtype: 'q8' }]
+          : [{ device: 'wasm', dtype: 'q8' }];
+        let lastError = null;
+        for (const options of attempts) {
+          try {
+            report({ type: 'progress', status: 'engine', device: options.device });
+            engine = await KokoroTTS.from_pretrained(modelId, {
+              ...options,
+              progress_callback: (progress) => report({ type: 'progress', progress }),
+            });
+            device = options.device;
+            report({ type: 'ready', device });
+            return { device };
+          } catch (error) {
+            lastError = error;
+            engine = null;
+            device = '';
+          }
+        }
+        throw lastError || new Error('워커에서 Kokoro TTS 엔진을 만들지 못했습니다.');
+      })();
+      try {
+        return await initPromise;
+      } catch (error) {
+        initPromise = null;
+        throw error;
+      }
+    }
+
+    function writeAscii(view, offset, text) {
+      for (let index = 0; index < text.length; index += 1) view.setUint8(offset + index, text.charCodeAt(index));
+    }
+
+    async function toWavArrayBuffer(rawAudio) {
+      if (rawAudio instanceof ArrayBuffer) return rawAudio;
+      if (rawAudio instanceof Blob) return rawAudio.arrayBuffer();
+      const samples = rawAudio?.audio || rawAudio?.data;
+      if (!samples) throw new Error('Kokoro가 오디오 데이터를 반환하지 않았습니다.');
+      const source = samples instanceof Float32Array
+        ? samples
+        : ArrayBuffer.isView(samples)
+          ? new Float32Array(samples.buffer, samples.byteOffset, Math.floor(samples.byteLength / 4))
+          : Float32Array.from(samples);
+      const sampleRate = Math.max(8000, Number(rawAudio?.sampling_rate || rawAudio?.samplingRate || rawAudio?.sampleRate) || 24000);
+      const buffer = new ArrayBuffer(44 + source.length * 2);
+      const view = new DataView(buffer);
+      writeAscii(view, 0, 'RIFF');
+      view.setUint32(4, 36 + source.length * 2, true);
+      writeAscii(view, 8, 'WAVE');
+      writeAscii(view, 12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2, true);
+      view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true);
+      writeAscii(view, 36, 'data');
+      view.setUint32(40, source.length * 2, true);
+      for (let index = 0; index < source.length; index += 1) {
+        const sample = Math.max(-1, Math.min(1, Number(source[index]) || 0));
+        view.setInt16(44 + index * 2, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+      }
+      return buffer;
+    }
+
+    self.onmessage = async (event) => {
+      const message = event.data || {};
+      if (message.type === 'init') {
+        try {
+          await initialize(Boolean(message.preferWebGpu));
+        } catch (error) {
+          report({ type: 'error', id: message.id, message: error?.message || String(error) });
+        }
+        return;
+      }
+      if (message.type !== 'generate') return;
+      try {
+        await initialize(Boolean(message.preferWebGpu));
+        const output = await engine.generate(message.text, {
+          voice: message.voice || defaultVoice,
+          speed: Number(message.speed) || 0.9,
+        });
+        const buffer = await toWavArrayBuffer(output);
+        report({ type: 'result', id: message.id, buffer }, [buffer]);
+      } catch (error) {
+        report({ type: 'error', id: message.id, message: error?.message || String(error) });
+      }
+    };
+  `;
+}
+
+function getKokoroWorkerTarget(snapshot = getTtsResourceSnapshot()) {
+  if (kokoroWorkersDisabled || typeof Worker === 'undefined' || typeof URL?.createObjectURL !== 'function' || typeof Blob === 'undefined') return 0;
+  const { cores, memory } = snapshot;
+  if (cores >= 12 && (memory === 0 || memory >= 16)) return TTS_MAX_CONCURRENCY;
+  if (cores >= 8 && (memory === 0 || memory >= 8)) return Math.min(2, TTS_MAX_CONCURRENCY);
+  return 1;
+}
+
+function makeKokoroWorkerError(message) {
+  return new Error(message || 'Kokoro 워커가 응답하지 않았습니다.');
+}
+
+function settleKokoroWorkerTask(task, error, value) {
+  if (!task) return;
+  if (error) task.reject(error);
+  else task.resolve(value);
+}
+
+function failKokoroWorkerSlot(slot, error) {
+  if (!slot || slot.failed) return;
+  slot.failed = true;
+  slot.ready = false;
+  const failure = error instanceof Error ? error : makeKokoroWorkerError(error?.message || error);
+  if (slot.initReject) {
+    slot.initReject(failure);
+    slot.initResolve = null;
+    slot.initReject = null;
+  }
+  slot.pending.forEach((task) => settleKokoroWorkerTask(task, failure));
+  slot.pending.clear();
+  slot.queue.splice(0).forEach((task) => settleKokoroWorkerTask(task, failure));
+  slot.busy = false;
+  const healthy = kokoroWorkerPool.some((candidate) => candidate !== slot && candidate.ready && !candidate.failed);
+  if (!healthy && kokoroWorkerPool.length) {
+    // 모든 워커가 실패하면 다음 생성 시 메인 스레드 WASM 경로로 자동 전환합니다.
+    kokoroWorkersDisabled = true;
+    localTtsReady = false;
+    localTtsDevice = '';
+    kokoroWorkerPool.forEach((candidate) => {
+      try { candidate.worker.terminate(); } catch { /* 이미 종료된 워커 */ }
+    });
+    kokoroWorkerPool = [];
+  }
+}
+
+function pumpKokoroWorkerSlot(slot) {
+  if (!slot || slot.failed || !slot.ready || slot.busy) return;
+  const task = slot.queue.shift();
+  if (!task) return;
+  const id = `${slot.index}-${++kokoroWorkerSequence}`;
+  slot.busy = true;
+  slot.pending.set(id, task);
+  try {
+    slot.worker.postMessage({
+      type: 'generate',
+      id,
+      text: task.text,
+      voice: task.voice,
+      speed: task.speed,
+      preferWebGpu: Boolean(navigator.gpu),
+    });
+  } catch (error) {
+    slot.pending.delete(id);
+    slot.busy = false;
+    settleKokoroWorkerTask(task, error);
+    failKokoroWorkerSlot(slot, error);
+  }
+}
+
+function createKokoroWorkerSlot(index) {
+  const worker = new Worker(kokoroWorkerScriptUrl, { type: 'classic', name: `opic-kokoro-${index + 1}` });
+  const slot = {
+    index,
+    worker,
+    ready: false,
+    busy: false,
+    failed: false,
+    device: '',
+    queue: [],
+    pending: new Map(),
+    initResolve: null,
+    initReject: null,
+    initPromise: null,
+  };
+  worker.onmessage = (event) => {
+    const message = event.data || {};
+    if (message.type === 'progress') {
+      if (message.progress) updateKokoroProgress(message.progress);
+      else if (message.status === 'engine') setTtsStatus(`Kokoro 워커 ${index + 1}번 엔진 초기화 중 · ${message.device === 'webgpu' ? 'WebGPU' : 'WASM'}`);
+      return;
+    }
+    if (message.type === 'ready') {
+      slot.ready = true;
+      slot.device = message.device || 'wasm';
+      if (slot.initResolve) slot.initResolve(slot.device);
+      slot.initResolve = null;
+      slot.initReject = null;
+      pumpKokoroWorkerSlot(slot);
+      return;
+    }
+    if (message.type === 'error' && !slot.ready && slot.initReject) {
+      const failure = makeKokoroWorkerError(message.message);
+      const reject = slot.initReject;
+      slot.initResolve = null;
+      slot.initReject = null;
+      reject(failure);
+      failKokoroWorkerSlot(slot, failure);
+      return;
+    }
+    if (message.type === 'result' || message.type === 'error') {
+      const task = slot.pending.get(message.id);
+      if (!task) return;
+      slot.pending.delete(message.id);
+      slot.busy = false;
+      if (message.type === 'error') settleKokoroWorkerTask(task, makeKokoroWorkerError(message.message));
+      else settleKokoroWorkerTask(task, null, new Blob([message.buffer], { type: 'audio/wav' }));
+      pumpKokoroWorkerSlot(slot);
+    }
+  };
+  worker.onerror = (event) => failKokoroWorkerSlot(slot, makeKokoroWorkerError(event?.message));
+  return slot;
+}
+
+async function initializeKokoroWorkerSlot(slot) {
+  if (!slot || slot.failed) throw makeKokoroWorkerError('Kokoro 워커를 만들지 못했습니다.');
+  if (slot.ready) return slot.device;
+  if (!slot.initPromise) {
+    slot.initPromise = new Promise((resolve, reject) => {
+      slot.initResolve = resolve;
+      slot.initReject = reject;
+      try {
+        slot.worker.postMessage({ type: 'init', id: `init-${slot.index}`, preferWebGpu: Boolean(navigator.gpu) });
+      } catch (error) {
+        reject(error);
+        failKokoroWorkerSlot(slot, error);
+      }
+    });
+  }
+  return slot.initPromise;
+}
+
+async function prepareKokoroWorkerPool(target) {
+  if (!target) return false;
+  if (kokoroWorkerPool.length >= target && kokoroWorkerPool.every((slot) => slot.ready && !slot.failed)) return true;
+  if (!kokoroWorkerScriptUrl) {
+    kokoroWorkerScriptUrl = URL.createObjectURL(new Blob([getKokoroWorkerSource()], { type: 'text/javascript' }));
+  }
+  const slots = [];
+  try {
+    for (let index = 0; index < target; index += 1) {
+      const slot = createKokoroWorkerSlot(index);
+      slots.push(slot);
+      setTtsStatus(`Kokoro 로컬 TTS 워커 준비 중 · ${index + 1}/${target}`);
+      // 모델 메모리 피크를 낮추기 위해 초기화는 순서대로 진행하고,
+      // 실제 문항 생성은 준비된 워커들이 동시에 처리합니다.
+      await initializeKokoroWorkerSlot(slot);
+    }
+    kokoroWorkerPool = slots;
+    return true;
+  } catch (error) {
+    slots.forEach((slot) => {
+      try { slot.worker.terminate(); } catch { /* 종료 중인 워커 */ }
+    });
+    kokoroWorkerPool = [];
+    throw error;
+  }
+}
+
+function terminateKokoroWorkerPool() {
+  kokoroWorkerPool.forEach((slot) => {
+    try { slot.worker.terminate(); } catch { /* 이미 종료된 워커 */ }
+  });
+  kokoroWorkerPool = [];
+}
+
+function enqueueKokoroWorkerGeneration(text, voice, speed) {
+  const available = kokoroWorkerPool.filter((slot) => slot.ready && !slot.failed);
+  if (!available.length) return Promise.reject(makeKokoroWorkerError('사용 가능한 Kokoro 워커가 없습니다.'));
+  const slot = available.reduce((best, candidate) => {
+    const bestLoad = best.queue.length + (best.busy ? 1 : 0);
+    const candidateLoad = candidate.queue.length + (candidate.busy ? 1 : 0);
+    return candidateLoad < bestLoad ? candidate : best;
+  }, available[0]);
+  return new Promise((resolve, reject) => {
+    slot.queue.push({ text, voice, speed, resolve, reject });
+    pumpKokoroWorkerSlot(slot);
+  });
+}
+
 function updateKokoroProgress(progress) {
   const value = Number(progress?.progress);
   if (Number.isFinite(value) && value >= 0 && value <= 100) {
@@ -1902,7 +2227,7 @@ function updateKokoroProgress(progress) {
 }
 
 async function prepareLocalTts() {
-  if (localTtsReady && localTtsEngine) {
+  if (localTtsReady && (localTtsEngine || kokoroWorkerPool.some((slot) => slot.ready && !slot.failed))) {
     updateTtsButtons();
     return true;
   }
@@ -1912,6 +2237,23 @@ async function prepareLocalTts() {
   localTtsPreparePromise = (async () => {
     try {
       setTtsStatus(`Kokoro 로컬 TTS를 준비합니다. 처음 한 번 ${KOKORO_TTS_SIZE_MB}MB 정도를 내려받습니다...`);
+      const resource = getTtsResourceSnapshot();
+      const workerTarget = getKokoroWorkerTarget(resource);
+      if (workerTarget > 0) {
+        try {
+          await prepareKokoroWorkerPool(workerTarget);
+          localTtsEngine = null;
+          localTtsDevice = kokoroWorkerPool[0]?.device || 'wasm';
+          localTtsReady = true;
+          setTtsStatus(`준비 완료 · Kokoro 워커 ${kokoroWorkerPool.length}개가 ${localTtsDevice === 'webgpu' ? 'WebGPU' : 'WASM'}에서 문항을 생성합니다.`, 'good');
+          updateTtsButtons();
+          return true;
+        } catch (workerError) {
+          terminateKokoroWorkerPool();
+          console.warn('Kokoro 워커 초기화 실패, 메인 스레드 경로로 전환합니다.', workerError);
+          setTtsStatus('Kokoro 워커 초기화에 실패해 호환 모드로 전환 중입니다...');
+        }
+      }
       if (!localTtsModulePromise) localTtsModulePromise = importKokoroTtsModule();
       const KokoroTTS = await localTtsModulePromise;
       const webgpu = Boolean(navigator.gpu);
@@ -1942,6 +2284,7 @@ async function prepareLocalTts() {
       return true;
     } catch (error) {
       localTtsModulePromise = null;
+      terminateKokoroWorkerPool();
       localTtsEngine = null;
       localTtsReady = false;
       localTtsDevice = '';
@@ -1993,6 +2336,10 @@ async function rawKokoroAudioToWavBlob(rawAudio) {
 
 async function generateQuestionAudio(question, options = {}) {
   await prepareLocalTts();
+  if (kokoroWorkerPool.some((slot) => slot.ready && !slot.failed)) {
+    if (!options.silent) setTtsStatus(`문항 음성을 생성하는 중입니다 · 워커 ${kokoroWorkerPool.length}개 병렬 처리`);
+    return enqueueKokoroWorkerGeneration(question.prompt, KOKORO_TTS_VOICE, 0.9);
+  }
   if (!options.silent) setTtsStatus('문항 음성을 생성하는 중입니다. 잠시만 기다려 주세요.');
   const output = await localTtsEngine.generate(question.prompt, {
     voice: KOKORO_TTS_VOICE,
@@ -2007,7 +2354,9 @@ async function generateQuestionAudioVerified(question, options = {}) {
     try {
       const blob = await generateQuestionAudio(question, options);
       await yieldToBrowser();
-      const validation = await validateQuestionAudioBlob(blob);
+      const validation = await validateQuestionAudioBlob(blob, {
+        deep: options.deepValidation !== false,
+      });
       if (validation.valid) return { blob, validation, attempts: attempt };
       lastError = new Error(validation.reason || '검증에 실패했습니다.');
     } catch (error) {
@@ -2054,7 +2403,12 @@ function getTtsResourceSnapshot() {
 
 function getTtsConcurrencyCeiling(snapshot = getTtsResourceSnapshot()) {
   const { cores, memory, heapRatio, longTaskDetected } = snapshot;
-  if (longTaskDetected || heapRatio >= 0.82 || cores <= 2 || (memory > 0 && memory <= 4)) return 1;
+  const workerCount = kokoroWorkerPool.filter((slot) => slot.ready && !slot.failed).length;
+  if ((memory > 0 && memory <= 4) || cores <= 2) return 1;
+  // Worker 추론은 메인 스레드를 막지 않으므로 메인 스레드의 long task만으로
+  // 병렬도를 낮추지 않습니다. JS 힙이 실제로 포화될 때만 안전하게 줄입니다.
+  if ((!workerCount && longTaskDetected) || heapRatio >= 0.92) return 1;
+  if (workerCount) return Math.min(TTS_MAX_CONCURRENCY, workerCount);
   if (cores >= 12 && (memory === 0 || memory >= 16)) return Math.min(TTS_MAX_CONCURRENCY, 3);
   if (cores >= 6 && (memory === 0 || memory >= 8)) return Math.min(TTS_MAX_CONCURRENCY, 2);
   return 1;
@@ -2066,7 +2420,8 @@ function tuneTtsGenerationConcurrency(batchResults, batchDuration) {
   const snapshot = getTtsResourceSnapshot();
   const ceiling = getTtsConcurrencyCeiling(snapshot);
   const failed = batchResults.some((result) => !result.valid);
-  if (failed || snapshot.longTaskDetected || snapshot.heapRatio >= 0.82 || snapshot.inputPending) {
+  const workerCount = kokoroWorkerPool.filter((slot) => slot.ready && !slot.failed).length;
+  if (failed || (!workerCount && snapshot.longTaskDetected) || snapshot.heapRatio >= 0.92 || snapshot.inputPending) {
     localTtsGenerationConcurrency = Math.max(1, localTtsGenerationConcurrency - 1);
   } else if (localTtsGenerationConcurrency < ceiling
     && (!localTtsLastBatchDuration || batchDuration <= localTtsLastBatchDuration * 1.2)) {
@@ -2080,7 +2435,7 @@ async function prepareOneQuestionRecording(question) {
   const cached = await readCachedQuestionAudio(key);
   if (cached) return { valid: true, cached: true, generated: false, attempts: 0, persisted: true };
   const startedAt = performance.now();
-  const generated = await generateQuestionAudioVerified(question, { silent: true });
+  const generated = await generateQuestionAudioVerified(question, { silent: true, deepValidation: false });
   const persisted = await cacheQuestionAudio(key, generated.blob, generated.validation);
   return {
     valid: true,
@@ -2102,7 +2457,10 @@ async function prepareAllQuestionRecordings() {
   try {
     await prepareLocalTts();
     const resource = getTtsResourceSnapshot();
-    localTtsGenerationConcurrency = resource.heapRatio >= 0.82 ? 1 : Math.min(getTtsConcurrencyCeiling(), 2);
+    const workerCount = kokoroWorkerPool.filter((slot) => slot.ready && !slot.failed).length;
+    localTtsGenerationConcurrency = resource.heapRatio >= 0.82
+      ? Math.max(1, Math.min(workerCount || 1, 2))
+      : Math.max(1, Math.min(workerCount || 1, getTtsConcurrencyCeiling(resource), TTS_MAX_CONCURRENCY));
     localTtsLastBatchDuration = 0;
     setTtsStatus(`녹음본 생성 준비 완료 · ${localTtsDevice === 'webgpu' ? 'WebGPU' : 'WASM'} · 동시 생성 ${localTtsGenerationConcurrency}개`);
     let created = 0;
