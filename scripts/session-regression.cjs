@@ -356,7 +356,7 @@ async function main() {
  const localDeadline=await page.evaluate(async()=>{
    const oldEngine=localLlmEngine,oldReady=localLlmReady,oldFault=localLlmFault;
    try {
-     localLlmEngine={chat:{completions:{create:async()=>({choices:[{message:{content:'{"content":4,"fluency":4,"grammar":4,"pronunciation":5,"tip":"세부사항을 추가하세요."}'}}]})}}};
+     localLlmEngine={chat:{completions:{create:async()=>({choices:[{finish_reason:'stop',message:{content:'{"content":4,"fluency":4,"grammar":4,"pronunciation":5,"tip":"세부사항을 추가하세요."}'}}]})}}};
      localLlmReady=true;
      const normal=await evaluateWithLocalLLM('Describe home','My home is small.','묘사',{});
      let finish;const pending=new Promise(resolve=>{finish=resolve;});
