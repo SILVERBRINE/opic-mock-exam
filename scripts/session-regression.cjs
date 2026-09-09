@@ -50,6 +50,32 @@ async function main() {
    }finally{requestVoiceCaptureStop=originalStop;state.isRecording=false;state.audioCaptureError='';}
  });
  assert.equal(disconnected.stops,1);assert.match(disconnected.message,/연결이 끊겼/);
+ const modelIntegrity=await page.evaluate(async()=>({empty:await validateWhisperModel(new ArrayBuffer(0)),wrong:await validateWhisperModel(new ArrayBuffer(WHISPER_MODEL_BYTES))}));
+ assert.deepEqual(modelIntegrity,{empty:false,wrong:false});
+ const corruptModelRecovery=await page.evaluate(async()=>{
+   const original={ensureWhisperWasmRuntime,readCachedWhisperModel,downloadWhisperModel,validateWhisperModel,loadWhisperModelIntoRuntime,cacheWhisperModel};
+   const events=[];let downloadedValid=true;
+   ensureWhisperWasmRuntime=async()=>({});readCachedWhisperModel=async()=> 'broken';
+   validateWhisperModel=async value=>value==='valid';downloadWhisperModel=async()=>{events.push('download');return downloadedValid?'valid':'invalid';};
+   loadWhisperModelIntoRuntime=async()=>{events.push('load');};cacheWhisperModel=async value=>{events.push(value===null?'discard':'save');};
+   try{
+     await prepareWhisperLocal();const success=events.slice();events.length=0;downloadedValid=false;
+     let error='';try{await prepareWhisperLocal();}catch(e){error=e.message;}
+     return {success,failure:events.slice(),error};
+   }finally{({ensureWhisperWasmRuntime,readCachedWhisperModel,downloadWhisperModel,validateWhisperModel,loadWhisperModelIntoRuntime,cacheWhisperModel}=original);}
+ });
+ assert.deepEqual(corruptModelRecovery.success,['discard','download','load','save']);
+ assert.deepEqual(corruptModelRecovery.failure,['discard','download']);assert.match(corruptModelRecovery.error,/손상/);
+ const runtimeFailure=await page.evaluate(async()=>{
+   const original={readCachedWhisperModel,cacheWhisperModel,append:document.head.appendChild,module:window.Module};const writes=[];
+   readCachedWhisperModel=async()=> 'x'.repeat(1001);cacheWhisperModel=async(value,key)=>{writes.push({value,key});};
+   document.head.appendChild=function(node){if(node.dataset?.opicWhisperWasm){queueMicrotask(()=>node.onerror());return node;}return original.append.call(this,node);};
+   try{
+     let message='';try{await ensureWhisperWasmRuntime();}catch(error){message=error.message;}
+     return {message,writes,quarantined:Boolean(whisperRuntimeFault)};
+   }finally{readCachedWhisperModel=original.readCachedWhisperModel;cacheWhisperModel=original.cacheWhisperModel;document.head.appendChild=original.append;window.Module=original.module;whisperModulePromise=null;whisperRuntimeFault=null;}
+ });
+ assert.equal(runtimeFailure.quarantined,true);assert.match(runtimeFailure.message,/새로고침/);assert.deepEqual(runtimeFailure.writes,[{value:null,key:'whisper-singlefile-runtime-v1'}]);
  const stalledAudio=await page.evaluate(async()=>{
    const originalAudio=window.Audio,originalGet=getQuestionAudio,originalTimeout=window.setTimeout;
    let watchdog;window.Audio=class{constructor(src){this.src=src;}play(){return Promise.resolve();}pause(){}removeAttribute(){}load(){}};

@@ -1249,7 +1249,9 @@ const QUESTION_EDITOR_PAGE_SIZE = 20;
 let questionEditorItems = [];
 const LOCAL_LLM_MODEL = 'Llama-3.2-1B-Instruct-q4f16_1-MLC';
 const WHISPER_WASM_SCRIPT_URL = 'https://ggml.ai/whisper.cpp/main.js';
-const WHISPER_MODEL_URL = 'https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en-q5_1.bin';
+const WHISPER_MODEL_URL = 'https://huggingface.co/ggerganov/whisper.cpp/resolve/5359861c739e955e79d9a303bcbc70fb988958b1/ggml-base.en-q5_1.bin';
+const WHISPER_MODEL_BYTES = 59721011;
+const WHISPER_MODEL_SHA256 = '4baf70dd0d7c4247ba2b81fafd9c01005ac77c2f9ef064e00dcf195d0e2fdd2f';
 const WHISPER_MODEL_NAME = 'base.en Q5_1';
 const WHISPER_MODEL_SIZE_MB = 57;
 const WHISPER_CACHE_DB = 'opic-whisper-cache-v1';
@@ -3032,6 +3034,13 @@ async function cacheWhisperModel(buffer, key = WHISPER_CACHE_KEY) {
   });
 }
 
+async function validateWhisperModel(buffer) {
+  if (!(buffer instanceof ArrayBuffer) || buffer.byteLength !== WHISPER_MODEL_BYTES) return false;
+  if (!crypto.subtle) throw new Error('모델 무결성 검증을 지원하는 브라우저에서 실행해 주세요.');
+  const digest = await crypto.subtle.digest('SHA-256', buffer);
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('') === WHISPER_MODEL_SHA256;
+}
+
 async function downloadWhisperModel() {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 180000);
@@ -3053,6 +3062,10 @@ async function downloadWhisperModel() {
     if (value) {
       chunks.push(value);
       received += value.byteLength;
+      if (received > WHISPER_MODEL_BYTES) {
+        await reader.cancel();
+        throw new Error('Whisper 모델 파일 크기가 예상과 다릅니다.');
+      }
       const percent = Math.min(100, Math.round((received / expected) * 100));
       setLocalAiStatus(`Whisper ${WHISPER_MODEL_NAME} 다운로드 중 · ${percent}%`);
     }
@@ -3089,7 +3102,11 @@ function ensureWhisperWasmRuntime() {
       settled = true;
       injectedScript?.remove();
       whisperModulePromise = null;
-      reject(error);
+      cacheWhisperModel(null, runtimeCacheKey).catch(() => {});
+      if (injectedScript) {
+        whisperRuntimeFault = new Error(`${error.message} 실행 파일 캐시를 초기화했습니다. 페이지를 새로고침한 뒤 다시 준비해 주세요.`);
+      }
+      reject(whisperRuntimeFault || error);
     };
 
     const module = window.Module || {};
@@ -3167,15 +3184,19 @@ async function prepareWhisperLocal() {
     setLocalAiStatus('whisper.cpp 실행 파일을 불러오는 중입니다...');
     await ensureWhisperWasmRuntime();
     let buffer = await readCachedWhisperModel().catch(() => null);
+    if (buffer && !(await validateWhisperModel(buffer))) {
+      setLocalAiStatus('저장된 Whisper 모델이 손상되어 다시 다운로드합니다.', 'warn');
+      await cacheWhisperModel(null).catch(() => {});
+      buffer = null;
+    }
     if (buffer) {
       setLocalAiStatus(`저장된 Whisper ${WHISPER_MODEL_NAME}을 불러오는 중입니다...`);
     } else {
       buffer = await downloadWhisperModel();
-      await cacheWhisperModel(buffer).catch((error) => {
-        console.warn('Whisper 모델 캐시 저장 실패:', error);
-      });
+      if (!(await validateWhisperModel(buffer))) throw new Error('Whisper 모델 다운로드가 불완전하거나 파일이 손상되었습니다. 다시 준비해 주세요.');
     }
     await loadWhisperModelIntoRuntime(buffer);
+    await cacheWhisperModel(buffer).catch(error => console.warn('Whisper 모델 캐시 저장 실패:', error));
     setLocalAiStatus(`준비 완료 · Whisper ${WHISPER_MODEL_NAME}이 이 PC에서 실행됩니다.`, 'good');
     return true;
   } finally {
