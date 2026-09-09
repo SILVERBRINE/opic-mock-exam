@@ -52,7 +52,7 @@
 
 API 방식을 쓰면 오프라인 기본 평가보다 음성 전사와 답변 분석이 더 정밀해져서, 연습 피드백 품질을 높일 수 있음. Google AI Studio의 무료 사용량과 정책은 계정·시점에 따라 달라질 수 있으니 발급 화면에서 확인하면 됨.
 
-[Google AI Studio API 키 발급 페이지](https://aistudio.google.com/app/apikey) ㄱㄱ
+[Google AI Studio API 키 발급 페이지](https://aistudio.google.com/app/apikey)
 
 1. Google 계정으로 로그인
 2. **API key 만들기** 클릭
