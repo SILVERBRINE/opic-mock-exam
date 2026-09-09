@@ -7,7 +7,7 @@ const {chromium} = require('playwright');
   try {
     const page=await browser.newPage();const errors=[];
     page.on('pageerror',error=>errors.push(error.message));
-    await page.goto(pathToFileURL(path.resolve('index.html')).href);
+    await page.goto(pathToFileURL(path.resolve(process.argv[2] || 'index.html')).href);
     async function checkWidths() {
       for(const width of [360,768,1920]) {
         await page.setViewportSize({width,height:1000});

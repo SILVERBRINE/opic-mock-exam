@@ -3330,7 +3330,7 @@ async function prepareLocalLlm() {
     if (navigator.gpu && !localLlmReady) {
       setLocalAiStatus('Whisper 준비 완료 · 로컬 LLM 평가 엔진을 불러오는 중입니다...');
       if (!localLlmModulePromise) {
-        localLlmModulePromise = import('https://esm.run/@mlc-ai/web-llm');
+        localLlmModulePromise = import('https://esm.run/@mlc-ai/web-llm@0.2.85');
       }
       const webllm = await withLocalLlmDeadline(localLlmModulePromise, 60000);
       const available = webllm.prebuiltAppConfig?.model_list || [];
@@ -5412,14 +5412,14 @@ function escapeHtml(value) {
 function sanitizeFeedbackHtml(value) {
   const template = document.createElement('template');
   template.innerHTML = String(value ?? '');
-  template.content.querySelectorAll('script, iframe, object, embed, link, meta, base, form, svg, math')
+  template.content.querySelectorAll('script, style, iframe, object, embed, link, meta, base, form, svg, math')
     .forEach((node) => node.remove());
   template.content.querySelectorAll('*').forEach((element) => {
     Array.from(element.attributes).forEach((attribute) => {
       const name = attribute.name.toLowerCase();
       const attributeValue = attribute.value.trim();
       if (!['class', 'style'].includes(name)
-        || (name === 'style' && /(?:url\s*\(|expression\s*\(|@import)/i.test(attributeValue))) {
+        || (name === 'style' && !/^width:\s*(?:100|\d{1,2})(?:\.\d+)?%\s*;?$/i.test(attributeValue))) {
         element.removeAttribute(attribute.name);
       }
     });
@@ -6345,13 +6345,19 @@ loadEvalConfig();
 restoreSessionCredentials();
 window.addEventListener('beforeunload', (e) => {
   saveCurrent();
+  const answered = Object.values(state.answers).filter(v => (v || '').trim().length > 0).length;
+  const pendingAudio = state.isRecording || state.voiceStarting || state.voiceFinalizing
+    || Object.keys(state.transcriptionJobs).length > 0 || Object.keys(state.evaluationJobs).length > 0
+    || Object.keys(state.failedRecordings).length > 0;
+  if (pendingAudio || (!state.examFinished && answered > 0 && answered < state.questions.length)) {
+    e.preventDefault();
+    e.returnValue = '처리 중인 답변이나 저장하지 않은 녹음이 있습니다.';
+  }
+});
+window.addEventListener('pagehide', () => {
+  if (state.isRecording && !state.voiceFinalizing) requestVoiceCaptureStop();
   releaseMicrophoneStream();
   stopMicTest();
-  const answered = Object.values(state.answers).filter(v => (v || '').trim().length > 0).length;
-  if (answered > 0 && answered < state.questions.length) {
-    e.preventDefault();
-    e.returnValue = '진행 중인 시험이 있습니다. 이 페이지를 나가면 진행 내용이 저장됩니다.';
-  }
 });
 
 </script>

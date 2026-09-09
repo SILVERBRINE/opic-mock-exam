@@ -36,6 +36,8 @@ jobs:
           grep -Fq "<title>OPIc 모의고사 ${RELEASE_TAG}</title>" index.html || { echo "App version and release tag must match"; exit 1; }
           mkdir release
           cp index.html coi-serviceworker.js README.md LICENSE release/
+          mkdir release/docs
+          cp docs/ARCHITECTURE.md docs/RELEASE-READINESS.md docs/GEMINI-EVALUATION-REVIEW.md release/docs/
           (cd release && zip -r "../opic-mock-exam-${RELEASE_TAG}.zip" .)
 
       - name: Publish GitHub Release

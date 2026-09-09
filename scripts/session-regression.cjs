@@ -38,6 +38,13 @@ async function main() {
  });
  assert.equal(capture.started,true);
  assert.ok(capture.size>0);
+ const unloadGuard=await page.evaluate(async()=>{
+   await startAudioCapture();state.isRecording=true;
+   const event=new Event('beforeunload',{cancelable:true});window.dispatchEvent(event);
+   const result={blocked:event.defaultPrevented,live:state.audioStream.getAudioTracks()[0].readyState,recording:state.audioRecorder.state};
+   state.isRecording=false;await stopAudioCapture();releaseMicrophoneStream();return result;
+ });
+ assert.deepEqual(unloadGuard,{blocked:true,live:'live',recording:'recording'});
  const disconnected=await page.evaluate(async()=>{
    const originalStop=requestVoiceCaptureStop;let stops=0;
    requestVoiceCaptureStop=()=>{stops++;};
@@ -124,6 +131,8 @@ async function main() {
  assert.equal(await page.evaluate(()=>Boolean(state.failedRecordings[1])),false);
  assert.equal(await page.locator('#submitBtn').isDisabled(),false);
  assert.equal(await page.evaluate(()=>normalizeEvalResult('{}')),null);
+ const safeMarkup=await page.evaluate(()=>sanitizeFeedbackHtml('<style>@import "https://example.invalid/style.css";</style><div style="background:u\\72l(https://example.invalid)">text</div><div style="width:50%"></div>'));
+ assert.doesNotMatch(safeMarkup,/<style|background|example\.invalid/);assert.match(safeMarkup,/width:50%/);
  assert.equal(await page.evaluate(()=>normalizeEvalResult('{"content":4,"fluency":4,"grammar":4,"pronunciation":5,"tip":"  "}')),null);
  await page.unroute('https://generativelanguage.googleapis.com/**');
  let quotaRequests=0;
