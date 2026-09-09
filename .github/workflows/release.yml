@@ -17,7 +17,10 @@ permissions:
   contents: write
 
 jobs:
+  verify:
+    uses: ./.github/workflows/verify.yml
   release:
+    needs: verify
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -29,8 +32,12 @@ jobs:
           RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
         run: |
           set -euo pipefail
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?$ ]] || { echo "Invalid release version"; exit 1; }
+          grep -Fq "<title>OPIc 모의고사 ${RELEASE_TAG}</title>" index.html || { echo "App version and release tag must match"; exit 1; }
           mkdir release
           cp index.html coi-serviceworker.js README.md LICENSE release/
+          mkdir release/docs
+          cp docs/ARCHITECTURE.md docs/RELEASE-READINESS.md docs/GEMINI-EVALUATION-REVIEW.md release/docs/
           (cd release && zip -r "../opic-mock-exam-${RELEASE_TAG}.zip" .)
 
       - name: Publish GitHub Release
@@ -62,11 +69,8 @@ jobs:
             const data = fs.readFileSync(assetName);
             const existingAsset = release.data.assets.find(asset => asset.name === assetName);
             if (existingAsset) {
-              await github.rest.repos.deleteReleaseAsset({
-                owner,
-                repo,
-                asset_id: existingAsset.id
-              });
+              core.notice(`Release asset ${assetName} already exists. Keeping the published file and its download count. Publish changes under a new version.`);
+              return;
             }
             await github.rest.repos.uploadReleaseAsset({
               owner,
