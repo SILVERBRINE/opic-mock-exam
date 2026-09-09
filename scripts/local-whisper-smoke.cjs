@@ -17,15 +17,23 @@ const {chromium}=require('playwright');
    page.on('requestfailed',r=>console.log('REQUEST FAILED',r.url().split('?')[0],r.failure()?.errorText));
    await page.goto(`http://127.0.0.1:${server.address().port}`);
    progress=setInterval(async()=>{try{console.log(await page.evaluate(()=>({ready:whisperModelReady,loading:whisperModelLoading})));}catch{}},20000);
-   const result=await page.evaluate(async()=>{
+   const result=await page.evaluate(async(longTest)=>{
      await prepareWhisperLocal();
      const response=await fetch('https://raw.githubusercontent.com/ggml-org/whisper.cpp/master/samples/jfk.wav');
      if(!response.ok)throw Error('Sample download failed');
      const sample=await response.blob();
      await cacheWhisperModel(sample,'test-jfk-sample');
      const transcript=await transcribeCapturedAudioWithWhisper(sample);
-     return {ready:whisperModelReady,isolated:crossOriginIsolated,transcript};
-   });
+     let longSeconds=0,longMatches=0;
+     if(longTest){
+       const originalDecode=decodeAudioForWhisper;const pcm=await originalDecode(sample);
+       const longPcm=new Float32Array(pcm.length*6);for(let i=0;i<6;i++)longPcm.set(pcm,i*pcm.length);
+       longSeconds=longPcm.length/16000;decodeAudioForWhisper=async()=>longPcm;
+       try{const text=await transcribeCapturedAudioWithWhisper(sample);longMatches=(text.match(/ask not/gi)||[]).length;if(longMatches<3)throw Error('Long transcription lost repeated speech');}
+       finally{decodeAudioForWhisper=originalDecode;}
+     }
+     return {ready:whisperModelReady,isolated:crossOriginIsolated,transcript,longSeconds,longMatches};
+   },process.env.OPIC_WHISPER_LONG==='1');
    console.log(JSON.stringify(result));
    if(!/ask not/i.test(result.transcript))throw Error('Expected sample transcript not found');
    await page.route('https://**',route=>route.abort('internetdisconnected'));
