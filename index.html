@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OPIc 모의고사 v1.0</title>
+  <title>OPIc 모의고사 v1.1</title>
   <script src="coi-serviceworker.js"></script>
   <style>
     :root {
@@ -1011,7 +1011,7 @@
           <div class="brand-mark" aria-hidden="true">O</div>
           <div>
             <div class="brand-kicker">SPEAKING PRACTICE</div>
-            <div class="brand-title">OPIc 모의고사 <span>v1.0</span></div>
+            <div class="brand-title">OPIc 모의고사 <span>v1.1</span></div>
           </div>
         </div>
         <div class="header-actions">
@@ -1029,7 +1029,8 @@
       </div>
       <div class="meta">
         <span class="chip">역할극 2문항 이상</span>
-        <span class="chip">질문 다시 듣기 1회</span>
+        <span class="chip">모의고사 다시 듣기 1회</span>
+        <span class="chip">연습모드 문항 반복 가능</span>
         <span class="chip">진행 내용 자동 저장</span>
       </div>
       <div class="hero-meta">
@@ -1072,6 +1073,7 @@
             <button id="clearTtsCacheBtn" type="button" class="ghost">녹음본 캐시 삭제</button>
           </div>
           <div id="ttsStatus" class="tts-status">현재 브라우저 기본 음성으로 문항을 읽습니다.</div>
+          <div class="tts-status">200문항 녹음본을 한 번에 만들면 PC 사양과 브라우저에 따라 30분 이상 걸릴 수 있습니다. 생성 중에는 브라우저를 닫지 마세요.</div>
         </div>
       </div>
       <div class="section-divider"><span>평가 방식</span><small>처음 사용한다면 ‘오프라인 기본 평가’를 추천합니다.</small></div>
@@ -3323,7 +3325,9 @@ function renderExam() {
     document.getElementById('playQuestionBtn').disabled = true;
   } else {
     document.getElementById('voiceBtn').disabled = false;
-    document.getElementById('playQuestionBtn').disabled = (state.promptPlayCount[q.no] || 0) >= 2;
+    document.getElementById('playQuestionBtn').disabled = isPracticeMode()
+      ? false
+      : (state.promptPlayCount[q.no] || 0) >= 2;
   }
 
   const isLast = state.idx === state.questions.length - 1;
@@ -3376,6 +3380,11 @@ function updatePromptButton() {
     button.disabled = true;
     return;
   }
+  if (isPracticeMode()) {
+    button.textContent = '문항 듣기 (계속 가능)';
+    button.disabled = false;
+    return;
+  }
   const played = (state.promptPlayCount[q.no] || 0);
   const remaining = Math.max(0, 2 - played);
   if (remaining <= 0) {
@@ -3415,7 +3424,7 @@ function stopPromptPlayback(options = {}) {
 function completePromptPlayback(q, token, message, isError = false) {
   if (token !== state.promptPlaybackToken) return;
   state.promptPlaybackPending = false;
-  state.promptPlayCount[q.no] = Math.min(2, (state.promptPlayCount[q.no] || 0) + 1);
+  state.promptPlayCount[q.no] = (state.promptPlayCount[q.no] || 0) + 1;
   updatePromptButton();
   const status = document.getElementById('voiceStatus');
   if (status) status.textContent = message;
@@ -3482,7 +3491,7 @@ async function speakQuestion() {
   const button = document.getElementById('playQuestionBtn');
   const status = document.getElementById('voiceStatus');
   const playCount = state.promptPlayCount[q.no] || 0;
-  if (playCount >= 2) {
+  if (!isPracticeMode() && playCount >= 2) {
     status.textContent = '문항은 2회까지만 들을 수 있습니다.';
     return;
   }
