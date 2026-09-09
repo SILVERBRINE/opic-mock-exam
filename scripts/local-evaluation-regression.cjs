@@ -17,16 +17,16 @@ const fs=require('node:fs'),http=require('node:http'),assert=require('node:asser
    state.questions=[{no:1,id:1,type:'묘사',prompt:'Describe your home and your favorite room.'},{no:2,id:2,type:'묘사',prompt:'Describe your home and your favorite room.'}];
    state.answers={1:'My home is a small apartment with a sunny kitchen. My favorite room is the living room because I read there.',2:'My home is a small apartment with a sunny kitchen. My favorite room is the living room because I read there.'};
    const good=await evaluateQuestionByNo(1,state.answers[1],{});
-   const invalid=applyEvaluationGuard(good,state.questions[0].prompt,'Mic test 123 mic test 123','묘사',{});
+   const invalid=normalizeEvaluationScore(good,state.questions[0].prompt,'Mic test 123 mic test 123','묘사',{});
    truncate=true;const fallback=await evaluateQuestionByNo(2,state.answers[2],{});
    const failureHtml=buildEvaluationHtml(fallback,state.questions[1],state.answers[2]);
    state.questionResults={1:good,2:fallback};state.questionScores={1:good.score,2:fallback.score};state.questionCriteria={1:good.criteria,2:fallback.criteria};document.getElementById('answerInput').value=state.answers[1];state.sessionMode='exam';finishExamNow();
    return {failed,ready,grammar:good.criteria.grammar,model:good.model,provisional:good.provisional,invalidScore:invalid.score,fallbackModel:fallback.model,failureHtml,readyAfterFailure:localLlmReady,summary:document.getElementById('resultPanel').textContent,schemas:calls.every(c=>c.response_format?.schema)};
   });
   assert.equal(results.failed.ready,false);assert.equal(results.failed.whisper,true);assert.match(results.failed.status,/Whisper.*전사는 준비됨/);assert.equal(results.ready,true);
-  assert.equal(results.grammar,8);assert.match(results.model,/Llama/);assert.equal(results.provisional,true);assert.ok(results.invalidScore<=25);
+  assert.equal(results.grammar,8);assert.match(results.model,/Llama/);assert.equal(results.provisional,true);assert.equal(results.invalidScore,77);
   assert.equal(results.fallbackModel,'offline-rules');assert.match(results.failureHtml,/로컬 AI 평가 실패/);assert.doesNotMatch(results.failureHtml,/온라인 평가 실패/);assert.equal(results.readyAfterFailure,false);
   assert.match(results.summary,/로컬 AI 참고 평가 1문항 · 규칙 평가 1문항/);assert.equal(results.schemas,true);assert.deepEqual(errors,[]);
-  console.log('PASS: inference health gate, partial Whisper readiness, retry preparation, structured local scoring, no rule-weight distortion, invalid answer guard, truncation fallback attribution, actual model counts');
+  console.log('PASS: inference health gate, partial Whisper readiness, retry preparation, structured local scoring, no rule-weight distortion, AI score preservation, truncation fallback attribution, actual model counts');
  }finally{if(browser)await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

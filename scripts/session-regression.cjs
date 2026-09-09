@@ -137,7 +137,7 @@ async function main() {
  const pronunciationExcluded=await page.evaluate(()=>{
    const parsed=normalizeEvalResult(JSON.stringify({content:8,fluency:7,grammar:6,pronunciation:null,tip:'Add details.'}));
    const answer='I live in a small apartment with my family. I like the sunny kitchen because we cook together every weekend and talk about our plans.';
-   const guarded=applyEvaluationGuard(parsed,'',answer,'묘사',{recognitionConfidence:1});
+   const guarded=normalizeEvaluationScore(parsed,'',answer,'묘사',{recognitionConfidence:1});
    const html=buildEvaluationHtml(guarded);
    const history=sanitizeImportedHistoryEntry({id:'pronunciation-test',prompt:'Home',answer,score:70,criteria:guarded.criteria},0);
    const group=parseExamGroup(JSON.stringify({results:[{questionNo:1,content:8,fluency:7,grammar:6,pronunciation:null,tip:'Add details.'}]}),[{no:1}]);
