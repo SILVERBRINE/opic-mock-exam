@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OPIc 모의고사 v1.4.2</title>
+  <title>OPIc 모의고사 v1.4.3</title>
   <script src="coi-serviceworker.js"></script>
   <style>
     :root {
@@ -1016,7 +1016,7 @@
           <div class="brand-mark" aria-hidden="true">O</div>
           <div>
             <div class="brand-kicker">SPEAKING PRACTICE</div>
-            <div class="brand-title">OPIc 모의고사 <span>v1.4.2</span></div>
+            <div class="brand-title">OPIc 모의고사 <span>v1.4.3</span></div>
           </div>
         </div>
         <div class="header-actions">
@@ -3117,6 +3117,7 @@ function ensureWhisperWasmRuntime() {
     };
 
     const module = window.Module || {};
+    module.onAbort = (reason) => markWhisperRuntimeFault(new Error(String(reason || 'WASM aborted')));
     const previousPrint = module.print;
     const previousPrintErr = module.printErr;
     // Emscripten captures print at initialization; replacing module.print later
@@ -3277,6 +3278,10 @@ function waitForWhisperCompletion(output, audioSeconds) {
   return new Promise((resolve, reject) => {
     const poll = () => {
       const text = output.join('\n');
+      if (whisperRuntimeFault || /Aborted\(|RuntimeError|memory access out of bounds|out of memory/i.test(text)) {
+        reject(whisperRuntimeFault || markWhisperRuntimeFault(new Error(text.slice(-500))));
+        return;
+      }
       const finished = /whisper_print_timings|whisper_full.*(done|end)|total time/i.test(text);
       if (finished) {
         resolve();
@@ -3292,9 +3297,17 @@ function waitForWhisperCompletion(output, audioSeconds) {
   });
 }
 
+function markWhisperRuntimeFault(error) {
+  whisperModelReady = false;
+  whisperRuntimeFault = Object.assign(new Error('Whisper 실행 엔진이 중단되었습니다. 녹음 파일을 먼저 저장한 뒤 새로고침하여 다시 준비하거나, API로 전사를 복구해 주세요.'), { code: 'WHISPER_ABORT', cause: error });
+  setLocalAiStatus('Whisper 전사 사용 불가 · 실행 엔진 중단. 녹음은 복구 화면에서 저장할 수 있습니다.', 'warn');
+  updateEvalStatus();
+  return whisperRuntimeFault;
+}
+
 async function transcribeCapturedAudioWithWhisper(blob, questionNo = '') {
   if (whisperRuntimeFault) throw whisperRuntimeFault;
-  if (!whisperModelReady || !whisperModule || !whisperInstance) return '';
+  if (!whisperModelReady || !whisperModule || !whisperInstance) throw new Error('Whisper가 준비되지 않았습니다. 오프라인 AI 준비를 완료해 주세요.');
   const audio = await decodeAudioForWhisper(blob);
   if (!audio.length) return '';
   const output = [];
@@ -3302,17 +3315,27 @@ async function transcribeCapturedAudioWithWhisper(blob, questionNo = '') {
   whisperOutputSink = output;
   try {
     const threads = window.crossOriginIsolated
-      ? Math.max(1, Math.min(4, Number(navigator.hardwareConcurrency) || 2))
+      ? Math.max(1, Math.min(2, Number(navigator.hardwareConcurrency) || 2))
       : 1;
-    const returnedValue = whisperModule.full_default(whisperInstance, audio, 'en', threads, false);
-    await waitForWhisperCompletion(output, audio.length / 16000);
-    applyWhisperSpeechMetrics(output.join('\n'), questionNo);
-    const transcript = extractWhisperTranscript(output.join('\n'), returnedValue);
+    const transcripts = [];
+    // 긴 녹음을 한 번에 WASM에 넘기지 않아 메모리·스레드 압박을 줄입니다.
+    const chunkSamples = 30 * 16000;
+    for (let offset = 0; offset < audio.length; offset += chunkSamples) {
+      if (whisperRuntimeFault) throw whisperRuntimeFault;
+      output.length = 0;
+      const chunk = audio.slice(offset, Math.min(audio.length, offset + chunkSamples));
+      const returnedValue = whisperModule.full_default(whisperInstance, chunk, 'en', threads, false);
+      if (typeof returnedValue === 'number' && returnedValue !== 0) throw new Error(`Whisper 실행 오류 ${returnedValue}`);
+      await waitForWhisperCompletion(output, chunk.length / 16000);
+      const text = extractWhisperTranscript(output.join('\n'), returnedValue);
+      if (text) transcripts.push(text);
+    }
+    const transcript = normalizeTranscriptText(transcripts.join(' '));
     if (!transcript) throw new Error('Whisper가 음성을 전사하지 못했습니다.');
     return transcript;
   } catch (error) {
     // A timed-out WASM worker may still be running; never reuse its shared output.
-    if (error.code === 'WHISPER_TIMEOUT') whisperRuntimeFault = error;
+    if (error.code === 'WHISPER_TIMEOUT' || /abort|RuntimeError|memory|Whisper 실행 오류/i.test(String(error.message))) throw markWhisperRuntimeFault(error);
     throw error;
   } finally {
     if (whisperOutputSink === output) whisperOutputSink = null;
@@ -4868,6 +4891,7 @@ function showTranscriptionFailure(q, message) {
     const blob = state.failedRecordings[q.no];
     if (blob) queueCapturedAudioTranscription(q, blob);
   };
+  area.querySelector('[data-retry]').disabled = readEvalConfig().mode === 'local' && Boolean(whisperRuntimeFault);
   area.querySelector('[data-download]').onclick = () => {
     const blob = state.failedRecordings[q.no];
     if (!blob) return;
@@ -4880,8 +4904,14 @@ function showTranscriptionFailure(q, message) {
     setTimeout(() => URL.revokeObjectURL(url), 60000);
   };
   const connectButton = area.querySelector('[data-connect]');
-  connectButton.hidden = readEvalConfig().mode === 'local';
+  connectButton.hidden = readEvalConfig().mode === 'local' && !whisperRuntimeFault;
+  if (readEvalConfig().mode === 'local' && whisperRuntimeFault) connectButton.textContent = 'API로 전사 복구';
   connectButton.onclick = () => {
+    if (readEvalConfig().mode === 'local' && whisperRuntimeFault) {
+      setEvaluationControlsDisabled(false);
+      setEvalMode('gemini');
+      area.querySelector('[data-retry]').disabled = false;
+    }
     // Unlock only connection recovery, not new-session or model-preparation controls.
     for (const id of ['apiKeyInput', 'handshakeBtn']) document.getElementById(id).disabled = false;
     const input = document.getElementById('apiKeyInput');
