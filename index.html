@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OPIc 모의고사 v1.3.1</title>
+  <title>OPIc 모의고사 v1.3.2</title>
   <script src="coi-serviceworker.js"></script>
   <style>
     :root {
@@ -1012,7 +1012,7 @@
           <div class="brand-mark" aria-hidden="true">O</div>
           <div>
             <div class="brand-kicker">SPEAKING PRACTICE</div>
-            <div class="brand-title">OPIc 모의고사 <span>v1.3.1</span></div>
+            <div class="brand-title">OPIc 모의고사 <span>v1.3.2</span></div>
           </div>
         </div>
         <div class="header-actions">
@@ -1027,7 +1027,7 @@
           <h1>OPIc 말하기 연습</h1>
           <p class="hero-desc">질문은 음성으로 듣고 답변은 마이크로 녹음합니다. 한 문항이 끝나면 개선점을 확인한 뒤 다음 문제로 넘어갑니다.</p>
         </div>
-        <div class="hero-badge"><strong id="heroModeValue">15</strong><span id="heroModeLabel">문항<br />총 40분 · 문항당 2분</span></div>
+        <div class="hero-badge"><strong id="heroModeValue">15</strong><span id="heroModeLabel">문항<br />총 40분 · 문항당 3분</span></div>
       </div>
       <div class="meta">
         <span class="chip">역할극 2문항 이상</span>
@@ -1113,7 +1113,7 @@
           </div>
           <div id="handshakeInfo" class="small-note">오프라인 기본 평가에서는 키가 필요 없습니다.</div>
           <div class="small-note api-help">Gemini 무료 키 발급: <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio에서 API 키 만들기</a> → Google 계정 로그인 → <b>API key 만들기</b> → 키를 복사해 위 입력란에 붙여넣으세요.</div>
-          <div class="small-note">API 키는 현재 탭에서만 사용하고 브라우저 저장소에는 저장하지 않습니다. 새로고침하면 다시 입력해야 합니다.</div>
+          <div class="small-note">API 키는 이 탭의 세션 저장소에 보관해 새로고침·평가 방식 변경 후에도 유지됩니다. 공용 PC에서는 사용 후 키 삭제를 눌러 주세요.</div>
         </div>
         <div class="field small">
           <label for="modelPickerButton">사용할 모델</label>
@@ -1271,7 +1271,7 @@ const TTS_GENERATION_MAX_ATTEMPTS = 3;
 // 상한으로 두고, 실제 코어·장치 메모리·WebGPU 지원에 따라 자동으로 선택합니다.
 const TTS_MAX_CONCURRENCY = 8;
 const TOTAL_EXAM_SECONDS = 40 * 60;
-const QUESTION_SECONDS = 2 * 60;
+const QUESTION_SECONDS = 3 * 60;
 let localLlmModulePromise = null;
 let localLlmEngine = null;
 let localLlmReady = false;
@@ -1309,6 +1309,10 @@ const state = {
   questionSeconds: QUESTION_SECONDS,
   sessionMode: 'exam',
   questionTimerStarted: false,
+  questionTimerPaused: false,
+  failedRecordings: {},
+  transcriptionErrors: {},
+  sessionKeys: {},
   questionExpired: false,
   examFinished: false,
   manualStopRequested: false,
@@ -1386,7 +1390,7 @@ const GEMINI_AUTO_MODEL = 'auto';
 // 브라우저에서 확인할 수 있는 것은 이 탭이 보낸 요청뿐이므로, 실제 계정 한도의 보장이 아닌 보수적 완충값으로 사용합니다.
 const GEMINI_CLIENT_RPM_CAP = 4;
 const GEMINI_CLIENT_RPD_CAP = 18;
-const GEMINI_REQUEST_TIMEOUT_MS = 30000;
+const GEMINI_REQUEST_TIMEOUT_MS = 60000;
 
 function updateProcessingOverlay(title = '', detail = '') {
   const overlay = document.getElementById('processingOverlay');
@@ -2662,6 +2666,29 @@ function collectQuestionEditorChanges() {
   saveQuestionBank();
 }
 
+function persistSessionCredentials() {
+  const mode = getEvalMode();
+  if (mode !== 'local') state.sessionKeys[mode] = document.getElementById('apiKeyInput').value.trim();
+  try { sessionStorage.setItem('opic-api-session-v1', JSON.stringify({ keys: state.sessionKeys, handshake: state.apiHandshake })); }
+  catch { /* Storage may be unavailable; in-memory keys remain usable. */ }
+}
+
+function restoreSessionCredentials() {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem('opic-api-session-v1') || '{}');
+    for (const mode of ['openai', 'gemini']) {
+      const key = saved.keys?.[mode];
+      if (typeof key !== 'string') continue;
+      state.sessionKeys[mode] = key;
+      const handshake = saved.handshake?.[mode];
+      if (handshake?.fingerprint === makeKeyFingerprint(key)) state.apiHandshake[mode] = handshake;
+    }
+    document.getElementById('apiKeyInput').value = state.sessionKeys[getEvalMode()] || '';
+    renderModelSelect(getEvalMode());
+    updateEvalStatus();
+  } catch { /* Ignore damaged session data. */ }
+}
+
 function loadEvalConfig() {
   const raw = localStorage.getItem(state.configStorageKey);
   if (!raw) {
@@ -2714,6 +2741,7 @@ function loadEvalConfig() {
 }
 
 function saveEvalConfig() {
+  persistSessionCredentials();
   const mode = getEvalMode();
   const cfg = {
     mode,
@@ -2726,6 +2754,8 @@ function saveEvalConfig() {
 }
 
 function clearEvalConfig() {
+  state.sessionKeys = {};
+  try { sessionStorage.removeItem('opic-api-session-v1'); } catch {} 
   localStorage.removeItem(state.configStorageKey);
   localStorage.removeItem('opic-mock-api-key-plain');
   document.getElementById('apiKeyInput').value = '';
@@ -2753,7 +2783,7 @@ function setSessionMode(mode, opts = {}) {
   const heroValue = document.getElementById('heroModeValue');
   const heroLabel = document.getElementById('heroModeLabel');
   if (heroValue) heroValue.textContent = nextMode === 'practice' ? '1' : '15';
-  if (heroLabel) heroLabel.innerHTML = nextMode === 'practice' ? '문항<br />문항당 2분 · 피드백' : '문항<br />총 40분 · 문항당 2분';
+  if (heroLabel) heroLabel.innerHTML = nextMode === 'practice' ? '문항<br />문항당 3분 · 피드백' : '문항<br />총 40분 · 문항당 3분';
   if (!opts.skipSave) localStorage.setItem('opic-session-mode-v1', nextMode);
 }
 
@@ -2786,6 +2816,9 @@ function setSessionStartButtonsDisabled(disabled) {
 }
 
 function setEvalMode(mode, opts = {}) {
+  const previousMode = getEvalMode();
+  if (previousMode !== 'local') state.sessionKeys[previousMode] = document.getElementById('apiKeyInput').value.trim();
+  if (mode !== 'local') document.getElementById('apiKeyInput').value = state.sessionKeys[mode] || '';
   const buttons = document.querySelectorAll('.mode-btn[data-mode]');
   buttons.forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.mode === mode);
@@ -3476,8 +3509,7 @@ function buildGeminiGenerationConfig(model, options = {}) {
   };
   if (options.responseMimeType) config.responseMimeType = options.responseMimeType;
 
-  // Gemini 3 계열은 legacy temperature 설정과 함께 보낼 때 빈 응답이
-  // 반환될 수 있으므로 temperature를 보내지 않고 사고 수준만 낮춥니다.
+  // Gemini 3의 권장 기본 sampling 설정을 유지하고 사고 수준을 조절합니다.
   if (isGemini3Model(model)) {
     // Gemini 3.1 Pro는 minimal을 지원하지 않으므로 low를 사용합니다.
     config.thinkingConfig = { thinkingLevel: isGemini3ProModel(model) ? 'low' : 'minimal' };
@@ -3726,6 +3758,7 @@ function saveProgress() {
     totalSeconds: state.totalSeconds,
     questionSeconds: state.questionSeconds,
     questionTimerStarted: state.questionTimerStarted,
+    questionTimerPaused: state.questionTimerPaused,
     startedAt: state.startedAt,
     updatedAt: new Date().toISOString(),
   };
@@ -3779,7 +3812,8 @@ function startExam(modeOverride = '') {
       state.idx = restored.idx || 0;
       state.startedAt = restored.startedAt || new Date().toISOString();
       state.totalSeconds = Math.max(0, Math.min(TOTAL_EXAM_SECONDS, Number(restored.totalSeconds) || TOTAL_EXAM_SECONDS));
-      state.questionSeconds = Math.max(0, Math.min(QUESTION_SECONDS, Number(restored.questionSeconds) || QUESTION_SECONDS));
+      state.questionSeconds = Math.max(0, Math.min(QUESTION_SECONDS, (Number.isFinite(Number(restored.questionSeconds)) ? Number(restored.questionSeconds) : QUESTION_SECONDS)));
+      state.questionTimerPaused = Boolean(restored.questionTimerPaused);
       state.questionTimerStarted = Boolean(restored.questionTimerStarted || Number(restored.questionSeconds) < QUESTION_SECONDS);
     } else {
       buildNewExam();
@@ -3817,11 +3851,14 @@ function buildNewExam() {
   state.promptPlayCount = {};
   state.evaluationJobs = {};
   state.transcriptionJobs = {};
+  state.failedRecordings = {};
+  state.transcriptionErrors = {};
   state.speechSignalsByQuestion = {};
   state.startedAt = new Date().toISOString();
   state.totalSeconds = practice ? 0 : TOTAL_EXAM_SECONDS;
   state.questionSeconds = QUESTION_SECONDS;
   state.questionTimerStarted = false;
+  state.questionTimerPaused = false;
   state.questionExpired = false;
   state.examFinished = false;
   saveProgress();
@@ -3841,8 +3878,8 @@ function updateTimerDisplays() {
     ? '연습모드 · 1문항'
     : `전체 남은 시간 ${formatClock(state.totalSeconds)}`;
   if (question) {
-    question.textContent = `문항 남은 시간 ${formatClock(state.questionSeconds)}`;
-    question.title = state.questionTimerStarted ? '문항 듣기 후부터 시간이 흐릅니다.' : '문항 듣기를 누르면 2분 타이머가 시작됩니다.';
+    question.textContent = `문항 남은 시간 ${formatClock(state.questionSeconds)}${state.questionTimerPaused ? " · 일시 정지" : ""}`;
+    question.title = state.questionTimerStarted ? '문항 듣기 후부터 시간이 흐릅니다.' : '문항 듣기를 누르면 3분 타이머가 시작됩니다.';
     question.classList.toggle('warning', state.questionTimerStarted && state.questionSeconds <= 30);
     question.classList.toggle('not-started', !state.questionTimerStarted);
   }
@@ -3858,8 +3895,6 @@ function startTimer() {
       state.timerId = null;
       if (state.questionTimerId) clearInterval(state.questionTimerId);
       state.questionTimerId = null;
-      state.examFinished = true;
-      stopActiveVoiceCapture();
       submitExam();
       return;
     }
@@ -3870,9 +3905,16 @@ function startTimer() {
   state.timerId = setInterval(tick, 1000);
 }
 
+function pauseQuestionTimer() {
+  clearInterval(state.questionTimerId);
+  state.questionTimerId = null;
+  state.questionTimerPaused = true;
+  updateTimerDisplays();
+}
+
 function startQuestionTimer() {
   if (state.questionTimerId) clearInterval(state.questionTimerId);
-  if (!state.questionTimerStarted) {
+  if (!state.questionTimerStarted || state.questionTimerPaused) {
     updateTimerDisplays();
     return;
   }
@@ -3905,6 +3947,7 @@ function resetQuestionTimer() {
   if (state.questionTimerId) clearInterval(state.questionTimerId);
   state.questionTimerId = null;
   state.questionTimerStarted = false;
+  state.questionTimerPaused = false;
   state.questionSeconds = QUESTION_SECONDS;
   state.questionExpired = false;
   updateTimerDisplays();
@@ -3940,6 +3983,7 @@ function armVoiceStopFallback() {
 }
 
 async function requestVoiceCaptureStop() {
+  pauseQuestionTimer();
   if (state.voiceFinalizing || state.voiceStopPending) return;
   state.voiceQuestion = state.voiceQuestion || state.questions[state.idx] || null;
   state.voiceStopPending = true;
@@ -3988,13 +4032,15 @@ function stopActiveVoiceCapture(options = {}) {
 
 function recordTimedOutQuestion(q) {
   const resultHtml = '<div><strong>문항 시간 종료</strong> · 답변이 제출되지 않아 0점으로 기록했습니다.</div>'
-    + '<div class="small" style="margin-top:6px;">다음 문제부터는 2분 안에 핵심 내용·이유·구체적인 사례를 순서대로 말해 보세요.</div>';
+    + '<div class="small" style="margin-top:6px;">다음 문제부터는 3분 안에 핵심 내용·이유·구체적인 사례를 순서대로 말해 보세요.</div>';
   state.questionFeedback[q.no] = resultHtml;
   state.questionScores[q.no] = 0;
   saveProgress();
 }
 
 async function advanceAfterQuestionTimeout() {
+  const current = state.questions[state.idx];
+  if (current && (state.transcriptionJobs[current.no] || state.failedRecordings[current.no] || state.voiceFinalizing)) return;
   if (!state.questionExpired || state.examFinished) return;
   const q = state.questions[state.idx];
   if (!q) return;
@@ -4024,6 +4070,7 @@ async function advanceAfterQuestionTimeout() {
 }
 
 function handleQuestionTimeout() {
+  if (state.questionTimerPaused) return;
   if (state.examFinished || state.questionExpired) return;
   state.questionExpired = true;
   const status = document.getElementById('voiceStatus');
@@ -4104,7 +4151,7 @@ function renderExam() {
       ? (isPracticeMode() ? '피드백을 확인한 뒤 새 연습 문제를 시작하세요.' : '평가가 완료되었습니다. 다음 문제로 이동하세요.')
       : state.evaluationJobs[q.no]
         ? '평가 중입니다. 다음 문제를 눌러 진행할 수 있습니다.'
-        : '문항 듣기를 누르면 2분이 시작됩니다. 먼저 질문을 들어 주세요.';
+        : '문항 듣기를 누르면 3분이 시작됩니다. 먼저 질문을 들어 주세요.';
   }
   renderEvaluationForQuestion(q);
 }
@@ -4423,9 +4470,9 @@ function releaseMicrophoneStream() {
 
 async function transcribeCapturedAudio(blob, questionNo = '') {
   const cfg = readEvalConfig();
-  if (!blob || blob.size < 1000) return '';
+  if (!blob || blob.size === 0) throw new Error('녹음 파일이 비어 있습니다. 마이크 테스트 후 다시 녹음해 주세요.');
   if (cfg.mode === 'local') return transcribeCapturedAudioWithWhisper(blob);
-  if (!['openai', 'gemini'].includes(cfg.mode) || !cfg.apiKey) return '';
+  if (!['openai', 'gemini'].includes(cfg.mode) || !cfg.apiKey) throw new Error('API 연결 키가 없습니다. 홈에서 키를 다시 연결해 주세요.');
   if (cfg.mode === 'gemini') return transcribeCapturedAudioWithGemini(blob, cfg, questionNo);
   const form = new FormData();
   const extension = blob.type.includes('mp4') ? 'm4a' : 'webm';
@@ -4456,56 +4503,74 @@ async function transcribeCapturedAudioWithGemini(blob, cfg, questionNo = '') {
     binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
   }
   const base64 = btoa(binary);
-  const request = await runGeminiWithFallback(cfg, (model) => ({
+  const makeBody = (model, retry = false) => ({
       contents: [{
         parts: [
           { text: 'Transcribe the spoken English in this audio verbatim. Return only the transcript, with no explanation and no correction.' },
           { inline_data: { mime_type: blob.type.split(';')[0] || 'audio/webm', data: base64 } },
         ],
       }],
-      generationConfig: buildGeminiGenerationConfig(model, { maxOutputTokens: 2048 }),
-    }), '고품질 STT', questionNo);
-  return normalizeTranscriptText(extractGeminiText(request.data));
+      generationConfig: buildGeminiGenerationConfig(model, { maxOutputTokens: retry ? 8192 : 4096 }),
+    });
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const request = await runGeminiWithFallback(cfg, model => makeBody(model, attempt > 0), '음성 전사', questionNo);
+    const transcript = normalizeTranscriptText(extractGeminiText(request.data));
+    const finish = request.data?.candidates?.[0]?.finishReason;
+    if (transcript && (!finish || finish === 'STOP')) return transcript;
+    if (attempt || request.data?.promptFeedback?.blockReason || (finish && !['STOP', 'MAX_TOKENS'].includes(finish))) {
+      throw new Error(`음성 전사 실패: ${describeGeminiResponse(request.data, transcript)}`);
+    }
+  }
+}
+
+function showTranscriptionFailure(q, message) {
+  if (state.questions[state.idx]?.no !== q.no) return;
+  const area = document.getElementById('questionFeedback');
+  area.classList.remove('hide');
+  area.innerHTML = '<strong>음성 전사를 완료하지 못했습니다</strong><p></p><button class="secondary">저장된 녹음으로 다시 전사</button>';
+  area.querySelector('p').textContent = message + ' 녹음은 이 탭에 보관되어 있으며 0점 처리하지 않습니다. 다시 전사하거나 새로 녹음해 주세요.';
+  area.querySelector('button').onclick = () => {
+    const blob = state.failedRecordings[q.no];
+    if (blob) queueCapturedAudioTranscription(q, blob);
+  };
+  document.getElementById('voiceStatus').textContent = message;
 }
 
 function queueCapturedAudioTranscription(q, blob, fallbackTranscript = '') {
   if (!q || !blob) return null;
   if (state.transcriptionJobs[q.no]) return state.transcriptionJobs[q.no];
-  const job = transcribeCapturedAudio(blob, q.no)
-    .catch((error) => {
-      console.warn('백그라운드 고품질 전사 실패:', error);
-      if (!state.examFinished && state.questions[state.idx]?.no === q.no) {
-        document.getElementById('voiceStatus').textContent = '고품질 전사를 완료하지 못했습니다. 인식된 답변으로 평가를 계속합니다.';
-      }
-      return '';
-    })
-    .then((polishedTranscript) => {
-      const transcript = normalizeTranscriptText(polishedTranscript || fallbackTranscript || '');
-      if (!transcript) {
-        if (!state.examFinished && state.questions[state.idx]?.no === q.no) {
-          document.getElementById('voiceStatus').textContent = '음성이 충분히 인식되지 않았습니다. 다시 녹음해 주세요.';
-        }
-        return '';
-      }
+  state.failedRecordings[q.no] = blob;
+  delete state.transcriptionErrors[q.no];
+  const job = Promise.resolve().then(() => transcribeCapturedAudio(blob, q.no))
+    .then((text) => {
+      const transcript = normalizeTranscriptText(text || fallbackTranscript || '');
+      if (!transcript) throw new Error('전사 응답에 텍스트가 없습니다.');
+      delete state.failedRecordings[q.no];
       state.answers[q.no] = transcript;
-      const answerField = document.getElementById('answerInput');
-      if (answerField && state.questions[state.idx]?.no === q.no) answerField.value = transcript;
+      if (state.questions[state.idx]?.no === q.no) document.getElementById('answerInput').value = transcript;
       state.speechSignalsByQuestion[q.no] = state.speechSignalsByQuestion[q.no] || getSpeechSignalSummary(transcript);
-      if (!state.examFinished) saveProgress();
       queueQuestionEvaluation(q, transcript);
-      if (!state.examFinished && state.questions[state.idx]?.no === q.no) {
-        document.getElementById('voiceStatus').textContent = '전사가 완료되었습니다. 평가를 백그라운드에서 처리 중입니다.';
-      }
+      if (!state.examFinished) saveProgress();
       return transcript;
+    })
+    .catch((error) => {
+      state.transcriptionErrors[q.no] = String(error.message || '전사 요청 실패');
+      return '';
     })
     .finally(() => {
       delete state.transcriptionJobs[q.no];
+      updateVoiceButton();
+      renderEvaluationForQuestion(q);
+      if (state.transcriptionErrors[q.no]) showTranscriptionFailure(q, state.transcriptionErrors[q.no]);
     });
   state.transcriptionJobs[q.no] = job;
+  updateVoiceButton();
+  renderEvaluationForQuestion(q);
   return job;
 }
 
 async function finalizeVoiceTurn() {
+  pauseQuestionTimer();
   if (state.voiceFinalizing) return;
   state.voiceFinalizing = true;
   // 다음 문제 버튼을 빠르게 눌러도 녹음을 시작했던 문항에 결과를 귀속합니다.
@@ -4978,6 +5043,10 @@ function normalizeEvalResult(raw) {
   try {
     const parsed = parseModelJson(raw);
     if (!parsed || typeof parsed !== 'object') return null;
+    const validNumber = (value) => (typeof value === 'number' || (typeof value === 'string' && value.trim() !== '')) && Number.isFinite(Number(value));
+    const compactValid = ['content','fluency','grammar','pronunciation'].every(key => validNumber(parsed[key]) && Number(parsed[key]) >= 1 && Number(parsed[key]) <= 10);
+    const legacyValid = parsed.rubric && ['task','fluency','vocabulary','grammar','interaction'].every(key => validNumber(parsed.rubric[key]));
+    if (!compactValid && !legacyValid) return null;
     const score = Number(parsed.total ?? parsed.score);
     const words = Number(parsed.words);
     const rubricRaw = parsed.rubric && typeof parsed.rubric === 'object' ? parsed.rubric : {};
@@ -5197,7 +5266,8 @@ function renderEvaluationForQuestion(q) {
   const btnNext = document.getElementById('nextBtn');
   const btnVoice = document.getElementById('voiceBtn');
   const btnPlay = document.getElementById('playQuestionBtn');
-  const pending = Boolean(state.evaluationJobs[q.no]);
+  const pending = Boolean(state.evaluationJobs[q.no] || state.transcriptionJobs[q.no]);
+  updateSubmitButton();
   const hasFeedback = Boolean(state.questionFeedback[q.no]);
   if (hasFeedback) {
     feedbackArea.classList.remove('hide');
@@ -5207,7 +5277,7 @@ function renderEvaluationForQuestion(q) {
     feedbackArea.innerHTML = '<div class="inline-processing"><span class="mini-spinner" aria-hidden="true"></span><span>답변을 평가하는 중입니다. 잠시만 기다려 주세요.</span></div>';
   }
   btnVoice.disabled = pending || hasFeedback;
-  btnPlay.disabled = pending || hasFeedback;
+  btnPlay.disabled = pending || (!isPracticeMode() && (state.promptPlayCount[q.no] || 0) >= 2);
   if (isPracticeMode()) {
     btnNext.textContent = hasFeedback ? '새 연습 문제' : '평가 후 다음 문제';
     btnNext.disabled = !hasFeedback;
@@ -5318,7 +5388,29 @@ async function evaluateCurrentQuestion(options = {}) {
   return job;
 }
 
+function practiceCanFinish() {
+  const q = state.questions[state.idx];
+  return Boolean(q && state.answers[q.no]?.trim() && state.questionFeedback[q.no]
+    && !state.transcriptionJobs[q.no] && !state.evaluationJobs[q.no]
+    && !state.isRecording && !state.voiceFinalizing && !state.voiceStopPending && !state.voiceStarting);
+}
+
+function updateSubmitButton() {
+  const button = document.getElementById('submitBtn');
+  if (!button) return;
+  button.disabled = state.submitInProgress || (isPracticeMode() && !practiceCanFinish());
+  button.textContent = state.submitInProgress ? '전사·평가 대기 중...' : isPracticeMode() ? '연습 종료' : '전체 제출';
+}
+
 function updateVoiceButton() {
+  updateSubmitButton();
+  const active = state.questions[state.idx];
+  if (active && state.transcriptionJobs[active.no]) {
+    const button = document.getElementById('voiceBtn');
+    button.disabled = true;
+    button.textContent = '음성 전사 중...';
+    return;
+  }
   const btn = document.getElementById('voiceBtn');
   if (!btn) return;
   if (state.voiceFinalizing || state.voiceStopPending) {
@@ -5349,6 +5441,8 @@ function updateVoiceButton() {
 }
 
 async function toggleVoiceInput() {
+  const current = state.questions[state.idx];
+  if (current && (state.transcriptionJobs[current.no] || state.evaluationJobs[current.no])) return;
   if (state.voiceFinalizing || state.voiceStopPending || state.submitInProgress) return;
   const canUse = initVoiceInput();
   if (!canUse) {
@@ -5377,6 +5471,12 @@ async function toggleVoiceInput() {
       throw new Error('마이크 오디오를 준비하지 못했습니다.');
     }
     state.isRecording = true;
+    if (!state.questionTimerStarted) beginQuestionTimer();
+    if (state.questionTimerPaused) {
+      state.questionTimerPaused = false;
+      if (state.questionSeconds <= 0) state.questionSeconds = QUESTION_SECONDS;
+      startQuestionTimer();
+    }
     updateVoiceButton();
     if (state.recognition) {
       state.recognition.start();
@@ -5451,9 +5551,12 @@ function buildNewPracticeQuestion() {
   state.promptPlayCount = {};
   state.evaluationJobs = {};
   state.transcriptionJobs = {};
+  state.failedRecordings = {};
+  state.transcriptionErrors = {};
   state.speechSignalsByQuestion = {};
   state.questionSeconds = QUESTION_SECONDS;
   state.questionTimerStarted = false;
+  state.questionTimerPaused = false;
   state.questionExpired = false;
   state.examFinished = false;
   state.startedAt = new Date().toISOString();
@@ -5659,6 +5762,11 @@ async function toggleMicTest() {
 }
 
 async function submitExam() {
+  if (isPracticeMode() && !practiceCanFinish()) {
+    updateSubmitButton();
+    document.getElementById('voiceStatus').textContent = '답변 전사와 평가를 완료한 뒤 연습을 종료할 수 있습니다.';
+    return;
+  }
   if (state.submitInProgress) return;
   if (state.examFinished && document.getElementById('resultPanel')?.classList.contains('hide') === false) return;
   state.submitInProgress = true;
@@ -5697,8 +5805,8 @@ function finishExamNow() {
   for (const q of attemptedQuestions) {
     const ans = state.answers[q.no] || '';
     const result = calcScoreForAnswer(ans, q.type);
-    list.push({ q, ans, ...result });
     const score = Number(state.questionScores[q.no]);
+    list.push({ q, ans, ...result, score: Number.isFinite(score) ? score : result.score, criteria: state.questionCriteria[q.no] || result.criteria });
     total += Number.isFinite(score) ? score : result.score;
     recordHistoryEntry(q, ans, {
       score: Number.isFinite(score) ? score : result.score,
@@ -5814,6 +5922,7 @@ document.querySelectorAll('.mode-btn[data-mode]').forEach((btn) => {
 document.getElementById('handshakeBtn').addEventListener('click', performApiHandshake);
 document.getElementById('prepareLocalAiBtn').addEventListener('click', prepareLocalLlm);
 document.getElementById('apiKeyInput').addEventListener('input', () => {
+  persistSessionCredentials();
   const mode = getEvalMode();
   const key = document.getElementById('apiKeyInput').value.trim();
   if (mode !== 'local' && state.apiHandshake[mode]?.fingerprint !== makeKeyFingerprint(key)) {
@@ -5880,6 +5989,7 @@ loadPracticeHistory();
 loadTtsPreference();
 setSessionMode(localStorage.getItem('opic-session-mode-v1') || 'exam', { skipSave: true });
 loadEvalConfig();
+restoreSessionCredentials();
 window.addEventListener('beforeunload', (e) => {
   saveCurrent();
   releaseMicrophoneStream();
