@@ -268,6 +268,26 @@ async function main() {
  assert.equal(await exam.evaluate(()=>state.submitInProgress),false);
  assert.match(await exam.locator('#questionFeedback').innerText(),/Temporary transcription failure/);
  assert.equal(await exam.evaluate(()=>state.failedRecordings[1].size),10);
+ const restoredSession=await browser.newPage();
+ restoredSession.on('dialog',dialog=>dialog.accept());
+ await restoredSession.goto(`http://127.0.0.1:${server.address().port}`);
+ await restoredSession.evaluate(async()=>{
+   setEvalMode('local');startExam('practice');
+   document.getElementById('answerInput').value='I live in an apartment. My favorite room is the kitchen because I cook there.';
+   saveCurrent();await queueQuestionEvaluation(state.questions[0]);
+   state.questionSeconds=73;state.questionTimerStarted=true;state.questionTimerPaused=true;state.promptPlayCount[1]=4;saveProgress();
+ });
+ const beforeReload=await restoredSession.evaluate(()=>({id:state.questions[0].id,answer:state.answers[1],score:state.questionScores[1]}));
+ await restoredSession.reload();await restoredSession.evaluate(()=>startExam('practice'));
+ const afterReload=await restoredSession.evaluate(()=>({id:state.questions[0].id,answer:state.answers[1],score:state.questionScores[1],seconds:state.questionSeconds,paused:state.questionTimerPaused,plays:state.promptPlayCount[1],provisional:state.questionResults[1].provisional}));
+ assert.deepEqual(afterReload,{...beforeReload,seconds:73,paused:true,plays:4,provisional:true});
+ await restoredSession.close();
+ await exam.evaluate(()=>{state.totalSeconds=0;startTimer();});
+ await exam.waitForFunction(()=>!state.submitInProgress);
+ assert.equal(await exam.evaluate(()=>state.examFinished),false);
+ assert.equal(await exam.evaluate(()=>state.timerId),null);
+ assert.equal(await exam.evaluate(()=>state.failedRecordings[1].size),10);
+ assert.match(await exam.locator('#questionFeedback').innerText(),/Temporary transcription failure/);
  await exam.evaluate(()=>{delete state.failedRecordings[1];delete state.transcriptionErrors[1];});
  // Timer callbacks delayed by a busy/background tab must catch up to elapsed time.
  const clockResult=await exam.evaluate(()=>{
