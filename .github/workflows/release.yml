@@ -37,7 +37,7 @@ jobs:
           mkdir release
           cp index.html coi-serviceworker.js README.md LICENSE release/
           mkdir release/docs
-          cp docs/ARCHITECTURE.md docs/RELEASE-READINESS.md docs/GEMINI-EVALUATION-REVIEW.md docs/GEMINI-FREE-PLAN-REVIEW.md docs/LOCAL-EVALUATION-REVIEW.md docs/WHISPER-RECOVERY-REVIEW.md release/docs/
+          cp docs/ARCHITECTURE.md docs/RELEASE-READINESS.md docs/GEMINI-EVALUATION-REVIEW.md docs/GEMINI-FREE-PLAN-REVIEW.md docs/LOCAL-EVALUATION-REVIEW.md docs/WHISPER-RECOVERY-REVIEW.md docs/SCORING-1.4.4.md release/docs/
           (cd release && zip -r "../opic-mock-exam-${RELEASE_TAG}.zip" .)
 
       - name: Publish GitHub Release
