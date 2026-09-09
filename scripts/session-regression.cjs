@@ -205,7 +205,7 @@ async function main() {
  });
  await storagePage.goto(`http://127.0.0.1:${server.address().port}`);
  await storagePage.evaluate(()=>{
-   setEvalMode('local');startExam('practice');
+   setEvalMode('local');startExam('exam');
    state.answers[1]='My house is small.';saveProgress();
  });
  assert.match(await storagePage.locator('#storageFailureNotice').innerText(),/내보내/);
@@ -272,15 +272,15 @@ async function main() {
  restoredSession.on('dialog',dialog=>dialog.accept());
  await restoredSession.goto(`http://127.0.0.1:${server.address().port}`);
  await restoredSession.evaluate(async()=>{
-   setEvalMode('local');startExam('practice');
+   setEvalMode('local');startExam('exam');
    document.getElementById('answerInput').value='I live in an apartment. My favorite room is the kitchen because I cook there.';
    saveCurrent();await queueQuestionEvaluation(state.questions[0]);
-   state.questionSeconds=73;state.questionTimerStarted=true;state.questionTimerPaused=true;state.promptPlayCount[1]=4;saveProgress();
+   state.questionSeconds=73;state.questionTimerStarted=true;state.questionTimerPaused=true;state.promptPlayCount[1]=1;saveProgress();
  });
  const beforeReload=await restoredSession.evaluate(()=>({id:state.questions[0].id,answer:state.answers[1],score:state.questionScores[1]}));
- await restoredSession.reload();await restoredSession.evaluate(()=>startExam('practice'));
+ await restoredSession.reload();await restoredSession.evaluate(()=>startExam('exam'));
  const afterReload=await restoredSession.evaluate(()=>({id:state.questions[0].id,answer:state.answers[1],score:state.questionScores[1],seconds:state.questionSeconds,paused:state.questionTimerPaused,plays:state.promptPlayCount[1],provisional:state.questionResults[1].provisional}));
- assert.deepEqual(afterReload,{...beforeReload,seconds:73,paused:true,plays:4,provisional:true});
+ assert.deepEqual(afterReload,{...beforeReload,seconds:73,paused:true,plays:1,provisional:true});
  await restoredSession.close();
  await exam.evaluate(()=>{state.totalSeconds=0;startTimer();});
  await exam.waitForFunction(()=>!state.submitInProgress);

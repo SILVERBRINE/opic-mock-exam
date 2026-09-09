@@ -19,6 +19,10 @@
 
 ## 실행 명령
 
+### 후속 UX 변경 검증
+
+`scripts/background-exam-regression.cjs`: 사고 설정 미지원 400 응답의 제한된 재시도, 모의고사 다음 문항 이동 중 이전 전사 완료, 현재 답변·음성 지표 격리, 전사 완료 초록 표시, 완료 순서가 뒤바뀐 평가와 전체 제출 대기, Whisper 순차 대기열, 연습모드 이어하기 제거를 검증한다. 연습모드는 진행 상태를 저장·복원하지 않으며 완료 기록은 유지한다. 모의고사 진행 복원은 유지한다.
+
 - `node scripts/session-regression.cjs`
 - `node scripts/worker-lifecycle-regression.cjs`
 - `node scripts/local-tts-smoke.cjs` (네트워크와 실제 모델 다운로드 필요, 기본 CI 제외)
