@@ -35,7 +35,8 @@ jobs:
           [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?$ ]] || { echo "Invalid release version"; exit 1; }
           grep -Fq "<title>OPIc 모의고사 ${RELEASE_TAG}</title>" index.html || { echo "App version and release tag must match"; exit 1; }
           mkdir release
-          cp index.html coi-serviceworker.js README.md LICENSE release/
+          cp index.html "release/OPIc 연습 시작.html"
+          cp coi-serviceworker.js README.md LICENSE "시작 안내.txt" release/
           mkdir release/docs
           cp docs/ARCHITECTURE.md docs/RELEASE-READINESS.md docs/GEMINI-EVALUATION-REVIEW.md docs/GEMINI-FREE-PLAN-REVIEW.md docs/LOCAL-EVALUATION-REVIEW.md docs/WHISPER-RECOVERY-REVIEW.md docs/SCORING-1.4.4.md docs/SCORING-1.4.5.md docs/ONBOARDING-1.5.0.md release/docs/
           (cd release && zip -r "../opic-mock-exam-${RELEASE_TAG}.zip" .)
