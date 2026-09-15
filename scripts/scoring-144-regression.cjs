@@ -29,7 +29,7 @@ const {chromium}=require('playwright');
   assert.deepEqual(actual.classifications.valid,[70,70,70,70,70]);assert.deepEqual(actual.classifications.checks,[70,70,70,70]);assert.equal(actual.phoneScore,87);assert.equal(actual.phoneFeedback,'Keep the clear sequence.');
   assert.equal(actual.score,87);assert.equal(actual.confidenceScore,87);assert.equal(actual.pronunciation,null);assert.equal(actual.criteriaCount,3);
   assert.ok(actual.evidence.some(x=>x.includes('past passive')));assert.match(actual.html,/arrived on time/);assert.doesNotMatch(actual.html,/더 구체적인 사례와 연결어/);assert.equal(actual.invalid,87);
-  assert.match(actual.prompt,/App AL reference/);assert.match(actual.prompt,/do not deduct twice/);assert.match(actual.prompt,/accepting paraphrases/);assert.ok(actual.words<450);assert.match(actual.version,/v1.4.5/);
+  assert.match(actual.prompt,/App AL reference/);assert.match(actual.prompt,/do not deduct twice/);assert.match(actual.prompt,/accepting paraphrases/);assert.ok(actual.words<450);assert.match(actual.version,/v1.5.0/);
   console.log('PASS: semantic paraphrase survives lexical guard, AL anchor 87 arithmetic, confidence-independent score, three metric cards, specific evidence, no invented advice, no content override, compact shared prompt');
  }finally{if(browser)await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
