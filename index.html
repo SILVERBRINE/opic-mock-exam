@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OPIc 모의고사 v1.4.5</title>
+  <title>OPIc 모의고사 v1.5.0</title>
   <script src="coi-serviceworker.js"></script>
   <style>
     :root {
@@ -1006,6 +1006,13 @@
       .evaluation-context, .evaluation-columns { grid-template-columns: 1fr; }
       .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
+  button[aria-disabled="true"] { opacity: .48; cursor: pointer; }
+    .mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #startDialog { border: 1px solid #cbd9ef; border-radius: 20px; padding: 28px; max-width: 560px; width: calc(100% - 40px); color: #203755; }
+    #startDialog::backdrop { background: #172b4d88; }
+    #startDialogActions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    #startDialogClose { margin-left: auto; } #startDialogActions button { padding: 12px 10px; font-size: 14px; white-space: nowrap; }
+    [hidden] { display: none !important; }
   </style>
 </head>
 <body>
@@ -1016,7 +1023,7 @@
           <div class="brand-mark" aria-hidden="true">O</div>
           <div>
             <div class="brand-kicker">SPEAKING PRACTICE</div>
-            <div class="brand-title">OPIc 모의고사 <span>v1.4.5</span></div>
+            <div class="brand-title">OPIc 모의고사 <span>v1.5.0</span></div>
           </div>
         </div>
         <div class="header-actions">
@@ -1061,42 +1068,32 @@
         <div id="deviceTestStatus" class="device-test-status" role="status">테스트 결과가 여기에 표시됩니다.</div>
         <div class="mic-meter" aria-hidden="true"><span id="micMeterBar"></span></div>
         <div class="tts-choice">
-          <strong>문항 음성 방식</strong>
-          <div class="tts-options" role="group" aria-label="문항 음성 방식">
-             <button type="button" class="tts-option" data-tts-mode="browser">
-              <span>브라우저 TTS</span><small>지금 바로 사용 가능</small>
-            </button>
-            <button type="button" class="tts-option" data-tts-mode="local">
-              <span>로컬 TTS</span><small>Kokoro 음성 모델 · PC에서 실행</small>
-            </button>
+          <strong>문항 녹음본</strong>
+          <div class="tts-options" role="group" aria-label="문항 녹음본">
              <button type="button" class="tts-option active" data-tts-mode="recording">
               <span>녹음본</span><small>생성된 WAV를 PC에 캐시해 재생</small>
             </button>
           </div>
           <div class="tts-actions">
-            <button id="prepareLocalTtsBtn" type="button" class="ghost">로컬 TTS 준비</button>
+            <button id="prepareLocalTtsBtn" type="button" class="ghost" hidden>로컬 TTS 준비</button>
             <button id="prepareAllTtsBtn" type="button" class="ghost">200문항 녹음본 미리 만들기</button>
             <button id="clearTtsCacheBtn" type="button" class="ghost">녹음본 캐시 삭제</button>
           </div>
-           <div id="ttsStatus" class="tts-status">녹음본을 우선 사용합니다. 캐시에 없으면 로컬 TTS로 생성합니다.</div>
+           <div id="ttsStatus" class="tts-status">시작하려면 200문항 녹음본을 먼저 준비해 주세요.</div>
           <div class="tts-status">200문항 녹음본은 생성 후 WAV 구조와 신호를 확인합니다. PC 사양에 따라 30분 이상 걸릴 수 있으며, 가능한 환경에서는 여러 문항을 동시에 생성합니다.</div>
         </div>
       </div>
-      <div class="section-divider"><span>평가 방식</span><small>추천 설정: 녹음본 + Gemini API · API 키를 연결하면 더 정밀하게 평가합니다.</small></div>
+      <div class="section-divider" id="evaluationSection" tabindex="-1"><span>평가 방식</span><small>추천 설정: 녹음본 + Gemini API · API 키를 연결하면 더 정밀하게 평가합니다.</small></div>
       <div class="setup-row config-row">
         <div class="field">
           <label>어떻게 평가할까요?</label>
           <div class="mode-grid" id="modeSelect" role="group" aria-label="평가 방식">
-             <button type="button" class="mode-btn" data-mode="local">
-              <span>오프라인 기본 평가</span>
-              <small>인터넷 불필요 · 바로 시작</small>
+             <button type="button" class="mode-btn active" data-mode="gemini">
+              <span>Gemini API</span>
+              <small>정밀한 AI 피드백 · 키 필요</small>
             </button>
             <button type="button" class="mode-btn" data-mode="openai">
               <span>OpenAI API</span>
-              <small>정밀한 AI 피드백 · 키 필요</small>
-            </button>
-             <button type="button" class="mode-btn active" data-mode="gemini">
-              <span>Gemini API</span>
               <small>정밀한 AI 피드백 · 키 필요</small>
             </button>
           </div>
@@ -1243,6 +1240,7 @@
     </div>
   </div>
 
+<dialog id="startDialog" aria-labelledby="startDialogTitle"><h2 id="startDialogTitle"></h2><p id="startDialogMessage"></p><div id="startDialogActions"></div></dialog>
 <script>
 const QUESTION_BANK = [{"id":1,"type":"자기소개","prompt":"Introduce yourself to someone who has never met you. What would help that person understand your everyday life and interests?"},{"id":2,"type":"묘사","prompt":"Choose three words that describe your personality. Explain how one of those qualities appears in your daily life."},{"id":3,"type":"일상","prompt":"Walk me through an ordinary weekday. Which part of the day do you usually look forward to most?"},{"id":4,"type":"인물 묘사","prompt":"Who do you spend the most time with these days? Describe that person and explain what you enjoy doing together."},{"id":5,"type":"취향","prompt":"What activity helps you feel like yourself after a busy week? Explain what makes it satisfying for you."},{"id":6,"type":"비교","prompt":"Compare a typical weekend now with a weekend when you were a teenager. What has changed the most?"},{"id":7,"type":"최근 경험","prompt":"Describe a small achievement you felt good about recently. What did you do, and how did you celebrate it?"},{"id":8,"type":"과거 경험","prompt":"Tell me about a time you met someone who later became a close friend. How did the conversation begin?"},{"id":9,"type":"변화","prompt":"Describe a habit you have changed in the past few years. What led you to change it, and how has your routine improved?"},{"id":10,"type":"계획","prompt":"What personal activity would you like to make more time for next month? Explain how you would fit it into your schedule."},{"id":11,"type":"묘사","prompt":"Imagine showing a visitor around your home. Describe the layout and the part of the home that feels most comfortable."},{"id":12,"type":"사물 묘사","prompt":"Choose an item of furniture that you use every day. What does it look like, and how does it fit into your life?"},{"id":13,"type":"일상","prompt":"What happens at home during a typical evening? Describe what you do from the time you get home until bedtime."},{"id":14,"type":"과정","prompt":"Explain how you clean and organize your living space. Which task takes the most effort, and why?"},{"id":15,"type":"비교","prompt":"Think of a place you lived in before. How does your current home differ in space, convenience, and atmosphere?"},{"id":16,"type":"과거 경험","prompt":"Tell me about a day when you rearranged or decorated your home. What did you change, and how did it turn out?"},{"id":17,"type":"문제 경험","prompt":"Describe a household item that stopped working at an inconvenient time. What were you trying to do, and how did you manage?"},{"id":18,"type":"과거 경험","prompt":"Recall a visit from a friend or relative at your home. How did you prepare, and what did you do together?"},{"id":19,"type":"변화","prompt":"Has the way you use your home changed since you were younger? Explain which activities now take up more space or time."},{"id":20,"type":"선호","prompt":"If you could improve one part of your home, what would you choose? Explain the practical difference it would make."},{"id":21,"type":"묘사","prompt":"Describe the area within a short walk of your home. What would a visitor notice first?"},{"id":22,"type":"장소 묘사","prompt":"Which neighborhood facility makes your life easier? Explain where it is, what it offers, and how you use it."},{"id":23,"type":"일상","prompt":"When you have a free hour in your neighborhood, where do you go? Describe your usual route and stops."},{"id":24,"type":"인물·관계","prompt":"How do people in your neighborhood interact with one another? Describe a situation in which neighbors usually meet."},{"id":25,"type":"비교","prompt":"Compare your neighborhood during the daytime and late in the evening. How do the sounds, crowds, and activities differ?"},{"id":26,"type":"최근 경험","prompt":"Tell me about a new place you recently discovered near home. How did you find it, and what was your first impression?"},{"id":27,"type":"과거 경험","prompt":"Describe a time someone in your neighborhood helped you or you helped them. What happened afterward?"},{"id":28,"type":"문제 경험","prompt":"Have construction, noise, or a closed road ever disrupted your neighborhood routine? Describe one incident and your response."},{"id":29,"type":"변화","prompt":"What is one noticeable change in your neighborhood since you moved there? Explain how it affects your daily activities."},{"id":30,"type":"의견","prompt":"What would make your neighborhood more pleasant for residents? Describe one improvement and who would benefit from it."},{"id":31,"type":"취향","prompt":"What makes you decide to watch a movie or a series? Describe the kind of story that usually catches your attention."},{"id":32,"type":"장소 묘사","prompt":"Describe a movie theater you know well. What is the experience like from the entrance to your seat?"},{"id":33,"type":"일상","prompt":"How do you choose something to watch at home? Explain what you do when several people want different things."},{"id":34,"type":"과정","prompt":"Describe your routine for an evening at the movies, including what you do before and after the screening."},{"id":35,"type":"비교","prompt":"Compare watching a story in weekly episodes with watching the whole series at once. Which experience suits you better?"},{"id":36,"type":"최근 경험","prompt":"Tell me about something you watched recently that stayed on your mind. Describe a scene and your reaction to it."},{"id":37,"type":"과거 경험","prompt":"Recall a movie you saw with someone whose reaction was different from yours. What did you discuss afterward?"},{"id":38,"type":"문제 경험","prompt":"Tell me about a time a technical problem or another viewer interrupted a movie. What happened, and how did the evening end?"},{"id":39,"type":"변화","prompt":"How have your viewing habits changed since childhood? Consider what you watch, where you watch it, and who joins you."},{"id":40,"type":"추천","prompt":"A friend wants a relaxing movie night. What kind of movie would you suggest, and how would you explain your choice?"},{"id":41,"type":"취향","prompt":"What kind of sound or mood do you look for in music? Describe an artist whose music gives you that feeling."},{"id":42,"type":"일상","prompt":"Explain how music fits into different parts of your day. Does your choice change depending on what you are doing?"},{"id":43,"type":"과정","prompt":"How do you discover songs you have not heard before? Describe how a new song becomes part of your regular playlist."},{"id":44,"type":"묘사","prompt":"Describe a venue where people can enjoy a live performance. What features help the audience enjoy the show?"},{"id":45,"type":"비교","prompt":"Compare listening with headphones and listening through speakers with other people. How does each experience feel?"},{"id":46,"type":"과거 경험","prompt":"Tell me about a song that reminds you of a particular person or period in your life. Explain the connection."},{"id":47,"type":"최근 경험","prompt":"Describe a performance you attended or watched online recently. What moment held your attention most strongly?"},{"id":48,"type":"문제 경험","prompt":"Recall a time your plans to enjoy music or a performance did not work out. What changed, and what did you do instead?"},{"id":49,"type":"변화","prompt":"Have the reasons you listen to music changed over time? Give examples from two different stages of your life."},{"id":50,"type":"비교·선호","prompt":"Would you rather see a familiar performer in a small venue or a large festival with unfamiliar acts? Explain your preference."},{"id":51,"type":"묘사","prompt":"Describe a green space you can easily visit. What can you see along its paths, and where do people tend to gather?"},{"id":52,"type":"일상","prompt":"What do you usually do during a visit to a park? Explain how you decide where to walk and when to return home."},{"id":53,"type":"과정","prompt":"How do you get ready for a long walk outdoors? Describe what you check and what you take with you."},{"id":54,"type":"묘사","prompt":"Describe the different activities you see people doing in a park. Which area seems busiest, and why?"},{"id":55,"type":"비교","prompt":"Compare a walk by yourself with a walk with a friend. How do the pace and the experience differ?"},{"id":56,"type":"최근 경험","prompt":"Describe your most recent walk that lasted longer than expected. Where did you go, and what kept you outside?"},{"id":57,"type":"과거 경험","prompt":"Tell me about something unusual you noticed while walking. Why did you stop to pay attention to it?"},{"id":58,"type":"문제 경험","prompt":"Recall a time a blocked path, bad weather, or another obstacle changed your walk. How did you find another way?"},{"id":59,"type":"변화","prompt":"How does a park you know change from one season to another? Describe the differences in scenery and visitors."},{"id":60,"type":"의견","prompt":"What makes a walking route enjoyable enough to use regularly? Explain your priorities with an example."},{"id":61,"type":"취향","prompt":"What kind of physical activity feels manageable in your current lifestyle? Explain why it suits your schedule and preferences."},{"id":62,"type":"장소 묘사","prompt":"Describe a place where you exercise or see other people exercising. What equipment or space is available?"},{"id":63,"type":"일상","prompt":"Talk me through a typical exercise session. How do you begin, keep going, and finish?"},{"id":64,"type":"과정","prompt":"How do you choose clothing or equipment for exercise? Explain what matters to you before you buy or use it."},{"id":65,"type":"비교","prompt":"Compare exercising outdoors with exercising indoors. How do weather, motivation, and convenience affect your choice?"},{"id":66,"type":"첫 경험","prompt":"Tell me about your first attempt at a physical activity you were unfamiliar with. What was harder than you expected?"},{"id":67,"type":"과거 경험","prompt":"Describe a time a friend encouraged you to be active. What did you do together, and how did you feel afterward?"},{"id":68,"type":"문제 경험","prompt":"Tell me about a day when you could not follow your exercise plan. What got in the way, and how did you adjust?"},{"id":69,"type":"변화","prompt":"How has your attitude toward exercise changed since school? Explain what motivates you now compared with then."},{"id":70,"type":"일상·대안","prompt":"If you do not exercise regularly, how do you include movement in your day? Describe walking, errands, or other everyday activities."},{"id":71,"type":"묘사","prompt":"Describe a seaside place you have visited or know about. What gives it a different atmosphere from an inland destination?"},{"id":72,"type":"묘사","prompt":"What would you look for in a campsite? Describe the surroundings and facilities that would make you comfortable."},{"id":73,"type":"일상","prompt":"How do you normally spend a day near the sea? Describe how your activities change from morning to evening."},{"id":74,"type":"과정","prompt":"Explain how you would pack for an overnight outdoor trip. Which items would you prepare first, and why?"},{"id":75,"type":"비교","prompt":"Compare sleeping in a tent with staying in a guesthouse near nature. What would you enjoy or find difficult about each?"},{"id":76,"type":"과거 경험","prompt":"Tell me about an outdoor meal you remember clearly. Who prepared it, and what made the setting special?"},{"id":77,"type":"과거 경험","prompt":"Describe a sunrise, sunset, or night sky you saw on a trip. What were you doing just before you noticed it?"},{"id":78,"type":"문제 경험","prompt":"Recall a time wind, insects, or missing equipment made an outdoor activity difficult. How did your group respond?"},{"id":79,"type":"변화","prompt":"Have your preferences for outdoor trips changed as you have gotten older? Explain what you now value more."},{"id":80,"type":"계획","prompt":"Plan a short seaside outing for a friend who dislikes crowded places. Explain where you would go and how you would spend the time."},{"id":81,"type":"장소 묘사","prompt":"Choose a destination in your country that feels different from your hometown. Describe its atmosphere and what visitors can do there."},{"id":82,"type":"선호","prompt":"When choosing a short domestic trip, what matters most to you? Explain how you weigh distance, cost, food, and activities."},{"id":83,"type":"과정","prompt":"Describe how you plan a two-day trip within your country. What do you arrange in advance, and what do you leave open?"},{"id":84,"type":"일상","prompt":"Once you arrive in a new city, how do you get a feel for the place? Explain your usual first few activities."},{"id":85,"type":"비교","prompt":"Compare traveling to a large city with visiting a small town. How do you spend your time differently?"},{"id":86,"type":"최근 경험","prompt":"Tell me about a domestic trip you took recently. Describe a specific part of the trip that went especially well."},{"id":87,"type":"과거 경험","prompt":"Recall a place on a trip that was better than you had expected. What had you imagined, and what did you actually find?"},{"id":88,"type":"문제 경험","prompt":"Tell me about a time you arrived at a destination and discovered that an attraction was unavailable. How did you change the day?"},{"id":89,"type":"변화","prompt":"How has the way you organize trips changed since your earliest travel experiences? Give a concrete example."},{"id":90,"type":"추천","prompt":"A visitor has one free day in your country and wants something beyond major tourist sights. Describe the day you would recommend."},{"id":91,"type":"묘사","prompt":"Describe a place abroad you have visited or would like to visit. What everyday details there interest you most?"},{"id":92,"type":"선호","prompt":"What do you look for when choosing accommodation in an unfamiliar city? Explain which features you would prioritize."},{"id":93,"type":"과정","prompt":"Walk me through your preparations for an international trip, from making a booking to leaving for the airport."},{"id":94,"type":"일상","prompt":"When staying at a hotel, how do you organize a typical morning before going out? What information do you usually check?"},{"id":95,"type":"비교","prompt":"Compare traveling with a detailed itinerary and deciding your plans each morning. What are the advantages of each approach?"},{"id":96,"type":"과거 경험","prompt":"Describe a time you had to communicate with someone while traveling in an unfamiliar place. How did you make yourself understood?"},{"id":97,"type":"과거 경험","prompt":"Tell me about a meal or local custom you encountered on a trip that was new to you. What did you learn from it?"},{"id":98,"type":"문제 경험","prompt":"Recall a misunderstanding involving a booking, directions, or a meeting point during travel. Explain how you cleared it up."},{"id":99,"type":"변화","prompt":"How have your expectations of a good hotel or guesthouse changed? Use a past stay to explain your current priorities."},{"id":100,"type":"계획","prompt":"Imagine returning to a destination you visited before. What would you do differently, and what would you want to experience again?"},{"id":101,"type":"취향","prompt":"What makes a day at home feel like a vacation to you? Describe the activities and atmosphere you enjoy."},{"id":102,"type":"일상","prompt":"Walk me through a day off when you have no appointments. How do you decide what to do next?"},{"id":103,"type":"묘사","prompt":"Describe your favorite setup for relaxing at home. What do you keep nearby, and how does it help you unwind?"},{"id":104,"type":"과정","prompt":"How do you prepare to take several days off without traveling? Explain what you finish beforehand and what you plan for the break."},{"id":105,"type":"비교","prompt":"Compare spending a day off alone with spending it with family or friends. What is enjoyable about each?"},{"id":106,"type":"최근 경험","prompt":"Tell me about a recent day when you stayed home and felt refreshed afterward. What did you do that made the difference?"},{"id":107,"type":"과거 경험","prompt":"Describe a time you tried a new hobby during a break at home. How did you get started, and did you continue?"},{"id":108,"type":"문제 경험","prompt":"Recall a day off that was interrupted by an unexpected responsibility. What happened to your original plans?"},{"id":109,"type":"변화","prompt":"Has your idea of a relaxing vacation changed over the years? Explain what you used to want and what you prefer now."},{"id":110,"type":"계획","prompt":"You have three free days at home next month. Describe how you would balance rest, enjoyable activities, and necessary chores."},{"id":111,"type":"묘사","prompt":"Describe a café where you could comfortably spend an hour. What are the seating, lighting, and background sounds like?"},{"id":112,"type":"취향","prompt":"What kind of restaurant do you choose for a casual meal with friends? Explain how you decide whether everyone will enjoy it."},{"id":113,"type":"일상","prompt":"Describe how you handle meals on a busy weekday. Which meals do you prepare, buy, or eat with other people?"},{"id":114,"type":"과정","prompt":"Explain how you make a simple meal you know well. What should a beginner pay attention to while preparing it?"},{"id":115,"type":"비교","prompt":"Compare getting a drink to go with sitting down in a café. When does each choice work better for you?"},{"id":116,"type":"최근 경험","prompt":"Tell me about a meal you recently shared with someone. What did you talk about, and what made the meal enjoyable?"},{"id":117,"type":"첫 경험","prompt":"Recall the first time you cooked something without help. What did you attempt, and how did people react to it?"},{"id":118,"type":"문제 경험","prompt":"Describe a time you realized you were missing an ingredient while cooking. What substitute or new plan did you use?"},{"id":119,"type":"변화","prompt":"How have your food preferences changed since childhood? Describe something you enjoy now that you once avoided."},{"id":120,"type":"장소·일상","prompt":"Describe a bar, pub, or evening gathering place you know. What do people do there, and what makes it suitable for conversation?"},{"id":121,"type":"묘사","prompt":"Describe a store you enjoy browsing even when you do not need anything. What draws your attention inside?"},{"id":122,"type":"선호","prompt":"What information do you want before buying a product you will use often? Explain how you judge whether it is worth buying."},{"id":123,"type":"일상","prompt":"How do you usually shop for groceries or household supplies? Describe how you keep track of what you need."},{"id":124,"type":"과정","prompt":"Explain how you choose a gift for someone. How do you move from an initial idea to the final purchase?"},{"id":125,"type":"비교","prompt":"Compare buying clothing online with trying it on in a store. How do you decide which method to use?"},{"id":126,"type":"최근 경험","prompt":"Describe a recent purchase that made an everyday task easier. How did you find it, and has it met your expectations?"},{"id":127,"type":"과거 경험","prompt":"Tell me about a time you spent longer choosing an item than you expected. What made the decision difficult?"},{"id":128,"type":"문제 경험","prompt":"Recall an order that arrived differently from what you expected. What was wrong, and how was the situation resolved?"},{"id":129,"type":"변화","prompt":"How has your shopping behavior changed in recent years? Describe something you now buy less often or more carefully."},{"id":130,"type":"의견","prompt":"What makes you trust or distrust a customer review? Explain with an example of how a review affected a decision."},{"id":131,"type":"일상","prompt":"Describe a journey you make regularly. Explain the route, the time it takes, and the part that requires the most attention."},{"id":132,"type":"묘사","prompt":"What is a station or bus stop you often use like? Describe how people find their way and wait there."},{"id":133,"type":"과정","prompt":"How do you plan your departure time for an important appointment? Explain how you prepare for possible delays."},{"id":134,"type":"비교","prompt":"Compare taking a taxi with using a bus or train for the same journey. What circumstances would influence your choice?"},{"id":135,"type":"과거 경험","prompt":"Tell me about a time you took an unfamiliar route and discovered something interesting. What made you choose that route?"},{"id":136,"type":"문제 경험","prompt":"Describe a time you left something behind while moving between places. When did you notice, and what did you do next?"},{"id":137,"type":"과정","prompt":"Explain how you usually arrange an appointment for a haircut or another personal service. What details do you confirm?"},{"id":138,"type":"최근 경험","prompt":"Describe your most recent visit to a bank, post office, or service counter. What did you need, and how did the visit go?"},{"id":139,"type":"문제 경험","prompt":"Tell me about a time you had to wait much longer than expected for a service. How did you use the time or change your plans?"},{"id":140,"type":"변화","prompt":"How has the way you book appointments changed? Compare an earlier method with the one you use now."},{"id":141,"type":"사물 묘사","prompt":"Describe a digital device you rely on during an ordinary day. Which features do you use most, and why?"},{"id":142,"type":"일상","prompt":"What tasks do you regularly complete on your phone? Describe a sequence of things you might do in a single morning."},{"id":143,"type":"과정","prompt":"When learning to use a new app, how do you figure it out? Describe what you do if a feature is confusing."},{"id":144,"type":"문제 경험","prompt":"Tell me about a time your internet connection or device failed during an important task. How did you finish what you needed to do?"},{"id":145,"type":"묘사","prompt":"Describe a workplace, classroom, or study space you know well. What makes it easy or difficult to concentrate there?"},{"id":146,"type":"일상","prompt":"Explain how you organize a day of work or study. How do you decide which task deserves your attention first?"},{"id":147,"type":"과거 경험","prompt":"Tell me about a project you completed with other people. What was your role, and how did the group coordinate its work?"},{"id":148,"type":"문제 경험","prompt":"Describe a time instructions for a task were unclear. How did you find out what was expected and move forward?"},{"id":149,"type":"비교","prompt":"Compare learning a skill online with learning it in person. Use an example from something you have tried to learn."},{"id":150,"type":"변화","prompt":"How has technology changed a task you do at work, at school, or in your personal life? Describe the old and new processes."},{"id":151,"type":"묘사","prompt":"Describe the season you find most comfortable where you live. What does a typical day in that season feel like?"},{"id":152,"type":"일상","prompt":"How do you change your daily routine during very hot or cold weather? Give examples involving clothing, transport, or leisure."},{"id":153,"type":"비교","prompt":"Compare how you spend a rainy weekend and a sunny weekend. Which activities stay the same?"},{"id":154,"type":"과거 경험","prompt":"Tell me about a day when the weather changed suddenly while you were out. Describe what you noticed and how you reacted."},{"id":155,"type":"문제 경험","prompt":"Recall a time weather disrupted a gathering or trip. How did the people involved agree on a new plan?"},{"id":156,"type":"과정","prompt":"Explain how you sort and dispose of household waste where you live. What steps require extra care?"},{"id":157,"type":"과거 경험","prompt":"Tell me about a time you were unsure how to dispose of an item. How did you find the right information?"},{"id":158,"type":"변화","prompt":"Has your use of reusable bags, bottles, or containers changed? Explain what encouraged or discouraged the change."},{"id":159,"type":"일상·문화","prompt":"Describe how you and the people around you spend a holiday or family celebration. What usually happens before the main gathering?"},{"id":160,"type":"과거 경험","prompt":"Tell me about a holiday gathering that differed from your usual celebrations. What changed, and how did everyone respond?"},{"id":161,"type":"정보 문의","prompt":"You are organizing a small book club meeting at a café. Call the café and ask three or four questions to find out whether the space will work for your group."},{"id":162,"type":"문제 해결","prompt":"The café has just told you that its meeting room is unavailable at your reserved time. Call the manager, explain what your group needs, and suggest two workable alternatives."},{"id":163,"type":"관련 경험","prompt":"Leave the role-play now. Tell me about a time a group meeting location changed unexpectedly. How did everyone receive the new information, and how did the meeting go?"},{"id":164,"type":"정보 문의","prompt":"You want to rent bicycles for yourself and a friend for an afternoon. Speak to the rental shop employee and ask three or four questions before making the booking."},{"id":165,"type":"문제 해결","prompt":"At pickup, only one of the two bicycles you reserved is available. Explain the situation to the employee and propose two ways to adjust your booking or your plans."},{"id":166,"type":"관련 경험","prompt":"Leave the role-play now. Describe a time equipment or a service you expected was unavailable. What did you arrange instead, and were you satisfied with the result?"},{"id":167,"type":"정보 문의","prompt":"You are interested in a weekend cooking class for beginners. Call the organizer and ask three or four questions that will help you decide whether to register."},{"id":168,"type":"문제 해결","prompt":"After registering, you learn that the class has moved to a day when you cannot attend. Call the organizer, explain the conflict, and offer two possible solutions."},{"id":169,"type":"관련 경험","prompt":"Leave the role-play now. Tell me about a time the schedule of a class or activity changed after you signed up. How did you handle the change?"},{"id":170,"type":"정보 문의","prompt":"Your train arrives several hours before your accommodation's check-in time. Call the front desk and ask three or four questions about what you can do before your room is ready."},{"id":171,"type":"문제 해결","prompt":"You arranged to leave your bags at the accommodation, but the storage area is now closed. Explain your sightseeing plans to the receptionist and suggest two practical alternatives."},{"id":172,"type":"관련 경험","prompt":"Leave the role-play now. Describe a time luggage or other belongings complicated a day out. What did you do with them, and how did the day continue?"},{"id":173,"type":"정보 문의","prompt":"You want to take a friend to an exhibition this weekend. Call the venue and ask three or four questions about planning the visit and buying tickets."},{"id":174,"type":"문제 해결","prompt":"The confirmation email shows tickets for Sunday, but you intended to visit on Saturday. Call the ticket office, explain the mismatch, and suggest two ways to resolve it."},{"id":175,"type":"관련 경험","prompt":"Leave the role-play now. Tell me about a time you noticed incorrect information in a reservation or confirmation. How did you get it corrected?"},{"id":176,"type":"정보 문의","prompt":"You want a shop to deliver a gift to your friend before a celebration. Speak to an employee and ask three or four questions about arranging the delivery."},{"id":177,"type":"문제 해결","prompt":"The shop says the gift will arrive two days after the celebration. Call the shop, explain why the timing matters, and propose two alternatives that could still work."},{"id":178,"type":"관련 경험","prompt":"Leave the role-play now. Describe a time something important arrived late. How did the delay affect your plans, and what did you do about it?"},{"id":179,"type":"정보 문의","prompt":"You would like to borrow your friend's portable speaker for a picnic. Call your friend and ask three or four questions about borrowing, using, and returning it."},{"id":180,"type":"문제 해결","prompt":"While you are using the borrowed speaker, it suddenly stops charging. Call your friend, explain what happened, and suggest two ways to handle the problem responsibly."},{"id":181,"type":"관련 경험","prompt":"Leave the role-play now. Tell me about a time something you borrowed was damaged or did not work properly. How did you discuss it with the owner?"},{"id":182,"type":"정보 문의","prompt":"A repair technician needs to visit your home to inspect a leaking kitchen tap. Call the service company and ask three or four questions to prepare for the visit."},{"id":183,"type":"문제 해결","prompt":"The technician is delayed, and you must leave home before the new arrival time. Call the company, explain your availability, and suggest two ways to arrange the visit."},{"id":184,"type":"관련 경험","prompt":"Leave the role-play now. Describe a time you had to stay home for a repair or delivery. Did things happen as planned? Explain the outcome."},{"id":185,"type":"정보 문의","prompt":"Your friend has invited you on a day trip but has given you very few details. Call your friend and ask three or four questions so that you can prepare."},{"id":186,"type":"문제 해결","prompt":"On the morning of the trip, you discover that the meeting place is much farther away than you understood. Call your friend, explain the difficulty, and suggest two changes to the plan."},{"id":187,"type":"관련 경험","prompt":"Leave the role-play now. Tell me about a time you and a friend understood a plan differently. How did you discover the misunderstanding and resolve it?"},{"id":188,"type":"정보 문의","prompt":"You think you left a small bag at a sports center yesterday. Call the reception desk and ask three or four questions about checking and collecting lost property."},{"id":189,"type":"문제 해결","prompt":"The center has found your bag, but its collection hours overlap with your work or study schedule. Speak to the receptionist, explain the conflict, and propose two ways to collect it."},{"id":190,"type":"관련 경험","prompt":"Leave the role-play now. Describe a time you recovered a lost item. Who helped you, what steps did you take, and how did you feel when you got it back?"},{"id":191,"type":"변화·영향","prompt":"Think about how people arrange social plans now compared with several years ago. What has become easier, and what new difficulties have appeared? Use an example you have observed."},{"id":192,"type":"비교·의견","prompt":"Compare a neighborhood filled with small independent stores and one centered around a large shopping complex. How might everyday life differ for residents?"},{"id":193,"type":"의견·근거","prompt":"Some people choose leisure activities mainly because they look interesting online. How useful is that approach? Discuss both a benefit and a possible disappointment."},{"id":194,"type":"문제·대안","prompt":"Imagine a popular local park becomes too crowded on weekends. What difficulties could this create, and what practical steps could improve visitors' experiences?"},{"id":195,"type":"변화·영향","prompt":"How might ordering meals more often change the way people cook and spend time together at home? Connect your explanation to something you have noticed."},{"id":196,"type":"비교·의견","prompt":"Compare using a self-service machine with speaking to an employee when buying a ticket. Who might prefer each option, and what makes a service easy to use?"},{"id":197,"type":"의견·사례","prompt":"When planning a group vacation, how much should be decided together in advance? Explain how a group could balance shared activities and individual preferences."},{"id":198,"type":"변화·영향","prompt":"Think of a hobby that people can now enjoy both online and in person. How does the online version change participation and the sense of community?"},{"id":199,"type":"문제·해결","prompt":"People sometimes find it difficult to keep work or study messages from interrupting their free time. Why can this be challenging, and what practical boundaries could help?"},{"id":200,"type":"의견·비교","prompt":"A community can improve either its outdoor recreation spaces or its indoor cultural facilities this year. Which would you prioritize for a place you know, and what trade-off would you accept?"}];
 
@@ -1642,6 +1640,84 @@ function closeHistory() {
   document.getElementById('historyModal')?.classList.add('hide');
 }
 
+let recordingsReady = false;
+let recordingGenerationFailed = false;
+let recordingScan = null;
+let startRequestPending = false;
+
+function updateStartReadiness() {
+  for (const id of ['startBtn', 'practiceStartBtn']) {
+    const button = document.getElementById(id);
+    // aria-disabled keeps keyboard/click access to the required preparation guide.
+    button.setAttribute('aria-disabled', String(!recordingsReady || localTtsBulkPreparing));
+  }
+}
+
+async function refreshRecordingReadiness() {
+  if (recordingGenerationFailed) { recordingsReady = false; updateStartReadiness(); return false; }
+  if (recordingScan) return recordingScan;
+  recordingsReady = false;
+  updateStartReadiness();
+  recordingScan = (async () => {
+    const bank = activeQuestionBank.slice();
+    try {
+      for (const question of bank) {
+        if (!await readCachedQuestionAudio(makeTtsCacheKey(question))) return false;
+      }
+      recordingsReady = bank.length > 0 && bank.every((q, i) => makeTtsCacheKey(q) === makeTtsCacheKey(activeQuestionBank[i]));
+      return recordingsReady;
+    } catch { return false; }
+    finally { updateStartReadiness(); }
+  })();
+  try { return await recordingScan; } finally { recordingScan = null; }
+}
+
+function showStartDialog(title, message, choices) {
+  const dialog = document.getElementById('startDialog');
+  if (dialog.open) return;
+  const previousFocus = document.activeElement;
+  document.getElementById('startDialogTitle').textContent = title;
+  document.getElementById('startDialogMessage').textContent = message;
+  const actions = document.getElementById('startDialogActions');
+  actions.replaceChildren();
+  for (const choice of choices) {
+    const button = document.createElement('button');
+    button.type = 'button'; button.textContent = choice.label;
+    if (choice.close) button.id = 'startDialogClose';
+    button.onclick = () => { dialog.onclose = () => { previousFocus?.focus({ preventScroll: true }); choice.action?.(); }; dialog.close(); };
+    actions.appendChild(button);
+  }
+  dialog.onclose = () => previousFocus?.focus({ preventScroll: true });
+  dialog.showModal();
+}
+
+function showRecordingPreparation() {
+  showStartDialog('녹음본 준비가 필요합니다', '200문항 녹음본을 먼저 생성해 주세요. PC 사양에 따라 30분 이상 걸릴 수 있습니다.', [
+    { label: '확인', action: () => prepareAllQuestionRecordings() },
+    { label: '닫기', close: true },
+  ]);
+}
+
+async function requestSessionStart(mode) {
+  if (startRequestPending || localTtsBulkPreparing || document.getElementById('startDialog').open) return;
+  startRequestPending = true;
+  try {
+    if (!await refreshRecordingReadiness()) { showRecordingPreparation(); return; }
+    const cfg = readEvalConfig();
+    if (cfg.mode !== 'local' && isApiReadyForMode(cfg.mode, cfg.apiKey)) { startExam(mode); return; }
+    showStartDialog('평가 방식을 선택해 주세요', 'API를 설정하는 것을 권장합니다. 또는 오프라인으로 진행하시겠습니까?', [
+      { label: '오프라인으로 시작', action: () => { setEvalMode('local', { skipSave: true }); startExam(mode); } },
+      { label: 'API 설정', action: () => {
+        if (getEvalMode() === 'local') setEvalMode('gemini');
+        const section = document.getElementById('evaluationSection');
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        section.focus({ preventScroll: true });
+      } },
+      { label: '닫기', close: true },
+    ]);
+  } finally { startRequestPending = false; }
+}
+
 function setTtsStatus(message, kind = '') {
   const status = document.getElementById('ttsStatus');
   if (!status) return;
@@ -1673,7 +1749,7 @@ function updateTtsButtons() {
 }
 
 function setTtsMode(mode, options = {}) {
-  const selected = ['browser', 'local', 'recording'].includes(mode) ? mode : DEFAULT_TTS_MODE;
+  const selected = 'recording';
   state.ttsMode = selected;
   document.querySelectorAll('.tts-option[data-tts-mode]').forEach((button) => {
     const active = button.dataset.ttsMode === selected;
@@ -1968,6 +2044,7 @@ async function cacheQuestionAudio(key, blob, knownValidation = null) {
 }
 
 async function clearQuestionAudioCache() {
+  recordingsReady = false; updateStartReadiness();
   state.questionAudioCache.clear();
   state.questionAudioValidation.clear();
   let db = null;
@@ -2416,7 +2493,7 @@ async function prepareLocalTts() {
       localTtsEngine = null;
       localTtsReady = false;
       localTtsDevice = '';
-      setTtsStatus(`로컬 TTS 준비 실패 · 브라우저 TTS로 대체할 수 있습니다. (${error.message})`, 'warn');
+      setTtsStatus(`녹음본 생성 준비 실패 · 연결 상태를 확인하고 다시 준비해 주세요. (${error.message})`, 'warn');
       throw error;
     } finally {
       localTtsLoading = false;
@@ -2501,9 +2578,8 @@ async function getQuestionAudio(question) {
   const key = makeTtsCacheKey(question);
   const cached = await readCachedQuestionAudio(key);
   if (cached) return cached;
-  const generated = await generateQuestionAudioVerified(question);
-  await cacheQuestionAudio(key, generated.blob, generated.validation);
-  return generated.blob;
+  recordingsReady = false; updateStartReadiness();
+  throw new Error('녹음본이 없습니다. 홈에서 녹음본을 다시 준비해 주세요.');
 }
 
 function getTtsResourceSnapshot() {
@@ -2579,7 +2655,10 @@ async function prepareAllQuestionRecordings() {
   const button = document.getElementById('prepareAllTtsBtn');
   if (button?.disabled || localTtsBulkPreparing) return false;
   const total = activeQuestionBank.length;
+  recordingsReady = false;
+  recordingGenerationFailed = true;
   localTtsBulkPreparing = true;
+  updateStartReadiness();
   updateTtsButtons();
   beginProcessing('200문항 녹음본 준비 중', `0/${total}문항 · Kokoro 음성 모델과 WAV를 준비합니다.`);
   try {
@@ -2644,13 +2723,16 @@ async function prepareAllQuestionRecordings() {
       updateProcessingOverlay('', `${total}/${total}문항 · 구조·디코딩 검증까지 완료했습니다.`);
       setTtsStatus(`녹음본 준비 완료 · ${total}문항 검증됨 · ${localTtsDevice === 'webgpu' ? 'WebGPU' : 'WASM'} · 동시 생성 최대 ${localTtsGenerationConcurrency}개`, 'good');
       }
+    recordingGenerationFailed = false;
+    recordingsReady = true;
     return true;
   } catch (error) {
-    setTtsStatus(`녹음본 준비 실패 · 필요한 문항은 재생할 때 다시 시도합니다. (${error.message})`, 'warn');
+    setTtsStatus(`녹음본 준비 실패 · 다시 준비 버튼을 눌러 주세요. (${error.message})`, 'warn');
     return false;
   } finally {
     endProcessing();
     localTtsBulkPreparing = false;
+    updateStartReadiness();
     if (button) button.disabled = false;
     updateTtsButtons();
   }
@@ -2838,7 +2920,7 @@ function loadEvalConfig() {
   try {
     const cfg = JSON.parse(raw);
     if (!cfg || typeof cfg !== 'object') throw new Error('invalid cfg');
-    const mode = ['local', 'openai', 'gemini'].includes(cfg.mode) ? cfg.mode : 'local';
+    const mode = ['openai', 'gemini'].includes(cfg.mode) ? cfg.mode : 'gemini';
     const modeHint = mode === 'gemini' ? 'gemini' : 'openai';
     const persistedModel = typeof cfg.model === 'string' ? cfg.model : '';
     const legacyKeyPresent = Object.prototype.hasOwnProperty.call(cfg, 'apiKey')
@@ -2988,7 +3070,7 @@ function applyEvalPresetByMode() {
   if (!keyInput || !handshakeBtn) return;
   keyInput.disabled = mode === 'local';
   handshakeBtn.disabled = mode === 'local';
-  if (localAiPanel) localAiPanel.style.display = mode === 'local' ? 'grid' : 'none';
+  if (localAiPanel) localAiPanel.style.display = 'none';
   if (mode === 'local') {
     document.getElementById('apiKeyInput').placeholder = '오프라인 기본 평가에서는 키가 필요 없습니다';
   } else if (mode === 'openai') {
@@ -4482,15 +4564,6 @@ function updatePromptButton() {
   }
 }
 
-function chooseNaturalEnglishVoice() {
-  if (!('speechSynthesis' in window)) return null;
-  const voices = speechSynthesis.getVoices().filter((voice) => /^en(-|_)/i.test(voice.lang || ''));
-  return voices.find((voice) => /en-US/i.test(voice.lang) && /Google US English|Microsoft.*(Jenny|Aria|Guy)|Samantha/i.test(voice.name))
-    || voices.find((voice) => /en-US/i.test(voice.lang))
-    || voices[0]
-    || null;
-}
-
 function stopPromptPlayback(options = {}) {
   clearTimeout(state.promptWatchdog);
   state.promptPlaybackToken += 1;
@@ -4528,35 +4601,6 @@ function startPromptAnswerTimer(q) {
     state.questionTimerPaused = false;
     startQuestionTimer();
   }
-}
-
-function speakQuestionWithBrowser(q, token, prefix = '') {
-  if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
-    throw new Error('이 브라우저는 브라우저 TTS를 지원하지 않습니다.');
-  }
-  const status = document.getElementById('voiceStatus');
-  const utterance = new SpeechSynthesisUtterance(q.prompt);
-  utterance.lang = 'en-US';
-  utterance.rate = 0.86;
-  utterance.pitch = 0.98;
-  utterance.volume = 0.96;
-  const voice = chooseNaturalEnglishVoice();
-  if (voice) utterance.voice = voice;
-  utterance.onstart = () => {
-    if (token !== state.promptPlaybackToken) return;
-    startPromptAnswerTimer(q);
-    if (status) status.textContent = `${prefix}질문을 읽어드리는 중...`;
-  };
-  utterance.onend = () => completePromptPlayback(q, token, '문항을 듣기 완료. 답변을 마이크로 진행하세요.');
-  utterance.onerror = () => completePromptPlayback(q, token, '문항 음성을 재생하지 못했습니다. 듣기 횟수는 차감되지 않으니 다시 눌러 주세요.', true);
-  speechSynthesis.cancel();
-  speechSynthesis.speak(utterance);
-  clearTimeout(state.promptWatchdog);
-  state.promptWatchdog = setTimeout(() => {
-    if (token !== state.promptPlaybackToken || !state.promptPlaybackPending) return;
-    completePromptPlayback(q, token, '음성 재생 응답이 없어 중단했습니다. 다시 재생해 주세요.', true);
-    speechSynthesis.cancel();
-  }, 120000);
 }
 
 async function speakQuestionWithLocalAudio(q, token, sourceMode) {
@@ -4616,11 +4660,7 @@ async function speakQuestion() {
   if (button) button.disabled = true;
   updatePromptButton();
   try {
-    if (state.ttsMode === 'browser') {
-      speakQuestionWithBrowser(q, token);
-    } else {
-      await speakQuestionWithLocalAudio(q, token, state.ttsMode);
-    }
+    await speakQuestionWithLocalAudio(q, token, 'recording');
   } catch (error) {
     if (token !== state.promptPlaybackToken) return;
     if (state.promptAudio) {
@@ -4631,15 +4671,6 @@ async function speakQuestion() {
       failedAudio.removeAttribute('src');
       try { failedAudio.load(); } catch (loadError) { /* 이미 실패한 오디오일 수 있습니다. */ }
       if (failedUrl && failedUrl.startsWith('blob:')) URL.revokeObjectURL(failedUrl);
-    }
-    if (state.ttsMode !== 'browser' && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window) {
-      if (status) status.textContent = `${state.ttsMode === 'local' ? '로컬 TTS' : '녹음본'}을 사용할 수 없어 브라우저 TTS로 대체합니다.`;
-      try {
-        speakQuestionWithBrowser(q, token, '대체 음성 · ');
-        return;
-      } catch (fallbackError) {
-        error = fallbackError;
-      }
     }
     state.promptPlaybackPending = false;
     updatePromptButton();
@@ -6084,25 +6115,18 @@ async function waitForVoiceFinalization() {
   }
 }
 
-function runSoundTest() {
+async function runSoundTest() {
   const status = document.getElementById('deviceTestStatus');
-  if (!('speechSynthesis' in window)) {
-    status.textContent = '이 브라우저에서는 소리 테스트를 지원하지 않습니다.';
-    return;
-  }
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance('Sound check. You should hear this sentence clearly.');
-  utterance.lang = 'en-US';
-  utterance.rate = 0.82;
-  utterance.pitch = 0.98;
-  const voice = chooseNaturalEnglishVoice();
-  if (voice) utterance.voice = voice;
-  utterance.onstart = () => { status.textContent = '소리 테스트 재생 중입니다. 문장이 또렷하게 들리는지 확인해 주세요.'; };
-  utterance.onend = () => { status.textContent = '소리 테스트가 끝났습니다.'; };
-  utterance.onerror = () => { status.textContent = '소리 테스트를 재생하지 못했습니다.'; };
-  window.speechSynthesis.speak(utterance);
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    await ctx.resume();
+    const tone = ctx.createOscillator(); const volume = ctx.createGain();
+    volume.gain.value = 0.12; tone.frequency.value = 440;
+    tone.connect(volume).connect(ctx.destination);
+    tone.onended = () => { ctx.close(); status.textContent = '소리 테스트가 끝났습니다. 확인음이 들렸는지 확인해 주세요.'; };
+    status.textContent = '확인음 재생 중입니다.'; tone.start(); tone.stop(ctx.currentTime + 0.6);
+  } catch { status.textContent = '소리를 재생하지 못했습니다. 브라우저와 스피커 설정을 확인해 주세요.'; }
 }
-
 function stopMicTest() {
   if (state.deviceTestAnimation) cancelAnimationFrame(state.deviceTestAnimation);
   state.deviceTestAnimation = null;
@@ -6377,8 +6401,8 @@ function finishExamNow() {
   setSessionMode(state.sessionMode, { skipSave: true });
 }
 
-document.getElementById('startBtn').addEventListener('click', () => startExam('exam'));
-document.getElementById('practiceStartBtn').addEventListener('click', () => startExam('practice'));
+document.getElementById('startBtn').addEventListener('click', () => requestSessionStart('exam'));
+document.getElementById('practiceStartBtn').addEventListener('click', () => requestSessionStart('practice'));
 document.getElementById('clearBtn').addEventListener('click', clearProgress);
 document.getElementById('playQuestionBtn').addEventListener('click', speakQuestion);
 document.getElementById('voiceBtn').addEventListener('click', toggleVoiceInput);
@@ -6480,6 +6504,7 @@ document.getElementById('questionNextBtn').addEventListener('click', () => {
 document.getElementById('resetQuestionsBtn').addEventListener('click', resetQuestionBank);
 document.getElementById('saveQuestionsBtn').addEventListener('click', () => {
   collectQuestionEditorChanges();
+  refreshRecordingReadiness();
   closeQuestionEditor();
   alert('연습 질문을 저장했습니다. 다음 모의고사부터 반영됩니다.');
 });
@@ -6498,6 +6523,7 @@ loadTtsPreference();
 setSessionMode(progressStorage.getItem('opic-session-mode-v1') || 'exam', { skipSave: true });
 loadEvalConfig();
 restoreSessionCredentials();
+refreshRecordingReadiness();
 window.addEventListener('beforeunload', (e) => {
   saveCurrent();
   const answered = Object.values(state.answers).filter(v => (v || '').trim().length > 0).length;
